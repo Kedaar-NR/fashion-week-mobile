@@ -1,64 +1,116 @@
 import React, { useState } from 'react';
-import { StyleSheet, ScrollView, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { StyleSheet, ScrollView, TouchableOpacity, FlatList, Alert, TextInput } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
-interface Drop {
+interface Brand {
   id: string;
-  brand: string;
-  productName: string;
+  name: string;
+  genre?: string;
   dropDate: string;
-  price: string;
-  status: 'upcoming' | 'live' | 'sold-out';
+  status: 'upcoming' | 'live' | 'adding-soon';
   notifyEnabled: boolean;
 }
 
-const mockDropData: Drop[] = [
+// Genre colors matching the web version
+const genreColors = {
+  PUNK: { bg: '#8b5cf6', text: '#ffffff' },
+  GOTH: { bg: '#8b5cf6', text: '#ffffff' },
+  GRUNGE: { bg: '#8b5cf6', text: '#ffffff' },
+  ESSENTIALS: { bg: '#3b82f6', text: '#ffffff' },
+  LUXURY: { bg: '#f59e0b', text: '#ffffff' },
+  VINTAGE: { bg: '#f59e0b', text: '#ffffff' },
+  MINIMALISTIC: { bg: '#6b7280', text: '#ffffff' },
+  'CRAZY EXPERIMENTAL': { bg: '#ec4899', text: '#ffffff' },
+  Y2K: { bg: '#a78bfa', text: '#ffffff' },
+  JEWELERY: { bg: '#10b981', text: '#ffffff' },
+  TECHWEAR: { bg: '#06b6d4', text: '#ffffff' },
+  STREET: { bg: '#ef4444', text: '#ffffff' },
+};
+
+const mockBrandsData: Brand[] = [
   {
     id: '1',
-    brand: 'Supreme',
-    productName: 'Box Logo Hoodie',
-    dropDate: '2024-06-28T11:00:00Z',
-    price: '$158',
-    status: 'upcoming',
-    notifyEnabled: true,
-  },
-  {
-    id: '2',
-    brand: 'Off-White',
-    productName: 'Industrial Belt 2.0',
-    dropDate: '2024-06-25T10:00:00Z',
-    price: '$245',
-    status: 'live',
+    name: '@supreme',
+    genre: 'STREET/LUXURY',
+    dropDate: 'Adding soon',
+    status: 'adding-soon',
     notifyEnabled: false,
   },
   {
+    id: '2',
+    name: '@offwhite',
+    genre: 'LUXURY/STREET',
+    dropDate: 'Adding soon',
+    status: 'adding-soon',
+    notifyEnabled: true,
+  },
+  {
     id: '3',
-    brand: 'Fear of God Essentials',
-    productName: 'Oversized T-Shirt',
-    dropDate: '2024-06-20T09:00:00Z',
-    price: '$85',
-    status: 'sold-out',
+    name: '@fearofgod',
+    genre: 'ESSENTIALS/MINIMALISTIC',
+    dropDate: 'Adding soon',
+    status: 'adding-soon',
+    notifyEnabled: false,
+  },
+  {
+    id: '4',
+    name: '@rickowens',
+    genre: 'GOTH/LUXURY',
+    dropDate: 'Adding soon',
+    status: 'adding-soon',
+    notifyEnabled: false,
+  },
+  {
+    id: '5',
+    name: '@vetements',
+    genre: 'CRAZY EXPERIMENTAL',
+    dropDate: 'Adding soon',
+    status: 'adding-soon',
+    notifyEnabled: true,
+  },
+  {
+    id: '6',
+    name: '@chromeheart',
+    genre: 'PUNK/JEWELERY',
+    dropDate: 'Adding soon',
+    status: 'adding-soon',
+    notifyEnabled: false,
+  },
+  {
+    id: '7',
+    name: '@stussy',
+    genre: 'STREET/VINTAGE',
+    dropDate: 'Adding soon',
+    status: 'adding-soon',
+    notifyEnabled: false,
+  },
+  {
+    id: '8',
+    name: '@acronym',
+    genre: 'TECHWEAR',
+    dropDate: 'Adding soon',
+    status: 'adding-soon',
     notifyEnabled: false,
   },
 ];
 
 export default function DropsScreen() {
-  const [drops, setDrops] = useState<Drop[]>(mockDropData);
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'live'>('all');
+  const [brands, setBrands] = useState<Brand[]>(mockBrandsData);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const toggleNotification = (id: string) => {
-    setDrops(prev => 
-      prev.map(drop => 
-        drop.id === id ? { ...drop, notifyEnabled: !drop.notifyEnabled } : drop
+    setBrands(prev => 
+      prev.map(brand => 
+        brand.id === id ? { ...brand, notifyEnabled: !brand.notifyEnabled } : brand
       )
     );
     
-    const drop = drops.find(d => d.id === id);
-    if (drop) {
+    const brand = brands.find(b => b.id === id);
+    if (brand) {
       Alert.alert(
         'Notification Updated',
-        `Notifications ${drop.notifyEnabled ? 'disabled' : 'enabled'} for ${drop.productName}`
+        `Notifications ${brand.notifyEnabled ? 'disabled' : 'enabled'} for ${brand.name}`
       );
     }
   };
@@ -67,34 +119,52 @@ export default function DropsScreen() {
     switch (status) {
       case 'upcoming': return '#FF9500';
       case 'live': return '#34C759';
-      case 'sold-out': return '#FF3B30';
+      case 'adding-soon': return '#6b7280';
       default: return '#666';
     }
   };
 
-  const formatDropDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffTime = date.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const renderGenreBadges = (genre?: string) => {
+    if (!genre) return null;
     
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Tomorrow';
-    if (diffDays > 0) return `In ${diffDays} days`;
-    return 'Past drop';
+    const genres = genre.split('/').map(g => g.trim().toUpperCase());
+    
+    return (
+      <ThemedView style={styles.genreContainer}>
+        {genres.map((g, index) => {
+          const colorConfig = genreColors[g as keyof typeof genreColors] || { bg: '#6b7280', text: '#ffffff' };
+          return (
+            <ThemedView 
+              key={index} 
+              style={[styles.genreBadge, { backgroundColor: colorConfig.bg }]}
+            >
+              <ThemedText style={[styles.genreText, { color: colorConfig.text }]}>
+                {g}
+              </ThemedText>
+            </ThemedView>
+          );
+        })}
+      </ThemedView>
+    );
   };
 
-  const filteredDrops = filter === 'all' 
-    ? drops 
-    : drops.filter(drop => drop.status === filter);
+  const filteredBrands = brands.filter(brand =>
+    brand.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (brand.genre && brand.genre.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
-  const renderDropItem = ({ item }: { item: Drop }) => (
+  const renderBrandItem = ({ item }: { item: Brand }) => (
     <ThemedView style={styles.dropItem}>
       <ThemedView style={styles.dropHeader}>
         <ThemedView style={styles.brandInfo}>
-          <ThemedText style={styles.brandName}>{item.brand}</ThemedText>
-          <ThemedView style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-            <ThemedText style={styles.statusText}>{item.status.toUpperCase()}</ThemedText>
+          <ThemedView style={styles.avatarPlaceholder}>
+            <ThemedText style={styles.avatarText}>
+              {item.name.substring(1, 3).toUpperCase()}
+            </ThemedText>
+          </ThemedView>
+          <ThemedView style={styles.brandDetails}>
+            <ThemedText style={styles.brandName}>{item.name}</ThemedText>
+            {renderGenreBadges(item.genre)}
           </ThemedView>
         </ThemedView>
         <TouchableOpacity
@@ -107,54 +177,33 @@ export default function DropsScreen() {
         </TouchableOpacity>
       </ThemedView>
       
-      <ThemedText style={styles.productName}>{item.productName}</ThemedText>
-      <ThemedText style={styles.price}>{item.price}</ThemedText>
-      <ThemedText style={styles.dropDate}>
-        {item.status === 'upcoming' ? formatDropDate(item.dropDate) : item.status === 'live' ? 'Live Now!' : 'Ended'}
-      </ThemedText>
+      <ThemedText style={styles.dropDate}>{item.dropDate}</ThemedText>
     </ThemedView>
   );
 
   return (
     <ScrollView style={styles.container}>
       <ThemedView style={styles.header}>
-        <ThemedText style={styles.title}>Drop Tracker</ThemedText>
+        <ThemedText style={styles.title}>DROP TRACKER</ThemedText>
         <ThemedText style={styles.subtitle}>
-          Stay updated on the latest fashion drops
+          STAY UPDATED WITH THE LATEST DROPS
         </ThemedText>
       </ThemedView>
 
-      <ThemedView style={styles.filterContainer}>
-        <TouchableOpacity
-          style={[styles.filterButton, filter === 'all' && styles.activeFilter]}
-          onPress={() => setFilter('all')}
-        >
-          <ThemedText style={[styles.filterText, filter === 'all' && styles.activeFilterText]}>
-            All
-          </ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterButton, filter === 'upcoming' && styles.activeFilter]}
-          onPress={() => setFilter('upcoming')}
-        >
-          <ThemedText style={[styles.filterText, filter === 'upcoming' && styles.activeFilterText]}>
-            Upcoming
-          </ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.filterButton, filter === 'live' && styles.activeFilter]}
-          onPress={() => setFilter('live')}
-        >
-          <ThemedText style={[styles.filterText, filter === 'live' && styles.activeFilterText]}>
-            Live
-          </ThemedText>
-        </TouchableOpacity>
+      <ThemedView style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search brands or styles..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholderTextColor="#999"
+        />
       </ThemedView>
 
       <FlatList
-        data={filteredDrops}
+        data={filteredBrands}
         keyExtractor={(item) => item.id}
-        renderItem={renderDropItem}
+        renderItem={renderBrandItem}
         style={styles.dropsList}
         scrollEnabled={false}
         showsVerticalScrollIndicator={false}
@@ -273,5 +322,50 @@ const styles = StyleSheet.create({
   dropDate: {
     fontSize: 14,
     opacity: 0.7,
+  },
+  searchContainer: {
+    marginBottom: 20,
+  },
+  searchInput: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 24,
+    paddingHorizontal: 20,
+    fontSize: 16,
+    backgroundColor: '#f8f8f8',
+  },
+  avatarPlaceholder: {
+    width: 48,
+    height: 48,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  avatarText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  brandDetails: {
+    flex: 1,
+  },
+  genreContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 4,
+    gap: 4,
+  },
+  genreBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  genreText: {
+    fontSize: 10,
+    fontWeight: '600',
+    textTransform: 'uppercase',
   },
 });
