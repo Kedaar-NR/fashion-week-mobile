@@ -37,8 +37,10 @@ export function NavBar() {
           />
         </View>
       </TouchableOpacity>
-      <ThemedText style={[styles.title, { fontFamily: 'Kanit-Bold' }]}>fashion:week</ThemedText>
-    
+      <ThemedText style={[styles.title, { fontFamily: "Kanit-Bold" }]}>
+        fashion:week
+      </ThemedText>
+
       <TouchableOpacity style={styles.button} onPress={handleSearchPress}>
         <IconSymbol name="magnifyingglass" size={20} color={iconColor} />
       </TouchableOpacity>
