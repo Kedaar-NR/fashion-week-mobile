@@ -35,7 +35,7 @@ export default function TabLayout() {
           options={{
             title: "Home",
             tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="house.fill" color={color} />
+              <IconSymbol size={20} name="house.fill" color={color} />
             ),
           }}
         />
@@ -44,7 +44,7 @@ export default function TabLayout() {
           options={{
             title: "Collection",
             tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="heart.fill" color={color} />
+              <IconSymbol size={20} name="heart.fill" color={color} />
             ),
           }}
         />
@@ -53,7 +53,7 @@ export default function TabLayout() {
           options={{
             title: "Drops",
             tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="bell.fill" color={color} />
+              <IconSymbol size={20} name="bell.fill" color={color} />
             ),
           }}
         />
@@ -62,7 +62,7 @@ export default function TabLayout() {
           options={{
             title: "Account",
             tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="person.fill" color={color} />
+              <IconSymbol size={20} name="person.fill" color={color} />
             ),
           }}
         />
