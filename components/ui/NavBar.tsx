@@ -1,16 +1,18 @@
 import React, { useRef, useState } from "react";
-import { Keyboard, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Keyboard,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
 export function NavBar() {
   const colorScheme = useColorScheme();
-  const iconColor =
-    colorScheme === "light" ? Colors.light.icon : Colors.dark.icon;
+  const iconColor = "#FFFFFF"; // White color for all icons
 
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -35,7 +37,7 @@ export function NavBar() {
   };
 
   return (
-    <ThemedView className="flex-row items-center justify-between px-4 py-3 pt-16 border-b border-gray-200">
+    <View className="absolute top-0 left-0 right-0 z-50 flex-row items-center justify-between px-4 py-3 pt-16 bg-transparent">
       {searchActive ? (
         <View className="flex-1 flex-row items-center gap-2 h-11">
           <TextInput
@@ -81,9 +83,9 @@ export function NavBar() {
             </View>
           </TouchableOpacity>
 
-          <ThemedText className="text-lg font-semibold tracking-wider">
+          <Text className="text-lg font-semibold tracking-wider text-white">
             fashion:week
-          </ThemedText>
+          </Text>
 
           <TouchableOpacity
             className="w-11 h-11 justify-center items-center"
@@ -93,6 +95,6 @@ export function NavBar() {
           </TouchableOpacity>
         </>
       )}
-    </ThemedView>
+    </View>
   );
 }
