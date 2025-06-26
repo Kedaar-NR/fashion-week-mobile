@@ -1,242 +1,196 @@
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+  Dimensions,
   FlatList,
   ScrollView,
-  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from "react-native";
 
-interface CollectionItem {
+interface FashionPiece {
   id: string;
   name: string;
+  type: string;
   designer: string;
-  season: string;
   image: string;
-  saved: boolean;
+  likedAt: Date;
 }
 
-const mockCollectionData: CollectionItem[] = [
+interface Collection {
+  id: string;
+  name: string;
+  description: string;
+  itemCount: number;
+  image: string;
+}
+
+const mockFashionPieces: FashionPiece[] = [
   {
     id: "1",
-    name: "Urban Elegance",
-    designer: "Stella McCartney",
-    season: "Spring/Summer 2024",
+    name: "Aviator Sunglasses",
+    type: "Accessories",
+    designer: "Ray-Ban",
     image: "placeholder",
-    saved: true,
+    likedAt: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
   },
   {
     id: "2",
-    name: "Minimalist Dreams",
-    designer: "Calvin Klein",
-    season: "Fall/Winter 2024",
+    name: "Denim Jacket",
+    type: "Outerwear",
+    designer: "Levi's",
     image: "placeholder",
-    saved: false,
+    likedAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
   },
   {
     id: "3",
-    name: "Vintage Revival",
-    designer: "Marc Jacobs",
-    season: "Spring/Summer 2024",
+    name: "White Sneakers",
+    type: "Footwear",
+    designer: "Nike",
     image: "placeholder",
-    saved: true,
+    likedAt: new Date(Date.now() - 1000 * 60 * 45), // 45 minutes ago
+  },
+  {
+    id: "4",
+    name: "Silk Scarf",
+    type: "Accessories",
+    designer: "Hermès",
+    image: "placeholder",
+    likedAt: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
+  },
+  {
+    id: "5",
+    name: "Leather Bag",
+    type: "Accessories",
+    designer: "Coach",
+    image: "placeholder",
+    likedAt: new Date(Date.now() - 1000 * 60 * 90), // 1.5 hours ago
   },
 ];
 
+const mockCollections: Collection[] = [
+  {
+    id: "1",
+    name: "Summer Vibes",
+    description: "Light and breezy summer collection",
+    itemCount: 12,
+    image: "placeholder",
+  },
+  {
+    id: "2",
+    name: "Work Outfits",
+    description: "Professional and polished looks",
+    itemCount: 8,
+    image: "placeholder",
+  },
+  {
+    id: "3",
+    name: "Weekend Casual",
+    description: "Comfortable weekend wear",
+    itemCount: 15,
+    image: "placeholder",
+  },
+  {
+    id: "4",
+    name: "Evening Glam",
+    description: "Elegant evening wear",
+    itemCount: 6,
+    image: "placeholder",
+  },
+  {
+    id: "5",
+    name: "Athleisure",
+    description: "Sporty and stylish",
+    itemCount: 10,
+    image: "placeholder",
+  },
+];
+
+const { width } = Dimensions.get("window");
+const gridItemWidth = (width - 64) / 3; // 3 columns with padding
+
 export default function CollectionScreen() {
-  const [collections, setCollections] =
-    useState<CollectionItem[]>(mockCollectionData);
-  const [filter, setFilter] = useState<"all" | "saved">("all");
+  const [fashionPieces] = useState<FashionPiece[]>(mockFashionPieces);
+  const [collections] = useState<Collection[]>(mockCollections);
 
-  const toggleSave = (id: string) => {
-    setCollections((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, saved: !item.saved } : item
-      )
-    );
-  };
+  // Get the 3 most recently liked pieces
+  const recentlyLiked = fashionPieces
+    .sort((a, b) => b.likedAt.getTime() - a.likedAt.getTime())
+    .slice(0, 3);
 
-  const filteredCollections =
-    filter === "saved" ? collections.filter((item) => item.saved) : collections;
+  const renderRecentlyLikedItem = ({ item }: { item: FashionPiece }) => (
+    <View className="items-center" style={{ width: gridItemWidth }}>
+      <View
+        className="bg-gray-200 rounded-xl justify-center items-center mb-2"
+        style={{ width: gridItemWidth, height: gridItemWidth }}
+      >
+        <Text className="text-xs opacity-50">Image</Text>
+      </View>
+      <Text className="text-xs font-medium text-center" numberOfLines={1}>
+        {item.name}
+      </Text>
+    </View>
+  );
 
-  const renderCollectionItem = ({ item }: { item: CollectionItem }) => (
-    <ThemedView style={styles.collectionItem}>
-      <ThemedView style={styles.imagePlaceholder}>
-        <ThemedText style={styles.imagePlaceholderText}>Image</ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.itemInfo}>
-        <ThemedText style={styles.itemName}>{item.name}</ThemedText>
-        <ThemedText style={styles.itemDesigner}>{item.designer}</ThemedText>
-        <ThemedText style={styles.itemSeason}>{item.season}</ThemedText>
-        <TouchableOpacity
-          style={[styles.saveButton, item.saved && styles.savedButton]}
-          onPress={() => toggleSave(item.id)}
-        >
-          <ThemedText
-            style={[
-              styles.saveButtonText,
-              item.saved && styles.savedButtonText,
-            ]}
-          >
-            {item.saved ? "Saved" : "Save"}
-          </ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
-    </ThemedView>
+  const renderGridItem = ({ item }: { item: Collection }) => (
+    <TouchableOpacity
+      className="items-center"
+      style={{ width: gridItemWidth }}
+      onPress={() => router.push(`/(tabs)/${encodeURIComponent(item.name)}`)}
+    >
+      <View
+        className="bg-gray-200 rounded-xl justify-center items-center mb-2"
+        style={{ width: gridItemWidth, height: gridItemWidth }}
+      >
+        <Text className="text-xs opacity-50">Image</Text>
+      </View>
+      <Text className="text-xs font-medium text-left" numberOfLines={1}>
+        {item.name}
+      </Text>
+    </TouchableOpacity>
   );
 
   return (
-    <ScrollView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText style={styles.title}>My Collections</ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Curate and save your favorite fashion pieces
-        </ThemedText>
-      </ThemedView>
+    <ScrollView className="flex-1 px-4">
+      {/* Recently Liked Section */}
+      <View className="mb-8">
+        <View className="flex-row items-center gap-4 mb-4">
+          <Text className="text-xl font-bold">LIKED</Text>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/all-liked")}>
+            <Text className="text-sm font-bold">SEE MORE ›</Text>
+          </TouchableOpacity>
+        </View>
+        <FlatList
+          data={recentlyLiked}
+          keyExtractor={(item) => item.id}
+          renderItem={renderRecentlyLikedItem}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ gap: 16, paddingRight: 16 }}
+        />
+      </View>
 
-      <ThemedView style={styles.filterContainer}>
-        <TouchableOpacity
-          style={[styles.filterButton, filter === "all" && styles.activeFilter]}
-          onPress={() => setFilter("all")}
-        >
-          <ThemedText
-            style={[
-              styles.filterText,
-              filter === "all" && styles.activeFilterText,
-            ]}
-          >
-            All
-          </ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.filterButton,
-            filter === "saved" && styles.activeFilter,
-          ]}
-          onPress={() => setFilter("saved")}
-        >
-          <ThemedText
-            style={[
-              styles.filterText,
-              filter === "saved" && styles.activeFilterText,
-            ]}
-          >
-            Saved
-          </ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
-
-      <FlatList
-        data={filteredCollections}
-        keyExtractor={(item) => item.id}
-        renderItem={renderCollectionItem}
-        style={styles.list}
-        scrollEnabled={false}
-      />
+      {/* Collections Grid Section */}
+      <View className="flex-1">
+        <View className="flex-row items-center gap-4 mb-4">
+          <Text className="text-xl font-bold">COLLECTIONS</Text>
+          <Text className="text-sm font-bold">Filter +</Text>
+          <Text className="text-sm font-bold">Sort By +</Text>
+        </View>
+        <FlatList
+          data={collections}
+          keyExtractor={(item) => item.id}
+          renderItem={renderGridItem}
+          numColumns={3}
+          columnWrapperStyle={{
+            gap: 16,
+            marginBottom: 16,
+          }}
+          scrollEnabled={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
+      </View>
     </ScrollView>
   );
 }
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  header: {
-    marginBottom: 24,
-    paddingTop: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    opacity: 0.7,
-  },
-  filterContainer: {
-    flexDirection: "row",
-    marginBottom: 20,
-    gap: 10,
-  },
-  filterButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-  },
-  activeFilter: {
-    backgroundColor: "#007AFF",
-    borderColor: "#007AFF",
-  },
-  filterText: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  activeFilterText: {
-    color: "white",
-  },
-  list: {
-    flex: 1,
-  },
-  collectionItem: {
-    flexDirection: "row",
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-  },
-  imagePlaceholder: {
-    width: 80,
-    height: 80,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  imagePlaceholderText: {
-    fontSize: 12,
-    opacity: 0.5,
-  },
-  itemInfo: {
-    flex: 1,
-  },
-  itemName: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  itemDesigner: {
-    fontSize: 14,
-    opacity: 0.7,
-    marginBottom: 4,
-  },
-  itemSeason: {
-    fontSize: 12,
-    opacity: 0.5,
-    marginBottom: 8,
-  },
-  saveButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#007AFF",
-    alignSelf: "flex-start",
-  },
-  savedButton: {
-    backgroundColor: "#007AFF",
-  },
-  saveButtonText: {
-    fontSize: 12,
-    color: "#007AFF",
-    fontWeight: "500",
-  },
-  savedButtonText: {
-    color: "white",
-  },
-});

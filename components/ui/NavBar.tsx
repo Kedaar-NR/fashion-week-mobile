@@ -49,7 +49,7 @@ export function NavBar() {
 
   return (
     <View
-      className={`flex-row items-center justify-between px-4 py-3 pt-16 ${isHomePage ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "bg-white border-b border-gray-200"}`}
+      className={`flex-row items-center justify-between px-4 py-3 pt-16 ${isHomePage ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "bg-transparent"}`}
     >
       {searchActive ? (
         <View className="flex-1 flex-row items-center gap-2 h-11">

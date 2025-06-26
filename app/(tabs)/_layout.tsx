@@ -49,6 +49,26 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="all-liked"
+          options={{
+            title: "All Liked",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={20} name="heart.fill" color={color} />
+            ),
+            href: null, // Hide from tab bar
+          }}
+        />
+        <Tabs.Screen
+          name="[collection]"
+          options={{
+            title: "[Collection]",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={20} name="heart.fill" color={color} />
+            ),
+            href: null, // Hide from tab bar
+          }}
+        />
+        <Tabs.Screen
           name="drops"
           options={{
             title: "Drops",

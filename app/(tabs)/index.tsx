@@ -5,9 +5,10 @@ import { Dimensions, FlatList } from "react-native";
 const { height: screenHeight } = Dimensions.get("window");
 
 const mediaItems = [
+  { id: "3", source: require("@/assets/media/watch.jpg") },
   { id: "1", source: require("@/assets/media/C74p7_SSAqK_1.jpg") },
   { id: "2", source: require("@/assets/media/DCHxFYqo_xv.jpg") },
-  { id: "3", source: require("@/assets/media/watch.jpg") },
+  
 ];
 
 const renderMediaItem = ({ item }: { item: (typeof mediaItems)[0] }) => (
