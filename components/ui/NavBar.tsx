@@ -1,3 +1,4 @@
+import { usePathname } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Keyboard,
@@ -12,7 +13,17 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 
 export function NavBar() {
   const colorScheme = useColorScheme();
-  const iconColor = "#FFFFFF"; // White color for all icons
+  const pathname = usePathname();
+
+  // // Log pathname changes
+  // useEffect(() => {
+  //   console.log("NavBar - Current pathname:", pathname);
+  // }, [pathname]);
+
+  const isHomePage = pathname === "/";
+
+  // Set icon color based on current page
+  const iconColor = isHomePage ? "#FFFFFF" : "#000000"; // White on homepage, black elsewhere
 
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -37,7 +48,9 @@ export function NavBar() {
   };
 
   return (
-    <View className="absolute top-0 left-0 right-0 z-50 flex-row items-center justify-between px-4 py-3 pt-16 bg-transparent">
+    <View
+      className={`flex-row items-center justify-between px-4 py-3 pt-16 ${isHomePage ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "bg-white border-b border-gray-200"}`}
+    >
       {searchActive ? (
         <View className="flex-1 flex-row items-center gap-2 h-11">
           <TextInput
@@ -83,7 +96,9 @@ export function NavBar() {
             </View>
           </TouchableOpacity>
 
-          <Text className="text-lg font-semibold tracking-wider text-white">
+          <Text
+            className={`text-lg font-semibold tracking-wider ${isHomePage ? "text-white" : "text-black"}`}
+          >
             fashion:week
           </Text>
 
