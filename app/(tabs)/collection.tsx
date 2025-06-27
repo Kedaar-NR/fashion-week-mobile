@@ -175,8 +175,8 @@ export default function CollectionScreen() {
       <View className="flex-1">
         <View className="flex-row items-center gap-4 mb-4">
           <Text className="text-xl font-bold">COLLECTIONS</Text>
-          <Text className="text-sm font-bold">Filter +</Text>
-          <Text className="text-sm font-bold">Sort By +</Text>
+          <Text className="text-sm font-bold">FILTER+</Text>
+          <Text className="text-sm font-bold">SORT BY+</Text>
         </View>
         <FlatList
           data={collections}

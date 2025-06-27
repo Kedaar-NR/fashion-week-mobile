@@ -59,6 +59,16 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="[drops]"
+          options={{
+            title: "[Drops]",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={20} name="heart.fill" color={color} />
+            ),
+            href: null, // Hide from tab bar
+          }}
+        />
+        <Tabs.Screen
           name="drops"
           options={{
             title: "Drops",

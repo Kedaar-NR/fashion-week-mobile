@@ -1,5 +1,6 @@
+import { router } from "expo-router";
 import React from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 interface Drop {
   id: string;
@@ -84,7 +85,12 @@ export default function DropTrackerScreen() {
       <View className="px-4">
         {/* Recent Drops Section */}
         <View className="mb-4">
-          <Text className="text-xl font-bold mb-4">RECENT</Text>
+          <View className="flex-row items-center gap-4 mb-4">
+            <Text className="text-xl font-bold">RECENT</Text>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/recents")}>
+              <Text className="text-sm font-bold">SEE MORE ›</Text>
+            </TouchableOpacity>
+          </View>
           <View className="space-y-6">
             {recentDrops.map((drop) => (
               <DropItem key={drop.id} drop={drop} />
@@ -94,7 +100,12 @@ export default function DropTrackerScreen() {
 
         {/* Upcoming Drops Section */}
         <View>
-          <Text className="text-xl font-bold mb-4">UPCOMING</Text>
+          <View className="flex-row items-center gap-4 mb-4">
+            <Text className="text-xl font-bold">UPCOMING</Text>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/upcoming")}>
+              <Text className="text-sm font-bold">SEE MORE ›</Text>
+            </TouchableOpacity>
+          </View>
           <View className="space-y-6">
             {upcomingDrops.map((drop) => (
               <DropItem key={drop.id} drop={drop} />
