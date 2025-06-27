@@ -137,7 +137,12 @@ export default function CollectionScreen() {
     <TouchableOpacity
       className="items-center"
       style={{ width: gridItemWidth }}
-      onPress={() => router.push(`/(tabs)/${encodeURIComponent(item.name)}`)}
+      onPress={() =>
+        router.push({
+          pathname: "/(tabs)/[collection]",
+          params: { collection: item.name },
+        })
+      }
     >
       <View
         className="bg-gray-200 rounded-xl justify-center items-center mb-2"
@@ -157,7 +162,14 @@ export default function CollectionScreen() {
       <View className="mb-8">
         <View className="flex-row items-center gap-4 mb-4">
           <Text className="text-xl font-bold">LIKED</Text>
-          <TouchableOpacity onPress={() => router.push("/(tabs)/all-liked")}>
+          <TouchableOpacity
+            onPress={() =>
+              router.push({
+                pathname: "/(tabs)/[collection]",
+                params: { collection: "all-liked" },
+              })
+            }
+          >
             <Text className="text-sm font-bold">SEE MORE ›</Text>
           </TouchableOpacity>
         </View>
@@ -175,8 +187,12 @@ export default function CollectionScreen() {
       <View className="flex-1">
         <View className="flex-row items-center gap-4 mb-4">
           <Text className="text-xl font-bold">COLLECTIONS</Text>
-          <Text className="text-sm font-bold">FILTER+</Text>
-          <Text className="text-sm font-bold">SORT BY+</Text>
+          <TouchableOpacity onPress={() => {}}>
+            <Text className="text-sm font-bold">FILTER+</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {}}>
+            <Text className="text-sm font-bold">SORT BY+</Text>
+          </TouchableOpacity>
         </View>
         <FlatList
           data={collections}

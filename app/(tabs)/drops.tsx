@@ -87,7 +87,14 @@ export default function DropTrackerScreen() {
         <View className="mb-4">
           <View className="flex-row items-center gap-4 mb-4">
             <Text className="text-xl font-bold">RECENT</Text>
-            <TouchableOpacity onPress={() => router.push("/(tabs)/recents")}>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/(tabs)/[drops]",
+                  params: { drops: "recent" },
+                })
+              }
+            >
               <Text className="text-sm font-bold">SEE MORE ›</Text>
             </TouchableOpacity>
           </View>
@@ -102,7 +109,14 @@ export default function DropTrackerScreen() {
         <View>
           <View className="flex-row items-center gap-4 mb-4">
             <Text className="text-xl font-bold">UPCOMING</Text>
-            <TouchableOpacity onPress={() => router.push("/(tabs)/upcoming")}>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/(tabs)/[drops]",
+                  params: { drops: "upcoming" },
+                })
+              }
+            >
               <Text className="text-sm font-bold">SEE MORE ›</Text>
             </TouchableOpacity>
           </View>
