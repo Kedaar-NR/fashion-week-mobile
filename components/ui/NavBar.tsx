@@ -42,6 +42,7 @@ export function NavBar() {
 
   // Set icon color based on current page
   const iconColor = isHomePage ? "#FFFFFF" : "#000000"; // White on homepage, black elsewhere
+  console.log("isHomePage", isHomePage);
 
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState("");
