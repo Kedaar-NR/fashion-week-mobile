@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -114,6 +115,12 @@ export default function CollectionScreen() {
   const [fashionPieces] = useState<FashionPiece[]>(mockFashionPieces);
   const [collections] = useState<Collection[]>(mockCollections);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log("📍 Current path: /(tabs)/(collections)/collection");
+    }, [])
+  );
+
   // Get the 3 most recently liked pieces
   const recentlyLiked = fashionPieces
     .sort((a, b) => b.likedAt.getTime() - a.likedAt.getTime())
@@ -139,7 +146,7 @@ export default function CollectionScreen() {
       style={{ width: gridItemWidth }}
       onPress={() =>
         router.push({
-          pathname: "/(tabs)/[collection]",
+          pathname: "/(tabs)/(collections)/[collection]",
           params: { collection: item.name },
         })
       }
@@ -165,7 +172,7 @@ export default function CollectionScreen() {
           <TouchableOpacity
             onPress={() =>
               router.push({
-                pathname: "/(tabs)/[collection]",
+                pathname: "/(tabs)/(collections)/[collection]",
                 params: { collection: "all-liked" },
               })
             }

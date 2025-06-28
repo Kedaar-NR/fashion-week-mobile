@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
 import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -80,6 +81,12 @@ const DropItem = ({ drop }: { drop: Drop }) => (
 );
 
 export default function DropTrackerScreen() {
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log("📍 Current path: /(tabs)/(drops)/drops");
+    }, [])
+  );
+
   return (
     <ScrollView className="flex-1 bg-transparent">
       <View className="px-4">
@@ -90,7 +97,7 @@ export default function DropTrackerScreen() {
             <TouchableOpacity
               onPress={() =>
                 router.push({
-                  pathname: "/(tabs)/[drops]",
+                  pathname: "/(tabs)/(drops)/[drops]",
                   params: { drops: "recent" },
                 })
               }
@@ -112,7 +119,7 @@ export default function DropTrackerScreen() {
             <TouchableOpacity
               onPress={() =>
                 router.push({
-                  pathname: "/(tabs)/[drops]",
+                  pathname: "/(tabs)/(drops)/[drops]",
                   params: { drops: "upcoming" },
                 })
               }

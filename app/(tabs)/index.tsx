@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { Image } from "expo-image";
 import React from "react";
 import { Dimensions, FlatList } from "react-native";
@@ -8,7 +9,6 @@ const mediaItems = [
   { id: "3", source: require("@/assets/media/watch.jpg") },
   { id: "1", source: require("@/assets/media/C74p7_SSAqK_1.jpg") },
   { id: "2", source: require("@/assets/media/DCHxFYqo_xv.jpg") },
-  
 ];
 
 const renderMediaItem = ({ item }: { item: (typeof mediaItems)[0] }) => (
@@ -21,6 +21,12 @@ const renderMediaItem = ({ item }: { item: (typeof mediaItems)[0] }) => (
 );
 
 export default function HomeScreen() {
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log("📍 Current path: / (Home)");
+    }, [])
+  );
+
   return (
     <FlatList
       data={mediaItems}

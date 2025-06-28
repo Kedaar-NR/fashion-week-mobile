@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -163,6 +164,13 @@ const gridItemWidth = (width - 64) / 3; // 3 columns with padding
 export default function CollectionDetailScreen() {
   const { collection } = useLocalSearchParams<{ collection: string }>();
   const [pieces] = useState<FashionPiece[]>(mockPieces);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log(`📍 Current path: /(tabs)/(collections)/[collection]`);
+      console.log(`📍 Collection parameter: ${collection}`);
+    }, [collection])
+  );
 
   // If the collection parameter is "all-liked", show "ALL LIKED", otherwise show the collection name
   const displayText =

@@ -1,6 +1,6 @@
+import { useFocusEffect } from "@react-navigation/native";
 import React from "react";
-import { router } from "expo-router";
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 interface ArchiveItem {
   id: string;
@@ -64,13 +64,21 @@ const ArchiveItem = ({ item }: { item: ArchiveItem }) => (
   <View className="flex-row items-center mb-3 ml-4">
     <View className="w-16 h-16 rounded-xl bg-gray-300 mr-4"></View>
     <View className="flex-1">
-      <Text className="text-lg font-semibold mb-1">{item.brandName.toUpperCase()}</Text>
+      <Text className="text-lg font-semibold mb-1">
+        {item.brandName.toUpperCase()}
+      </Text>
       <Text className="text-sm text-gray-600">{item.tagline}</Text>
     </View>
   </View>
 );
 
 export default function ArchiveScreen() {
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log("📍 Current path: /(tabs)/archive");
+    }, [])
+  );
+
   return (
     <ScrollView className="flex-1 bg-transparent">
       <View className="flex-row items-center gap-4 ml-4 mb-4">

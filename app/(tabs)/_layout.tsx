@@ -40,27 +40,7 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="[drops]"
-          options={{
-            title: "[Drops]",
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={20} name="bell.fill" color={color} />
-            ),
-            href: null, // Hide from tab bar
-          }}
-        />
-        <Tabs.Screen
-          name="[collection]"
-          options={{
-            title: "[Collection]",
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={20} name="heart.fill" color={color} />
-            ),
-            href: null, // Hide from tab bar
-          }}
-        />
-        <Tabs.Screen
-          name="collection"
+          name="(collections)"
           options={{
             title: "Collection",
             tabBarIcon: ({ color }) => (
@@ -69,7 +49,7 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="drops"
+          name="(drops)"
           options={{
             title: "Drops",
             tabBarIcon: ({ color }) => (

@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -148,6 +149,13 @@ const DropItem = ({ drop }: { drop: Drop }) => (
 export default function DropsDetailScreen() {
   const { drops } = useLocalSearchParams<{ drops: string }>();
   const [allDrops] = useState<Drop[]>(mockDrops);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log(`📍 Current path: /(tabs)/(drops)/[drops]`);
+      console.log(`📍 Drops parameter: ${drops}`);
+    }, [drops])
+  );
 
   // Filter drops based on the parameter
   const filteredDrops = allDrops.filter((drop) => {
