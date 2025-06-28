@@ -211,7 +211,6 @@ export default function CollectionDetailScreen() {
     <ScrollView className="flex-1 px-4">
       {/* Header Section */}
       <View className="flex-row items-center gap-4 mb-4">
-        <Text className="text-xl font-bold">{displayText}</Text>
         <TouchableOpacity onPress={() => {}}>
           <Text className="text-sm font-bold">FILTER+</Text>
         </TouchableOpacity>

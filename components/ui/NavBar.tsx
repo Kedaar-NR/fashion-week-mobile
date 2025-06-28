@@ -22,6 +22,24 @@ export function NavBar() {
 
   const isHomePage = pathname === "/";
 
+  // Function to get page display name based on pathname
+  const getPageDisplayName = (path: string): string => {
+    if (path === "/") return "fashion:week";
+    if (path.includes("/collection")) return "COLLECTIONS";
+    // if (path.includes("/(tabs)/(collections)/collection")) return "COLLECTION";
+    if (path.includes("/drops")) return "DROPS";
+    // if (path.includes("/(tabs)/(drops)/[drops]")) return "DROPS";
+    if (path.includes("/user")) return "ACCOUNT";
+    if (path.includes("/archive")) return "ARCHIVE";
+    if (path.includes("/style-quiz")) return "STYLE QUIZ";
+    console.log("path", path);
+
+    // Default fallback
+    return path.split("/").slice(-1)[0].toUpperCase();
+  };
+
+  const pageDisplayName = getPageDisplayName(pathname);
+
   // Set icon color based on current page
   const iconColor = isHomePage ? "#FFFFFF" : "#000000"; // White on homepage, black elsewhere
 
@@ -99,7 +117,7 @@ export function NavBar() {
           <Text
             className={`text-lg font-semibold tracking-wider ${isHomePage ? "text-white" : "text-black"}`}
           >
-            fashion:week
+            {pageDisplayName}
           </Text>
 
           <TouchableOpacity
