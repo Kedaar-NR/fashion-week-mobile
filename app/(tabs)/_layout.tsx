@@ -1,13 +1,10 @@
-import { Tabs } from "expo-router";
-import React from "react";
-import { Platform, StyleSheet, View } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { NavBar } from "@/components/ui/NavBar";
 import TabBar from "@/components/ui/TabBar";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import TabBarBackground from "@/components/ui/TabBarBackground";
-import { HapticTab } from "@/components/HapticTab";
-import { Colors } from "@/constants/Colors";
+import { Tabs } from "expo-router";
+import React from "react";
+import { StyleSheet, View } from "react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -20,7 +17,7 @@ export default function TabLayout() {
         screenOptions={{
           headerShown: false,
         }}
-        
+
         // screenOptions={{
         //   tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         //   headerShown: false,
@@ -72,6 +69,17 @@ export default function TabLayout() {
             headerShown: false,
             tabBarIcon: ({ color }) => (
               <IconSymbol size={20} name="person.fill" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="search-results"
+          options={{
+            title: "Search Results",
+            headerShown: false,
+            href: null,
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={20} name="magnifyingglass" color={color} />
             ),
           }}
         />

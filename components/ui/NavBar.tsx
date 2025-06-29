@@ -1,4 +1,4 @@
-import { usePathname, useSegments } from "expo-router";
+import { router, usePathname, useSegments } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Keyboard,
@@ -31,6 +31,7 @@ export function NavBar() {
     if (path.includes("/user")) return "ACCOUNT";
     if (path.includes("/archive")) return "ARCHIVE";
     if (path.includes("/style-quiz")) return "STYLE QUIZ";
+    if (path.includes("/search-results")) return "SEARCH RESULTS";
     console.log("path", path);
 
     // Default fallback
@@ -65,6 +66,19 @@ export function NavBar() {
     Keyboard.dismiss();
   };
 
+  const handleSearchSubmit = () => {
+    if (searchText.trim()) {
+      // Navigate to search results page with the query
+      router.push({
+        pathname: "/(tabs)/search-results",
+        params: { query: searchText.trim() },
+      });
+      setSearchActive(false);
+      setSearchText("");
+      Keyboard.dismiss();
+    }
+  };
+
   return (
     <View
       className={`flex-row items-center justify-between px-4 py-3 pt-16 ${pageDisplayName === "fashion:week" ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "bg-transparent"}`}
@@ -80,10 +94,7 @@ export function NavBar() {
             placeholderTextColor={colorScheme === "light" ? "#999" : "#aaa"}
             autoFocus={true}
             returnKeyType="search"
-            onSubmitEditing={() => {
-              // TODO: Implement search submit
-              console.log("Search for:", searchText);
-            }}
+            onSubmitEditing={handleSearchSubmit}
           />
           <TouchableOpacity
             className="ml-2 px-2 py-1"
