@@ -87,7 +87,7 @@ export default function SearchResultsScreen() {
         {query ? (
           <View className="flex-row flex-wrap justify-between">
             {searchResults.map((item) => (
-              <View key={item.id} className="w-[48%] mb-6">
+              <View key={item.id} className="w-[48%] mb-4">
                 {/* Rounded Rectangle (Product Image Placeholder) */}
                 <View className="w-full h-64 bg-gray-200 rounded-2xl mb-3 overflow-hidden">
                   <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl" />
