@@ -56,6 +56,28 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="archive"
+          options={{
+            title: "Archive",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={20} name="archivebox.fill" color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="style-quiz"
+          options={{
+            title: "Style Quiz",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol
+                size={20}
+                name="questionmark.circle.fill"
+                color={color}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="(drops)"
           options={{
             title: "Drops",
