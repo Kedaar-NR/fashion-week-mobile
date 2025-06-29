@@ -7,25 +7,25 @@ interface IconProps {
 }
 
 export const icons: Record<string, React.FC<IconProps>> = {
-  index: ({ color, size = 24 }) => (
+  index: ({ color, size = 20 }) => (
     <AntDesign name="home" size={size} color={color} />
   ),
-  "(collections)": ({ color, size = 24 }) => (
+  "(collections)": ({ color, size = 20 }) => (
     <Feather name="grid" size={size} color={color} />
   ),
-  "(drops)": ({ color, size = 24 }) => (
+  "(drops)": ({ color, size = 20 }) => (
     <Feather name="clock" size={size} color={color} />
   ),
-  archive: ({ color, size = 24 }) => (
+  archive: ({ color, size = 20 }) => (
     <Feather name="archive" size={size} color={color} />
   ),
-  "style-quiz": ({ color, size = 24 }) => (
+  "style-quiz": ({ color, size = 20 }) => (
     <Feather name="help-circle" size={size} color={color} />
   ),
-  user: ({ color, size = 24 }) => (
+  user: ({ color, size = 20 }) => (
     <Feather name="user" size={size} color={color} />
   ),
-  default: ({ color, size = 24 }) => (
+  default: ({ color, size = 20 }) => (
     <AntDesign name="question" size={size} color={color} />
   ),
 };

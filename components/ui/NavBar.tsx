@@ -23,11 +23,11 @@ export function NavBar() {
   const getPageDisplayName = (path: string, segments: string[]): string => {
     if (path === "/") {
       if (segments && segments.includes("(collections)")) return "COLLECTIONS";
-      if (segments && segments.includes("(drops)")) return "DROPS";
+      if (segments && segments.includes("(drops)")) return "DROP TRACKER";
       return "fashion:week";
     }
     if (path.includes("/collection")) return "COLLECTIONS";
-    if (path.includes("/drops")) return "DROPS";
+    if (path.includes("/drops")) return "DROP TRACKER";
     if (path.includes("/user")) return "ACCOUNT";
     if (path.includes("/archive")) return "ARCHIVE";
     if (path.includes("/style-quiz")) return "STYLE QUIZ";
