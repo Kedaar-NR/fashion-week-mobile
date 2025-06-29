@@ -11,7 +11,7 @@ const TabBar: React.FC<BottomTabBarProps> = ({
   const primaryColor = "#0891b2";
   const greyColor = "#737373";
   return (
-    <View className="absolute bottom-6 left-5 right-5 flex-row justify-between items-center bg-white mx-5 py-2 rounded-3xl shadow-lg">
+    <View className="absolute bottom-6 left-5 right-5 flex-row justify-between items-center bg-white mx-5 py-2 rounded-3xl shadow-sm">
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =

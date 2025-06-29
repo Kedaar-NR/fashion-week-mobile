@@ -80,7 +80,7 @@ export default function TabLayout() {
           options={{
             title: "Archive",
             headerShown: false,
-            // href: null,
+            href: null,
             tabBarIcon: ({ color }) => (
               <IconSymbol size={20} name="person.fill" color={color} />
             ),
@@ -91,7 +91,7 @@ export default function TabLayout() {
           options={{
             title: "Style Quiz",
             headerShown: false,
-            // href: null,
+            href: null,
             tabBarIcon: ({ color }) => (
               <IconSymbol size={20} name="person.fill" color={color} />
             ),
