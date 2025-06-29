@@ -1,4 +1,4 @@
-import { usePathname } from "expo-router";
+import { usePathname, useSegments } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Keyboard,
@@ -14,21 +14,20 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 export function NavBar() {
   const colorScheme = useColorScheme();
   const pathname = usePathname();
-
-  // // Log pathname changes
-  // useEffect(() => {
-  //   console.log("NavBar - Current pathname:", pathname);
-  // }, [pathname]);
-
-  const isHomePage = pathname === "/";
+  // console.log("pathname", pathname);
+  const segments = useSegments();
+  // console.log("segments", segments);
+  // const isHomePage = pathname === "/";
 
   // Function to get page display name based on pathname
-  const getPageDisplayName = (path: string): string => {
-    if (path === "/") return "fashion:week";
+  const getPageDisplayName = (path: string, segments: string[]): string => {
+    if (path === "/") {
+      if (segments && segments.includes("(collections)")) return "COLLECTIONS";
+      if (segments && segments.includes("(drops)")) return "DROPS";
+      return "fashion:week";
+    }
     if (path.includes("/collection")) return "COLLECTIONS";
-    // if (path.includes("/(tabs)/(collections)/collection")) return "COLLECTION";
     if (path.includes("/drops")) return "DROPS";
-    // if (path.includes("/(tabs)/(drops)/[drops]")) return "DROPS";
     if (path.includes("/user")) return "ACCOUNT";
     if (path.includes("/archive")) return "ARCHIVE";
     if (path.includes("/style-quiz")) return "STYLE QUIZ";
@@ -38,11 +37,11 @@ export function NavBar() {
     return path.split("/").slice(-1)[0].toUpperCase();
   };
 
-  const pageDisplayName = getPageDisplayName(pathname);
+  const pageDisplayName = getPageDisplayName(pathname, segments);
 
   // Set icon color based on current page
-  const iconColor = isHomePage ? "#FFFFFF" : "#000000"; // White on homepage, black elsewhere
-  console.log("isHomePage", isHomePage);
+  const iconColor = pageDisplayName === "fashion:week" ? "#FFFFFF" : "#000000"; // White on homepage, black elsewhere
+  // console.log("isHomePage", isHomePage);
 
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -68,7 +67,7 @@ export function NavBar() {
 
   return (
     <View
-      className={`flex-row items-center justify-between px-4 py-3 pt-16 ${isHomePage ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "bg-transparent"}`}
+      className={`flex-row items-center justify-between px-4 py-3 pt-16 ${pageDisplayName === "fashion:week" ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "bg-transparent"}`}
     >
       {searchActive ? (
         <View className="flex-1 flex-row items-center gap-2 h-11">
@@ -116,7 +115,7 @@ export function NavBar() {
           </TouchableOpacity>
 
           <Text
-            className={`text-lg font-semibold tracking-wider ${isHomePage ? "text-white" : "text-black"}`}
+            className={`text-lg font-semibold tracking-wider ${pageDisplayName === "fashion:week" ? "text-white" : "text-black"}`}
           >
             {pageDisplayName}
           </Text>
