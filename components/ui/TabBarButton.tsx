@@ -31,8 +31,8 @@ const TabBarButton: React.FC<TabBarButtonProps> = (props) => {
   }, [scale, isFocused]);
 
   const animatedIconStyle = useAnimatedStyle(() => {
-    const scaleValue = interpolate(scale.value, [0, 1], [1, 1.4]);
-    const top = interpolate(scale.value, [0, 1], [0, 8]);
+    const scaleValue = interpolate(scale.value, [0, 1], [1, 1.2]);
+    const top = interpolate(scale.value, [0, 1], [0, 0]);
 
     return {
       // styles
@@ -60,7 +60,7 @@ const TabBarButton: React.FC<TabBarButtonProps> = (props) => {
         <IconComponent color={color} />
       </Animated.View>
 
-      <Animated.Text
+      {/* <Animated.Text
         style={[
           {
             color,
@@ -70,7 +70,7 @@ const TabBarButton: React.FC<TabBarButtonProps> = (props) => {
         ]}
       >
         {label}
-      </Animated.Text>
+      </Animated.Text> */}
     </Pressable>
   );
 };
