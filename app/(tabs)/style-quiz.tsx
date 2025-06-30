@@ -204,6 +204,25 @@ export default function StyleQuizScreen() {
                   resizeMode="contain"
                   onError={() => setImageError(true)}
                 />
+                {/* Preload the next image invisibly for seamless transition */}
+                {current < shuffledImages.length - 1 && (
+                  <Image
+                    source={{ uri: shuffledImages[current + 1] }}
+                    style={[
+                      styles.image,
+                      {
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        opacity: 0,
+                      },
+                    ]}
+                    resizeMode="contain"
+                    // No onError needed for preloading
+                  />
+                )}
                 {/* Blur corners overlay */}
                 <View pointerEvents="none" style={styles.blurCorners} />
               </>
