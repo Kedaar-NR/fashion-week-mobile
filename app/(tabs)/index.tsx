@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   Dimensions,
   FlatList,
-  StyleSheet,
+  Text,
   View,
 } from "react-native";
 
@@ -183,13 +183,13 @@ const MediaItem = React.memo(
   }) => {
     if (item.type === "video") {
       return (
-        <View style={{ width: "100%", height: screenHeight }}>
+        <View className="w-full" style={{ height: screenHeight }}>
           <Video
             source={{ uri: item.url }}
             style={{ width: "100%", height: screenHeight }}
             resizeMode={"cover" as any}
             shouldPlay={isVisible}
-            useNativeControls={true}
+            useNativeControls={false}
             isLooping={true}
             isMuted={muted === undefined ? false : muted}
             volume={1.0}
@@ -273,19 +273,17 @@ export default function HomeScreen() {
   }, [visibleIndex, mediaItems]);
 
   if (loading || !firstImageLoaded) {
-    return (
-      <ActivityIndicator
-        size="large"
-        style={{ flex: 1, alignSelf: "center" }}
-      />
-    );
+    return <ActivityIndicator size="large" className="flex-1 self-center" />;
   }
 
   return (
     <>
       {/* Mute button under search bar, only for videos */}
       {showMuteButton && (
-        <View style={styles.muteButtonContainer} pointerEvents="box-none">
+        <View
+          className="absolute bottom-28 right-5 z-50 bg-transparent rounded-full w-11 h-11 items-center justify-center shadow-lg"
+          pointerEvents="box-none"
+        >
           <Ionicons
             name={
               mutedMap[mediaItems[visibleIndex].id]
@@ -306,6 +304,22 @@ export default function HomeScreen() {
           />
         </View>
       )}
+
+      {/* Brand name overlay at bottom */}
+      {mediaItems[visibleIndex] && (
+        <View
+          className="absolute bottom-24 left-5 right-5 bg-black/30 px-4 py-2 rounded-full items-center justify-center z-50"
+          pointerEvents="box-none"
+        >
+          <Text className="text-white text-sm font-semibold text-center">
+            {mediaItems[visibleIndex].id}
+          </Text>
+          {/* <Text style={styles.brandNameText}>
+            {mediaItems[visibleIndex].url}
+          </Text> */}
+        </View>
+      )}
+
       <FlatList
         data={mediaItems}
         keyExtractor={(item) => item.id}
@@ -337,22 +351,3 @@ export default function HomeScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  muteButtonContainer: {
-    position: "absolute",
-    bottom: 110, // more space above the bottom nav bar
-    right: 20, // more space from the edge
-    zIndex: 100,
-    backgroundColor: "transparent", // fully transparent
-    borderRadius: 22,
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-  },
-});
