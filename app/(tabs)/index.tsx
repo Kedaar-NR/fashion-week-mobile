@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { Video } from "expo-av";
 import { Image as ExpoImage } from "expo-image";
 import React, { useEffect, useRef, useState } from "react";
@@ -176,10 +176,12 @@ const MediaItem = React.memo(
     item,
     isVisible,
     muted,
+    isScreenFocused,
   }: {
     item: { id: string; type: "video" | "image"; url: string };
     isVisible: boolean;
     muted?: boolean;
+    isScreenFocused: boolean;
   }) => {
     if (item.type === "video") {
       return (
@@ -188,7 +190,7 @@ const MediaItem = React.memo(
             source={{ uri: item.url }}
             style={{ width: "100%", height: screenHeight }}
             resizeMode={"cover" as any}
-            shouldPlay={isVisible}
+            shouldPlay={isVisible && isScreenFocused}
             useNativeControls={false}
             isLooping={true}
             isMuted={muted === undefined ? false : muted}
@@ -217,8 +219,19 @@ export default function HomeScreen() {
   const [mutedMap, setMutedMap] = useState<{ [id: string]: boolean }>({});
   const [imagesPrefetched, setImagesPrefetched] = useState(false);
   const [firstImageLoaded, setFirstImageLoaded] = useState(false);
+  const [isScreenFocused, setIsScreenFocused] = useState(true);
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 80 });
   const [showMuteButton, setShowMuteButton] = useState(false);
+
+  // Handle screen focus/blur to pause/resume videos
+  useFocusEffect(
+    React.useCallback(() => {
+      setIsScreenFocused(true);
+      return () => {
+        setIsScreenFocused(false);
+      };
+    }, [])
+  );
 
   useEffect(() => {
     (async () => {
@@ -284,7 +297,7 @@ export default function HomeScreen() {
           className="absolute bottom-28 right-5 z-50 bg-transparent rounded-full w-11 h-11 items-center justify-center shadow-lg"
           pointerEvents="box-none"
         >
-          <Ionicons
+          {/* <Ionicons
             name={
               mutedMap[mediaItems[visibleIndex].id]
                 ? "volume-mute"
@@ -301,7 +314,7 @@ export default function HomeScreen() {
                 ),
               }))
             }
-          />
+          /> */}
         </View>
       )}
 
@@ -328,6 +341,7 @@ export default function HomeScreen() {
             item={item}
             isVisible={index === visibleIndex}
             muted={mutedMap[item.id] ?? false}
+            isScreenFocused={isScreenFocused}
           />
         )}
         pagingEnabled={true}
