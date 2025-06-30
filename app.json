@@ -43,6 +43,12 @@
             "node_modules/@expo-google-fonts/kanit/700Bold/Kanit_700Bold.ttf"
           ]
         }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow $(fashionweekmobile) to access your microphone."
+        }
       ]
     ],
     "experiments": {

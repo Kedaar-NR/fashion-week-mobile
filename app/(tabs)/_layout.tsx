@@ -56,6 +56,8 @@ export default function TabLayout() {
           name="archive"
           options={{
             title: "Archive",
+            headerShown: false,
+            href: null,
             tabBarIcon: ({ color }) => (
               <IconSymbol size={20} name="archivebox.fill" color={color} />
             ),
@@ -102,28 +104,6 @@ export default function TabLayout() {
             href: null,
             tabBarIcon: ({ color }) => (
               <IconSymbol size={20} name="magnifyingglass" color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="archive"
-          options={{
-            title: "Archive",
-            headerShown: false,
-            href: null,
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={20} name="person.fill" color={color} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="style-quiz"
-          options={{
-            title: "Style Quiz",
-            headerShown: false,
-            href: null,
-            tabBarIcon: ({ color }) => (
-              <IconSymbol size={20} name="person.fill" color={color} />
             ),
           }}
         />
