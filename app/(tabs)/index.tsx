@@ -7,6 +7,7 @@ import {
   Dimensions,
   FlatList,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
 
@@ -189,7 +190,7 @@ const MediaItem = React.memo(
             style={{ width: "100%", height: screenHeight }}
             resizeMode={"cover" as any}
             shouldPlay={isVisible}
-            useNativeControls={true}
+            useNativeControls={false}
             isLooping={true}
             isMuted={muted === undefined ? false : muted}
             volume={1.0}
@@ -306,6 +307,19 @@ export default function HomeScreen() {
           />
         </View>
       )}
+
+      {/* Brand name overlay at bottom */}
+      {mediaItems[visibleIndex] && (
+        <View style={styles.brandNameContainer} pointerEvents="box-none">
+          <Text style={styles.brandNameText}>
+            {mediaItems[visibleIndex].id}
+          </Text>
+          {/* <Text style={styles.brandNameText}>
+            {mediaItems[visibleIndex].url}
+          </Text> */}
+        </View>
+      )}
+
       <FlatList
         data={mediaItems}
         keyExtractor={(item) => item.id}
@@ -337,7 +351,6 @@ export default function HomeScreen() {
     </>
   );
 }
-
 const styles = StyleSheet.create({
   muteButtonContainer: {
     position: "absolute",
@@ -354,5 +367,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
+  },
+  brandNameContainer: {
+    position: "absolute",
+    bottom: 100, // Position above the bottom navigation
+    left: 20,
+    right: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.3)",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 50,
+  },
+  brandNameText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
