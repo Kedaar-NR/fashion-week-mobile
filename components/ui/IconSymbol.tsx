@@ -9,7 +9,10 @@ type IconMapping = Record<
   SymbolViewProps["name"],
   ComponentProps<typeof MaterialIcons>["name"]
 >;
-type IconSymbolName = keyof typeof MAPPING;
+type IconSymbolName =
+  | keyof typeof MAPPING
+  | "archivebox.fill"
+  | "questionmark.circle.fill";
 
 /**
  * Add your SF Symbols to Material Icons mappings here.
@@ -23,6 +26,10 @@ const MAPPING = {
   "chevron.right": "chevron-right",
   "person.fill": "person",
   magnifyingglass: "search",
+  "heart.fill": "favorite",
+  "bell.fill": "notifications",
+  "archivebox.fill": "archive",
+  "questionmark.circle.fill": "quiz",
 } as IconMapping;
 
 /**
