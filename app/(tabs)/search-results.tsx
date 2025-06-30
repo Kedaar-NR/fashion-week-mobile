@@ -5,11 +5,15 @@ import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function SearchResultsScreen() {
   const { query } = useLocalSearchParams<{ query: string }>();
+  const scrollViewRef = React.useRef<ScrollView>(null);
 
   useFocusEffect(
     React.useCallback(() => {
       console.log("📍 Current path: /(tabs)/search-results");
       console.log("📍 Search query:", query);
+
+      // Scroll to top when screen is focused
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
     }, [query])
   );
 
@@ -62,7 +66,7 @@ export default function SearchResultsScreen() {
   ];
 
   return (
-    <ScrollView className="flex-1 bg-transparent">
+    <ScrollView ref={scrollViewRef} className="flex-1 bg-transparent">
       <View className="px-4 py-0">
         {/* Search Results Header */}
         <View className="mb-2">
@@ -98,9 +102,9 @@ export default function SearchResultsScreen() {
                   {/* Brand and Piece in VStack */}
                   <View className="flex-1">
                     <Text className="text-sm font-semibold text-gray-800 mb-1">
-                      {item.brand}
+                      {item.piece}
                     </Text>
-                    <Text className="text-xs text-gray-600">{item.piece}</Text>
+                    <Text className="text-xs text-gray-600">{item.brand}</Text>
                   </View>
 
                   {/* Price on the right */}
