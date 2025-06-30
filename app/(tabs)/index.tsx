@@ -1,43 +1,358 @@
-import { useFocusEffect } from "@react-navigation/native";
-import { Image } from "expo-image";
-import React from "react";
-import { Dimensions, FlatList } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Video } from "expo-av";
+import { Image as ExpoImage } from "expo-image";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  StyleSheet,
+  View,
+} from "react-native";
 
 const { height: screenHeight } = Dimensions.get("window");
 
-const mediaItems = [
-  { id: "3", source: require("@/assets/media/watch.jpg") },
-  { id: "1", source: require("@/assets/media/C74p7_SSAqK_1.jpg") },
-  { id: "2", source: require("@/assets/media/DCHxFYqo_xv.jpg") },
+const BUCKET_URL =
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/brand-content/brand_content";
+const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
+const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+
+const BRANDS = [
+  "2001odysey",
+  "22kilogram",
+  "aliasonline.us",
+  "allure.newyork",
+  "alreadywritten",
+  "angel333online",
+  "ArtificialFever",
+  "astonecoldstudiosproduction",
+  "attachmentsonline",
+  "awaitedmilitia",
+  "badson.us",
+  "berlinc.co",
+  "blanksbythirteen",
+  "bomiworks",
+  "brotherlylove",
+  "byjeshal",
+  "bykodyphillips",
+  "california.arts",
+  "chinatowncountryclub",
+  "chxmicalover",
+  "concrete_orchids",
+  "corporateworld",
+  "cozy.worldwidee",
+  "cyvist",
+  "deadatlantic",
+  "demiknj",
+  "derschutze_clo",
+  "ditch",
+  "drolandmiller",
+  "emestudios_",
+  "emptyspaces",
+  "eraworldwideclub",
+  "eternal_artwear",
+  "eternalloveworld",
+  "fine.culture",
+  "fnkstudios",
+  "forcesunseen",
+  "forevakaash",
+  "fortytwoco",
+  "fourfour.jpg",
+  "friedrice_nyc",
+  "haveyoudiedbefore",
+  "__heavencanwait__",
+  "heavenonearthstudios",
+  "hidden.season",
+  "hypedept.co",
+  "iconaclub",
+  "idle____time",
+  "ihp.ihp.ihp",
+  "insain.worldwide",
+  "kinejkt",
+  "kontend__",
+  "kyonijr",
+  "lantiki_official",
+  "lildenimjean",
+  "liquidlagoon",
+  "maharishi",
+  "menacelosangeles",
+  "misanthropestudios",
+  "Mutimer.co",
+  "nihil.ny",
+  "nomaintenance",
+  "oedemaa",
+  "omneeworld",
+  "outlw.usa",
+  "paradoxeparis",
+  "pdf.channel",
+  "peaceandwar89",
+  "personalfears",
+  "poolhousenewyork",
+  "profitminded.clo",
+  "qbsay",
+  "rangercartel",
+  "rdvstudios",
+  "roypubliclabel",
+  "saeminium",
+  "sensorydept",
+  "septemberseventhstudios",
+  "shineluxurystudios",
+  "shmuie",
+  "sixshooter.us",
+  "slovakiandreams",
+  "somar.us",
+  "srrysora",
+  "ssstufff.official",
+  "stolenarts_",
+  "sundae.school",
+  "thegvgallery",
+  "throneroomx",
+  "vega9602k",
+  "vengeance_studios",
+  "vicinity_de",
+  "winterhouse__",
+  "youngchickenpox",
 ];
 
-const renderMediaItem = ({ item }: { item: (typeof mediaItems)[0] }) => (
-  <Image
-    source={item.source}
-    className="w-full h-full"
-    style={{ height: screenHeight }}
-    contentFit="cover"
-  />
+// Seeded random number generator (Mulberry32)
+function mulberry32(seed: number) {
+  return function () {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleArraySeeded<T>(array: T[], seed: number): T[] {
+  const arr = [...array];
+  const random = mulberry32(seed);
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+async function fetchBrandMediaFromIndex(brand: string) {
+  // Fetch index.json from the brand's folder
+  const indexUrl = `${BUCKET_URL}/${brand}/index.json`;
+  try {
+    const res = await fetch(indexUrl);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!Array.isArray(data.files)) return null;
+
+    // Normalize: get array of filenames (strings)
+    const filenames = data.files
+      .map((f: any) => (typeof f === "string" ? f : f?.name))
+      .filter(Boolean);
+
+    // Prioritize video
+    let file = filenames.find((name: string) =>
+      VIDEO_EXTENSIONS.some((ext) => name.endsWith(ext))
+    );
+    let type: "video" | "image" | null = null;
+    if (file) type = "video";
+    if (!file) {
+      file = filenames.find((name: string) =>
+        IMAGE_EXTENSIONS.some((ext) => name.endsWith(ext))
+      );
+      if (file) type = "image";
+    }
+    if (!file || !type) return null;
+    return {
+      id: brand,
+      type,
+      url: `${BUCKET_URL}/${brand}/${file}`,
+    };
+  } catch {
+    return null;
+  }
+}
+
+const MediaItem = React.memo(
+  ({
+    item,
+    isVisible,
+    muted,
+  }: {
+    item: { id: string; type: "video" | "image"; url: string };
+    isVisible: boolean;
+    muted?: boolean;
+  }) => {
+    if (item.type === "video") {
+      return (
+        <View style={{ width: "100%", height: screenHeight }}>
+          <Video
+            source={{ uri: item.url }}
+            style={{ width: "100%", height: screenHeight }}
+            resizeMode={"cover" as any}
+            shouldPlay={isVisible}
+            useNativeControls={true}
+            isLooping={true}
+            isMuted={muted === undefined ? false : muted}
+            volume={1.0}
+          />
+        </View>
+      );
+    }
+    return (
+      <ExpoImage
+        source={{ uri: item.url }}
+        style={{ width: "100%", height: screenHeight }}
+        contentFit="cover"
+      />
+    );
+  }
 );
+MediaItem.displayName = "MediaItem";
 
 export default function HomeScreen() {
-  useFocusEffect(
-    React.useCallback(() => {
-      console.log("📍 Current path: / (Home)");
-    }, [])
-  );
+  const [mediaItems, setMediaItems] = useState<
+    { id: string; type: "video" | "image"; url: string }[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [visibleIndex, setVisibleIndex] = useState(0);
+  const [mutedMap, setMutedMap] = useState<{ [id: string]: boolean }>({});
+  const [imagesPrefetched, setImagesPrefetched] = useState(false);
+  const [firstImageLoaded, setFirstImageLoaded] = useState(false);
+  const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 80 });
+  const [showMuteButton, setShowMuteButton] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      // Use a time-based seed for a different order on every app load
+      const seed = Date.now() % 1000000000;
+      const shuffledBrands = shuffleArraySeeded(BRANDS, seed);
+      const mediaPromises = shuffledBrands.map((brand) =>
+        fetchBrandMediaFromIndex(brand)
+      );
+      const allMedia = (await Promise.all(mediaPromises)).filter(Boolean) as {
+        id: string;
+        type: "video" | "image";
+        url: string;
+      }[];
+      setMediaItems(allMedia);
+      setLoading(false);
+    })();
+  }, []);
+
+  // Prefetch all images once mediaItems are loaded
+  useEffect(() => {
+    if (!loading && mediaItems.length > 0) {
+      const imageUrls = mediaItems
+        .filter((item) => item.type === "image")
+        .map((item) => item.url);
+      if (imageUrls.length > 0) {
+        ExpoImage.prefetch(imageUrls[0])
+          .then(() => setFirstImageLoaded(true))
+          .catch(() => setFirstImageLoaded(true));
+        Promise.all(imageUrls.slice(1).map((url) => ExpoImage.prefetch(url)))
+          .then(() => setImagesPrefetched(true))
+          .catch(() => setImagesPrefetched(true));
+      } else {
+        setFirstImageLoaded(true);
+        setImagesPrefetched(true);
+      }
+    }
+  }, [loading, mediaItems]);
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
+    if (viewableItems && viewableItems.length > 0) {
+      setVisibleIndex(viewableItems[0].index ?? 0);
+    }
+  });
+
+  useEffect(() => {
+    if (mediaItems[visibleIndex]?.type === "video") {
+      setShowMuteButton(true);
+    } else {
+      setShowMuteButton(false);
+    }
+  }, [visibleIndex, mediaItems]);
+
+  if (loading || !firstImageLoaded) {
+    return (
+      <ActivityIndicator
+        size="large"
+        style={{ flex: 1, alignSelf: "center" }}
+      />
+    );
+  }
 
   return (
-    <FlatList
-      data={mediaItems}
-      renderItem={renderMediaItem}
-      keyExtractor={(item) => item.id}
-      pagingEnabled={true}
-      showsVerticalScrollIndicator={false}
-      snapToInterval={screenHeight}
-      snapToAlignment="start"
-      decelerationRate="fast"
-      className="flex-1"
-    />
+    <>
+      {/* Mute button under search bar, only for videos */}
+      {showMuteButton && (
+        <View style={styles.muteButtonContainer} pointerEvents="box-none">
+          <Ionicons
+            name={
+              mutedMap[mediaItems[visibleIndex].id]
+                ? "volume-mute"
+                : "volume-high"
+            }
+            size={20}
+            color="#fff"
+            style={{ opacity: 0.85 }}
+            onPress={() =>
+              setMutedMap((prev) => ({
+                ...prev,
+                [mediaItems[visibleIndex].id]: !(
+                  prev[mediaItems[visibleIndex].id] ?? false
+                ),
+              }))
+            }
+          />
+        </View>
+      )}
+      <FlatList
+        data={mediaItems}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item, index }) => (
+          <MediaItem
+            item={item}
+            isVisible={index === visibleIndex}
+            muted={mutedMap[item.id] ?? false}
+          />
+        )}
+        pagingEnabled={true}
+        showsVerticalScrollIndicator={false}
+        snapToInterval={screenHeight}
+        snapToAlignment="start"
+        decelerationRate="fast"
+        className="flex-1"
+        removeClippedSubviews={true}
+        windowSize={3}
+        initialNumToRender={3}
+        maxToRenderPerBatch={3}
+        onViewableItemsChanged={onViewableItemsChanged.current}
+        viewabilityConfig={viewabilityConfig.current}
+        getItemLayout={(_, index) => ({
+          length: screenHeight,
+          offset: screenHeight * index,
+          index,
+        })}
+      />
+    </>
   );
 }
+
+const styles = StyleSheet.create({
+  muteButtonContainer: {
+    position: "absolute",
+    bottom: 110, // more space above the bottom nav bar
+    right: 20, // more space from the edge
+    zIndex: 100,
+    backgroundColor: "transparent", // fully transparent
+    borderRadius: 22,
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
+});

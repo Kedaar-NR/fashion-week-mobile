@@ -1,6 +1,7 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
   Dimensions,
   Image,
@@ -13,39 +14,39 @@ import {
 
 const quizImages = [
   // Emo Opium Goth
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Emo_Opium_Goth.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L0Vtb19PcGl1bV9Hb3RoLmpwZyIsImlhdCI6MTc1MTE1OTEzOCwiZXhwIjoxNzgyNjk1MTM4fQ.7MbI5htBaNhUAX29GNOrmZ56fPYACiDy_QKM1FkVLuI",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Emo_Opium_Goth.jpg",
   // Gorpcore
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Gorpcore.JPG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L0dvcnBjb3JlLkpQRyIsImlhdCI6MTc1MTE1OTE0NSwiZXhwIjoxNzgyNjk1MTQ1fQ.rrvPddkNmGMzRGrbTW4trMAx-7LazpsbWw61eFARsos",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Gorpcore.JPG",
   // Grunge 2
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Grunge%202.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L0dydW5nZSAyLmpwZyIsImlhdCI6MTc1MTE1OTE1MSwiZXhwIjoxNzgyNjk1MTUxfQ.cG7M5E1vP6k8xXEe_APW1VJf28Utnza0rhRPzHDm2q8",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Grunge 2.jpg",
   // Grunge
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Grunge.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L0dydW5nZS5qcGciLCJpYXQiOjE3NTExNTkxNTYsImV4cCI6MTc4MjY5NTE1Nn0.8yTNClPvghSc3bno0GpLJf_8cP95KBKG3hKMGC5HKVw",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Grunge.jpg",
   // IMG_4959
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/IMG_4959.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L0lNR180OTU5LmpwZyIsImlhdCI6MTc1MTE1OTE2NCwiZXhwIjoxNzgyNjk1MTY0fQ.Qa9h-tIkcBkOIXJgm-ezHoCUD1Z81vYvd0OUUbpBtlE",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/IMG_4959.jpg",
   // Japanese Punk
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Japanese_Punk.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L0phcGFuZXNlX1B1bmsuanBnIiwiaWF0IjoxNzUxMTU5MTczLCJleHAiOjE3ODI2OTUxNzN9.2G-RYbC7JeAS90izTcp6MieN6TUbJdp5J1nDxkfg1us",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Japanese_Punk.jpg",
   // Leather
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Leather.JPG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L0xlYXRoZXIuSlBHIiwiaWF0IjoxNzUxMTU5MTc5LCJleHAiOjE3ODI2OTUxNzl9.ftsxPB-QXyg4S8fxH26iAbF8DfVzlatHbN_97N1k0H4",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Leather.JPG",
   // Luxary Street (only once)
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Luxary%20Street.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L0x1eGFyeSBTdHJlZXQuanBnIiwiaWF0IjoxNzUxMTU5MTg0LCJleHAiOjE3ODI2OTUxODR9.5TKNQAb2MgggX-YG-KJM_B_UnMVW2XKW2q3-bw5FwIo",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Luxary Street.jpg",
   // Minimal Comfy
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Minimal_Comfy.JPG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L01pbmltYWxfQ29tZnkuSlBHIiwiaWF0IjoxNzUxMTU5MjAwLCJleHAiOjE3ODI2OTUyMDB9.SSp_XwS0GIhVA7Jhb0UlJaSJIrrvIz6CBvR4uz1Pfr0",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Minimal_Comfy.JPG",
   // Minimalist
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Minimalist.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L01pbmltYWxpc3QuanBnIiwiaWF0IjoxNzUxMTU5MjA4LCJleHAiOjE3ODI2OTUyMDh9.cFScUx9cyHSjVOk5rAioNWMhn-zBVq1bhu3kz5V272A",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Minimalist.jpg",
   // Opium Goth
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Opium_Goth.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L09waXVtX0dvdGguanBnIiwiaWF0IjoxNzUxMTU5MjE1LCJleHAiOjE3ODI2OTUyMTV9.sV3mG24ZHUykMRRdTMZasqf8M1DsH-FHPWFD8sByrjA",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Opium_Goth.jpg",
   // Streetwear(1)
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Streetwear(1).JPG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L1N0cmVldHdlYXIoSDEpLkpQRyIsImlhdCI6MTc1MTE1OTIyMCwiZXhwIjoxNzgyNjk1MjIwfQ.nMeqYuZZqeeBrtquFoGx13zOcip7yKe_MfG7Oq9Xe5U",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Streetwear(1).JPG",
   // Streetwear
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Streetwear.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L1N0cmVldHdlYXIuanBnIiwiaWF0IjoxNzUxMTU5MjI4LCJleHAiOjE3ODI2OTUyMjh9.UHO9BNGH66wtnUdT-AZl6IwqoDNMiQs7PsvOa5xAazU",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Streetwear.jpg",
   // Vintage
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Vintage.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L1ZpbnRhZ2UuanBnIiwiaWF0IjoxNzUxMTU5MjM0LCJleHAiOjE3ODI2OTUyMzR9.ltxndn0eRSEYiDehUWqM_StfIn261NyFxq9128zBjrE",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Vintage.jpg",
   // work_street
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/work_street.JPG?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L3dvcmtfc3RyZWV0LkpQRyIsImlhdCI6MTc1MTE1OTIzOSwiZXhwIjoxNzgyNjk1MjM5fQ.PgLhyVxVzOuSw-v8wmM-UjeVta66iZ1oz8r9M-Qj1v4",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/work_street.JPG",
   // Workwear
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Workwear.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L1dvcmt3ZWFyLmpwZyIsImlhdCI6MTc1MTE1OTI0NCwiZXhwIjoxNzgyNjk1MjQ0fQ.gQDd0eMEXTgI4qu6SoVR4EQ_HqJN1uGO9lMvVKUzGK4",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Workwear.jpg",
   // Y2K Street
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/sign/style-quiz/Y2K_Street.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9iMzRhOTEyYS03YzNlLTQ1ZGYtOGIwNC0zNmU1MDY0M2IwMjQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzdHlsZS1xdWl6L1kyS19TdHJlZXQuanBnIiwiaWF0IjoxNzUxMTU5MjUxLCJleHAiOjE3ODI2OTUyNTF9.z2oZmz6yFAsZkKBuj8fOvGsjMQDo-kCwHSFs8stsTq4",
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/style-quiz/Y2K_Street.jpg",
 ];
 const SWIPE_THRESHOLD = 120;
 
@@ -78,6 +79,8 @@ export default function StyleQuizScreen() {
   const [showConfirm, setShowConfirm] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [loaded, setLoaded] = useState(Array(quizImages.length).fill(false));
+  const [firstLoaded, setFirstLoaded] = useState(false);
   const router = useRouter();
 
   const pan = useRef(new Animated.ValueXY()).current;
@@ -87,11 +90,13 @@ export default function StyleQuizScreen() {
   // Reset quiz and reshuffle images when navigating to this screen
   useFocusEffect(
     React.useCallback(() => {
-      // setShuffledImages(shuffleArray(quizImages)); // REMOVED to prevent reshuffling on every focus
+      setShuffledImages(shuffleArray(quizImages));
       setCurrent(0);
       setResponses([]);
       setDone(false);
       setImageError(false);
+      setLoaded(Array(quizImages.length).fill(false));
+      setFirstLoaded(false);
       pan.setValue({ x: 0, y: 0 });
       fadeAnim.setValue(1);
       scaleAnim.setValue(1);
@@ -105,20 +110,11 @@ export default function StyleQuizScreen() {
 
   // Instantly switch to next image on swipe or button press
   const handleAnswer = (answer: "yes" | "no") => {
-    Animated.timing(pan, {
-      toValue: { x: answer === "yes" ? 500 : -500, y: 0 },
-      duration: 120,
-      useNativeDriver: true,
-    }).start(() => {
-      if (current < shuffledImages.length - 1) {
-        setCurrent((prev) => prev + 1);
-        pan.setValue({ x: 0, y: 0 });
-        fadeAnim.setValue(1);
-        scaleAnim.setValue(1);
-      } else {
-        setDone(true);
-      }
-    });
+    if (current < shuffledImages.length - 1) {
+      setCurrent((prev) => prev + 1);
+    } else {
+      setDone(true);
+    }
   };
 
   // PanResponder for swipe gestures
@@ -148,6 +144,42 @@ export default function StyleQuizScreen() {
   const progressNum =
     current < shuffledImages.length ? current + 1 : shuffledImages.length;
 
+  // Show loading spinner until the first image is loaded
+  if (!firstLoaded) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#111" />
+        <Text style={{ marginTop: 16, fontSize: 18, color: "#111" }}>
+          Loading quiz image...
+        </Text>
+        {/* Preload all images invisibly */}
+        {shuffledImages.map((uri, idx) => (
+          <Image
+            key={uri}
+            source={{ uri }}
+            style={{ width: 1, height: 1, position: "absolute", opacity: 0 }}
+            onLoad={() => {
+              setLoaded((prev) => {
+                const next = [...prev];
+                next[idx] = true;
+                if (idx === 0) setFirstLoaded(true);
+                return next;
+              });
+            }}
+            onError={() => {
+              setLoaded((prev) => {
+                const next = [...prev];
+                next[idx] = true;
+                if (idx === 0) setFirstLoaded(true);
+                return next;
+              });
+            }}
+          />
+        ))}
+      </View>
+    );
+  }
+
   if (done || current >= shuffledImages.length) {
     return (
       <View style={styles.centered}>
@@ -156,10 +188,7 @@ export default function StyleQuizScreen() {
     );
   }
 
-  // Debug: log image URL
-  const imageUrl = shuffledImages[current];
-  console.log("Loading image:", imageUrl);
-
+  // Only render the current image (no stacking)
   return (
     <View style={styles.container}>
       <View style={{ height: 8 }} />
@@ -204,26 +233,6 @@ export default function StyleQuizScreen() {
                   resizeMode="contain"
                   onError={() => setImageError(true)}
                 />
-                {/* Preload the next image invisibly for seamless transition */}
-                {current < shuffledImages.length - 1 && (
-                  <Image
-                    source={{ uri: shuffledImages[current + 1] }}
-                    style={[
-                      styles.image,
-                      {
-                        position: "absolute",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        opacity: 0,
-                      },
-                    ]}
-                    resizeMode="contain"
-                    // No onError needed for preloading
-                  />
-                )}
-                {/* Blur corners overlay */}
                 <View pointerEvents="none" style={styles.blurCorners} />
               </>
             )}
