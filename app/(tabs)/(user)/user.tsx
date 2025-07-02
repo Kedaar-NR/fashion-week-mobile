@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Session } from "@supabase/supabase-js";
 import { router } from "expo-router";
@@ -34,39 +33,6 @@ export default function UserScreen() {
   const [styleCollections, setStyleCollections] = useState<any[]>([]);
   const [loadingCollections, setLoadingCollections] = useState(true);
 
-  const CACHE_KEY = "pinned_collections_cache";
-  const CACHE_TIMESTAMP_KEY = "pinned_collections_timestamp";
-  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-  const loadFromCache = async () => {
-    try {
-      const cachedData = await AsyncStorage.getItem(CACHE_KEY);
-      const timestamp = await AsyncStorage.getItem(CACHE_TIMESTAMP_KEY);
-
-      if (cachedData && timestamp) {
-        const isExpired = Date.now() - parseInt(timestamp) > CACHE_DURATION;
-        if (!isExpired) {
-          setStyleCollections(JSON.parse(cachedData));
-          setLoadingCollections(false);
-          return true; // Cache was valid
-        }
-      }
-      return false; // Cache was invalid or missing
-    } catch (error) {
-      console.log("Error loading from cache:", error);
-      return false;
-    }
-  };
-
-  const saveToCache = async (data: any[]) => {
-    try {
-      await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(data));
-      await AsyncStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString());
-    } catch (error) {
-      console.log("Error saving to cache:", error);
-    }
-  };
-
   const fetchPinnedCollections = async () => {
     if (!session) return;
 
@@ -81,7 +47,6 @@ export default function UserScreen() {
           setStyleCollections([]);
         } else {
           setStyleCollections(data || []);
-          saveToCache(data || []); // Save to cache after successful fetch
         }
         setLoadingCollections(false);
       });
@@ -130,13 +95,7 @@ export default function UserScreen() {
     React.useCallback(() => {
       console.log("📍 Current path: /(tabs)/user");
       if (session) {
-        // Try to load from cache first
-        loadFromCache().then((cacheValid) => {
-          if (!cacheValid) {
-            // If cache is invalid or missing, fetch from Supabase
-            fetchPinnedCollections();
-          }
-        });
+        fetchPinnedCollections();
       }
     }, [session])
   );
@@ -154,24 +113,6 @@ export default function UserScreen() {
       listener.subscription.unsubscribe();
     };
   }, []);
-
-  // useEffect(() => {
-  //   if (!session) return;
-  //   setLoadingCollections(true);
-  //   supabase
-  //   .from("collections")
-  //   .select("*")
-  //   .eq("user_id", session.user.id)
-  //   .eq("is_pinned", true)
-  //   .then(({ data, error }) => {
-  //     if (error) {
-  //       setStyleCollections([]);
-  //     } else {
-  //       setStyleCollections(data || []);
-  //     }
-  //     setLoadingCollections(false);
-  //   });
-  // }, [session]);
 
   if (!session) {
     return <Auth />;
@@ -256,7 +197,6 @@ export default function UserScreen() {
           (c) => c.id !== collectionId
         );
         setStyleCollections(updatedCollections);
-        saveToCache(updatedCollections);
       } else {
         // Add to pinned collections (you might need to fetch the collection data first)
         fetchPinnedCollections(); // Refresh the list
@@ -270,7 +210,7 @@ export default function UserScreen() {
     <View className="flex-1 justify-center items-center">
       <ScrollView className="flex-1 bg-transparent">
         {/* Profile Section */}
-        <View className="items-center pt-6 pb-2">
+        <View className="items-center pt-6 pb-0">
           {/* Profile Picture */}
           <Image
             source={{
@@ -305,8 +245,8 @@ export default function UserScreen() {
         </View>
 
         {/* Action Buttons */}
-        <View className="pb-4 px-6">
-          {/* Style Quiz Button */}
+        {/* <View className="pb-4 px-6">
+          Style Quiz Button
           <TouchableOpacity
             className="bg-gray-800 px-6 py-3 rounded-lg w-full mb-4"
             onPress={() => router.push("/(tabs)/style-quiz")}
@@ -315,7 +255,7 @@ export default function UserScreen() {
               Style Quiz
             </Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         {/* Content Section */}
         <View className="pb-8 px-4">
@@ -323,7 +263,11 @@ export default function UserScreen() {
           <View className="mb-0">
             <View className="flex-row items-center gap-4 mb-4">
               <Text className="text-xl font-bold">MY STYLE</Text>
-              <TouchableOpacity onPress={() => {router.push("/(tabs)/(user)/pinnedCollections")}}>
+              <TouchableOpacity
+                onPress={() => {
+                  router.push("/(tabs)/(user)/pinnedCollections");
+                }}
+              >
                 <Text className="text-sm font-bold">PIN COLLECTION+</Text>
               </TouchableOpacity>
             </View>
@@ -368,7 +312,7 @@ export default function UserScreen() {
           </View>
         </View>
       </ScrollView>
-      <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
+      {/* <Button title="Sign Out" onPress={() => supabase.auth.signOut()} /> */}
     </View>
   );
 }
