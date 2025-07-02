@@ -108,13 +108,27 @@ export default function StyleQuizScreen() {
     setImageError(false);
   }, [current]);
 
-  // Instantly switch to next image on swipe or button press
+  // Helper to animate card off-screen, then reset and show next image
+  const animateCard = (direction: "left" | "right", onComplete: () => void) => {
+    Animated.timing(pan, {
+      toValue: { x: direction === "right" ? width * 1.2 : -width * 1.2, y: 0 },
+      duration: 260,
+      useNativeDriver: true,
+    }).start(() => {
+      pan.setValue({ x: 0, y: 0 });
+      onComplete();
+    });
+  };
+
+  // Unified answer handler for both swipe and button
   const handleAnswer = (answer: "yes" | "no") => {
-    if (current < shuffledImages.length - 1) {
-      setCurrent((prev) => prev + 1);
-    } else {
-      setDone(true);
-    }
+    animateCard(answer === "yes" ? "right" : "left", () => {
+      if (current < shuffledImages.length - 1) {
+        setCurrent((prev) => prev + 1);
+      } else {
+        setDone(true);
+      }
+    });
   };
 
   // PanResponder for swipe gestures
@@ -127,9 +141,21 @@ export default function StyleQuizScreen() {
       }),
       onPanResponderRelease: (_, gesture) => {
         if (gesture.dx > SWIPE_THRESHOLD) {
-          handleAnswer("yes");
+          animateCard("right", () => {
+            if (current < shuffledImages.length - 1) {
+              setCurrent((prev) => prev + 1);
+            } else {
+              setDone(true);
+            }
+          });
         } else if (gesture.dx < -SWIPE_THRESHOLD) {
-          handleAnswer("no");
+          animateCard("left", () => {
+            if (current < shuffledImages.length - 1) {
+              setCurrent((prev) => prev + 1);
+            } else {
+              setDone(true);
+            }
+          });
         } else {
           Animated.spring(pan, {
             toValue: { x: 0, y: 0 },
