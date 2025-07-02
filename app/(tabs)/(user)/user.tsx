@@ -124,7 +124,11 @@ export default function UserScreen() {
       style={{ width: gridItemWidth }}
       onPress={() => {
         // Handle collection selection
-        console.log("Select collection:", item.name);
+        router.push({
+          pathname: "/(tabs)/(collections)/[collection]",
+          params: { collection: item.collection_name },
+        });
+        console.log("Select collection:", item.collection_name);
       }}
     >
       <View
