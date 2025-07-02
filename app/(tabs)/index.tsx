@@ -1,11 +1,15 @@
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Video } from "expo-av";
 import { Image as ExpoImage } from "expo-image";
+import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
   FlatList,
+  PanResponder,
   Text,
   View,
 } from "react-native";
@@ -177,15 +181,21 @@ const MediaItem = React.memo(
     isVisible,
     muted,
     isScreenFocused,
+    panHandlers,
   }: {
     item: { id: string; type: "video" | "image"; url: string };
     isVisible: boolean;
     muted?: boolean;
     isScreenFocused: boolean;
+    panHandlers?: any;
   }) => {
     if (item.type === "video") {
       return (
-        <View className="w-full" style={{ height: screenHeight }}>
+        <View
+          className="w-full"
+          style={{ height: screenHeight }}
+          {...(panHandlers || {})}
+        >
           <Video
             source={{ uri: item.url }}
             style={{ width: "100%", height: screenHeight }}
@@ -200,11 +210,17 @@ const MediaItem = React.memo(
       );
     }
     return (
-      <ExpoImage
-        source={{ uri: item.url }}
-        style={{ width: "100%", height: screenHeight }}
-        contentFit="cover"
-      />
+      <View
+        className="w-full"
+        style={{ height: screenHeight }}
+        {...(panHandlers || {})}
+      >
+        <ExpoImage
+          source={{ uri: item.url }}
+          style={{ width: "100%", height: screenHeight }}
+          contentFit="cover"
+        />
+      </View>
     );
   }
 );
@@ -216,12 +232,13 @@ export default function HomeScreen() {
   >([]);
   const [loading, setLoading] = useState(true);
   const [visibleIndex, setVisibleIndex] = useState(0);
-  const [mutedMap, setMutedMap] = useState<{ [id: string]: boolean }>({});
+  const [muted, setMuted] = useState(false);
   const [imagesPrefetched, setImagesPrefetched] = useState(false);
   const [firstImageLoaded, setFirstImageLoaded] = useState(false);
   const [isScreenFocused, setIsScreenFocused] = useState(true);
   const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 80 });
-  const [showMuteButton, setShowMuteButton] = useState(false);
+  const router = useRouter();
+  const SWIPE_THRESHOLD = 120;
 
   // Handle screen focus/blur to pause/resume videos
   useFocusEffect(
@@ -277,47 +294,104 @@ export default function HomeScreen() {
     }
   });
 
+  // Load mute preference on mount
   useEffect(() => {
-    if (mediaItems[visibleIndex]?.type === "video") {
-      setShowMuteButton(true);
-    } else {
-      setShowMuteButton(false);
-    }
-  }, [visibleIndex, mediaItems]);
+    (async () => {
+      const stored = await AsyncStorage.getItem("globalMute");
+      if (stored !== null) setMuted(stored === "true");
+    })();
+  }, []);
+
+  // Save mute preference when changed
+  useEffect(() => {
+    AsyncStorage.setItem("globalMute", muted ? "true" : "false");
+  }, [muted]);
+
+  // PanResponder for left swipe on visible media item
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: (evt, gesture) => {
+        // Only allow swipe if touch starts in the middle 70% of the screen
+        const x = evt.nativeEvent.pageX;
+        const screenWidth = Dimensions.get("window").width;
+        const margin = screenWidth * 0.15;
+        const inMiddle = x > margin && x < screenWidth - margin;
+        return inMiddle && Math.abs(gesture.dx) > 8;
+      },
+      onMoveShouldSetPanResponder: (evt, gesture) => {
+        const x = evt.nativeEvent.pageX;
+        const screenWidth = Dimensions.get("window").width;
+        const margin = screenWidth * 0.15;
+        const inMiddle = x > margin && x < screenWidth - margin;
+        return (
+          inMiddle &&
+          Math.abs(gesture.dx) > Math.abs(gesture.dy) &&
+          Math.abs(gesture.dx) > 8
+        );
+      },
+      onPanResponderMove: () => {}, // No visual feedback
+      onPanResponderRelease: (_, gesture) => {
+        console.log("PanResponderRelease dx:", gesture.dx);
+        if (gesture.dx < -SWIPE_THRESHOLD) {
+          // Left swipe detected, extract brand from URL
+          const url = mediaItems[visibleIndex]?.url;
+          const brand = url
+            ? url.split("/brand_content/")[1].split("/")[0]
+            : undefined;
+          console.log("Left swipe detected for brand:", brand);
+          if (brand) {
+            try {
+              console.log(
+                "Attempting navigation to /brand/[brand] with brand:",
+                brand
+              );
+              router.push({ pathname: "/brand/[brand]", params: { brand } });
+            } catch (err) {
+              console.error("Navigation to brand page failed:", err);
+            }
+          } else {
+            console.error("No brand found for current media item.");
+          }
+        }
+        // Do nothing on insufficient swipe (no bounce back)
+      },
+    })
+  ).current;
 
   if (loading || !firstImageLoaded) {
     return <ActivityIndicator size="large" className="flex-1 self-center" />;
   }
 
   return (
-    <>
-      {/* Mute button under search bar, only for videos */}
-      {showMuteButton && (
-        <View
-          className="absolute bottom-28 right-5 z-50 bg-transparent rounded-full w-11 h-11 items-center justify-center shadow-lg"
-          pointerEvents="box-none"
-        >
-          {/* <Ionicons
-            name={
-              mutedMap[mediaItems[visibleIndex].id]
-                ? "volume-mute"
-                : "volume-high"
-            }
-            size={20}
-            color="#fff"
-            style={{ opacity: 0.85 }}
-            onPress={() =>
-              setMutedMap((prev) => ({
-                ...prev,
-                [mediaItems[visibleIndex].id]: !(
-                  prev[mediaItems[visibleIndex].id] ?? false
-                ),
-              }))
-            }
-          /> */}
-        </View>
-      )}
-
+    <View style={{ flex: 1 }} {...panResponder.panHandlers}>
+      {/* Mute button: bright white icon, moved further down from the NavBar */}
+      <View
+        style={{
+          position: "absolute",
+          top: 112,
+          right: 12,
+          zIndex: 50,
+          width: 44,
+          height: 44,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+        pointerEvents="box-none"
+      >
+        <Ionicons
+          name={muted ? "volume-mute" : "volume-high"}
+          size={20}
+          color="#fff"
+          style={{
+            opacity: 1,
+            backgroundColor: "transparent",
+            borderRadius: 22,
+            padding: 6,
+            overflow: "hidden",
+          }}
+          onPress={() => setMuted((m) => !m)}
+        />
+      </View>
       {/* Brand name overlay at bottom */}
       {mediaItems[visibleIndex] && (
         <View
@@ -327,23 +401,27 @@ export default function HomeScreen() {
           <Text className="text-white text-sm font-semibold text-center">
             {mediaItems[visibleIndex].id}
           </Text>
-          {/* <Text style={styles.brandNameText}>
-            {mediaItems[visibleIndex].url}
-          </Text> */}
         </View>
       )}
-
       <FlatList
         data={mediaItems}
         keyExtractor={(item) => item.id}
-        renderItem={({ item, index }) => (
-          <MediaItem
-            item={item}
-            isVisible={index === visibleIndex}
-            muted={mutedMap[item.id] ?? false}
-            isScreenFocused={isScreenFocused}
-          />
-        )}
+        renderItem={({ item, index }) => {
+          if (index === visibleIndex) {
+            console.log("Attaching panHandlers to media item:", item.id);
+          }
+          return (
+            <MediaItem
+              item={item}
+              isVisible={index === visibleIndex}
+              muted={muted}
+              isScreenFocused={isScreenFocused}
+              panHandlers={
+                index === visibleIndex ? panResponder.panHandlers : undefined
+              }
+            />
+          );
+        }}
         pagingEnabled={true}
         showsVerticalScrollIndicator={false}
         snapToInterval={screenHeight}
@@ -362,6 +440,6 @@ export default function HomeScreen() {
           index,
         })}
       />
-    </>
+    </View>
   );
 }
