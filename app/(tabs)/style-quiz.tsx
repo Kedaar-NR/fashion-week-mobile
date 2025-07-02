@@ -6,11 +6,13 @@ import {
   Dimensions,
   Image,
   PanResponder,
+  Image as RNImage,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import QuizCard from "../../components/QuizCard";
 
 const quizImages = [
   // Emo Opium Goth
@@ -80,12 +82,17 @@ export default function StyleQuizScreen() {
   const [done, setDone] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [loaded, setLoaded] = useState(Array(quizImages.length).fill(false));
-  const [firstLoaded, setFirstLoaded] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+  const [preloaded, setPreloaded] = useState<Record<string, boolean>>({});
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const [firstImageLoaded, setFirstImageLoaded] = useState(false);
   const router = useRouter();
 
   const pan = useRef(new Animated.ValueXY()).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const appearAnim = useRef(new Animated.Value(0)).current;
+  const appearScale = useRef(new Animated.Value(0.95)).current;
 
   // Reset quiz and reshuffle images when navigating to this screen
   useFocusEffect(
@@ -96,7 +103,6 @@ export default function StyleQuizScreen() {
       setDone(false);
       setImageError(false);
       setLoaded(Array(quizImages.length).fill(false));
-      setFirstLoaded(false);
       pan.setValue({ x: 0, y: 0 });
       fadeAnim.setValue(1);
       scaleAnim.setValue(1);
@@ -108,24 +114,81 @@ export default function StyleQuizScreen() {
     setImageError(false);
   }, [current]);
 
-  // Instantly switch to next image on swipe or button press
-  const handleAnswer = (answer: "yes" | "no") => {
+  // Preload all images as soon as the component mounts
+  useEffect(() => {
+    shuffledImages.forEach((uri) => {
+      RNImage.prefetch(uri);
+    });
+  }, [shuffledImages]);
+
+  // Preload the next image using Image.prefetch (React Native safe)
+  useEffect(() => {
     if (current < shuffledImages.length - 1) {
-      setCurrent((prev) => prev + 1);
-    } else {
-      setDone(true);
+      const nextUrl = shuffledImages[current + 1];
+      if (!preloaded[nextUrl]) {
+        Image.prefetch(nextUrl).then(() => {
+          setPreloaded((prev) => ({ ...prev, [nextUrl]: true }));
+        });
+      }
     }
+  }, [current, shuffledImages, preloaded]);
+
+  // Prefetch the first image on mount, as soon as possible
+  useEffect(() => {
+    let didCancel = false;
+    setFirstImageLoaded(false);
+    const url = quizImages[0];
+    RNImage.prefetch(url)
+      .then(() => {
+        if (!didCancel) setFirstImageLoaded(true);
+      })
+      .catch(() => {
+        if (!didCancel) setFirstImageLoaded(true); // fallback: let it try to load in the card
+      });
+    return () => {
+      didCancel = true;
+    };
+  }, []);
+
+  // Helper to animate card off-screen, then reset and show next image
+  const animateCard = (direction: "left" | "right", onComplete: () => void) => {
+    setIsAnimatingOut(true);
+    setTransitioning(true);
+    Animated.timing(pan, {
+      toValue: { x: direction === "right" ? width * 1.2 : -width * 1.2, y: 0 },
+      duration: 260,
+      useNativeDriver: true,
+    }).start(() => {
+      // After animation, update index and reset card position
+      pan.setValue({ x: 0, y: 0 });
+      if (current < shuffledImages.length - 1) {
+        setCurrent((prev) => prev + 1);
+      } else {
+        setDone(true);
+      }
+      setTransitioning(false);
+      setIsAnimatingOut(false);
+      onComplete();
+    });
+  };
+
+  // Unified answer handler for both swipe and button
+  const handleAnswer = (answer: "yes" | "no") => {
+    if (transitioning || isAnimatingOut) return; // Prevent double triggers
+    animateCard(answer === "yes" ? "right" : "left", () => {});
   };
 
   // PanResponder for swipe gestures
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 10,
+      onStartShouldSetPanResponder: () => !transitioning,
+      onMoveShouldSetPanResponder: (_, gesture) =>
+        Math.abs(gesture.dx) > 10 && !transitioning,
       onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }], {
         useNativeDriver: false,
       }),
       onPanResponderRelease: (_, gesture) => {
+        if (transitioning) return;
         if (gesture.dx > SWIPE_THRESHOLD) {
           handleAnswer("yes");
         } else if (gesture.dx < -SWIPE_THRESHOLD) {
@@ -144,41 +207,26 @@ export default function StyleQuizScreen() {
   const progressNum =
     current < shuffledImages.length ? current + 1 : shuffledImages.length;
 
-  // Show loading spinner until the first image is loaded
-  if (!firstLoaded) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#111" />
-        <Text style={{ marginTop: 16, fontSize: 18, color: "#111" }}>
-          Loading quiz image...
-        </Text>
-        {/* Preload all images invisibly */}
-        {shuffledImages.map((uri, idx) => (
-          <Image
-            key={uri}
-            source={{ uri }}
-            style={{ width: 1, height: 1, position: "absolute", opacity: 0 }}
-            onLoad={() => {
-              setLoaded((prev) => {
-                const next = [...prev];
-                next[idx] = true;
-                if (idx === 0) setFirstLoaded(true);
-                return next;
-              });
-            }}
-            onError={() => {
-              setLoaded((prev) => {
-                const next = [...prev];
-                next[idx] = true;
-                if (idx === 0) setFirstLoaded(true);
-                return next;
-              });
-            }}
-          />
-        ))}
-      </View>
-    );
-  }
+  // Use a key that changes after animation to force React to remount the card
+  const cardKey = `${current}-${isAnimatingOut ? "animating" : "static"}`;
+
+  useEffect(() => {
+    appearAnim.setValue(0);
+    appearScale.setValue(0.95);
+    Animated.parallel([
+      Animated.timing(appearAnim, {
+        toValue: 1,
+        duration: 220,
+        useNativeDriver: true,
+      }),
+      Animated.spring(appearScale, {
+        toValue: 1,
+        useNativeDriver: true,
+        speed: 16,
+        bounciness: 8,
+      }),
+    ]).start();
+  }, [cardKey]);
 
   if (done || current >= shuffledImages.length) {
     return (
@@ -188,7 +236,6 @@ export default function StyleQuizScreen() {
     );
   }
 
-  // Only render the current image (no stacking)
   return (
     <View style={styles.container}>
       <View style={{ height: 8 }} />
@@ -196,47 +243,39 @@ export default function StyleQuizScreen() {
       <Text style={styles.subtitle}>Swipe right for Yes, left for No</Text>
       <View style={{ alignItems: "center", width: "100%" }}>
         <View style={styles.swipeContainer}>
-          <Animated.View
-            {...panResponder.panHandlers}
-            style={[
-              styles.card,
-              {
-                transform: [
-                  { translateX: pan.x },
-                  { translateY: pan.y },
-                  {
-                    rotate: pan.x.interpolate({
-                      inputRange: [-200, 0, 200],
-                      outputRange: ["-15deg", "0deg", "15deg"],
-                    }),
-                  },
-                  { scale: scaleAnim },
-                ],
-                opacity: fadeAnim,
-              },
-            ]}
-          >
-            {imageError ? (
+          <View style={{ width: "100%", height: "100%" }}>
+            <QuizCard
+              key={cardKey}
+              cardKey={cardKey}
+              imageUrl={shuffledImages[current]}
+              panHandlers={panResponder.panHandlers}
+              pan={pan}
+              fadeAnim={fadeAnim}
+              scaleAnim={scaleAnim}
+              imageError={imageError}
+              onImageError={() => setImageError(true)}
+              appearAnim={appearAnim}
+              appearScale={appearScale}
+            />
+            {/* Overlay spinner only for first image if not loaded */}
+            {current === 0 && !firstImageLoaded && (
               <View
-                style={[
-                  styles.image,
-                  { alignItems: "center", justifyContent: "center" },
-                ]}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "rgba(255,255,255,0.18)",
+                  zIndex: 10,
+                }}
               >
-                <Text style={{ color: "#888" }}>Image not found</Text>
+                <ActivityIndicator size="large" color="#111" />
               </View>
-            ) : (
-              <>
-                <Image
-                  source={{ uri: shuffledImages[current] }}
-                  style={styles.image}
-                  resizeMode="contain"
-                  onError={() => setImageError(true)}
-                />
-                <View pointerEvents="none" style={styles.blurCorners} />
-              </>
             )}
-          </Animated.View>
+          </View>
         </View>
       </View>
       <View style={styles.buttonRow}>
