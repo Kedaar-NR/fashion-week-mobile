@@ -87,7 +87,7 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="user"
+          name="(user)"
           options={{
             title: "Account",
             headerShown: false,

@@ -24,6 +24,7 @@ export function NavBar() {
     if (path === "/") {
       if (segments && segments.includes("(collections)")) return "COLLECTIONS";
       if (segments && segments.includes("(drops)")) return "DROP TRACKER";
+      if (segments && segments.includes("(user)")) return "ACCOUNT";
       return "fashion:week";
     }
     if (path.includes("/collection")) return "COLLECTIONS";
