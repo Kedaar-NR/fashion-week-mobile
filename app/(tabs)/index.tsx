@@ -141,6 +141,7 @@ async function fetchBrandMediaFromIndex(brand: string) {
     const res = await fetch(indexUrl);
     if (!res.ok) return null;
     const data = await res.json();
+    // console.log(data);
     if (!Array.isArray(data.files)) return null;
 
     // Normalize: get array of filenames (strings)
@@ -350,7 +351,7 @@ export default function HomeScreen() {
         snapToAlignment="start"
         decelerationRate="fast"
         className="flex-1"
-        removeClippedSubviews={true}
+        removeClippedSubviews={true}       
         windowSize={3}
         initialNumToRender={3}
         maxToRenderPerBatch={3}
