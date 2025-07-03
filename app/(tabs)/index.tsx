@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { height: screenHeight } = Dimensions.get("window");
 
@@ -290,6 +291,7 @@ export default function HomeScreen() {
   const [muted, setMuted] = useState(false);
   const [isScreenFocused, setIsScreenFocused] = useState(true);
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   useFocusEffect(
     React.useCallback(() => {
@@ -380,44 +382,39 @@ export default function HomeScreen() {
               />
             )}
             {/* Brand name overlay bubble above the bottom navbar */}
-            <View
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() =>
+                router.push({
+                  pathname: "/brand/[brand]",
+                  params: { brand: brandsMedia[verticalIndex].brand },
+                })
+              }
               style={{
                 position: "absolute",
-                bottom: 80, // fixed distance above TabBar
-                left: 0,
-                right: 0,
+                left: 20,
+                right: 20,
+                bottom: (insets.bottom || 0) + 56, // always above the bottom navbar
+                backgroundColor: "rgba(0,0,0,0.3)",
+                paddingHorizontal: 20,
+                paddingVertical: 8,
+                borderRadius: 9999,
                 alignItems: "center",
+                justifyContent: "center",
                 zIndex: 50,
               }}
-              pointerEvents="box-none"
             >
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() =>
-                  router.push({ pathname: "/brand/[brand]", params: { brand } })
-                }
+              <Text
                 style={{
-                  backgroundColor: "rgba(0,0,0,0.6)",
-                  height: 32,
-                  minWidth: 180,
-                  paddingHorizontal: 32,
-                  borderRadius: 16,
-                  alignItems: "center",
-                  justifyContent: "center",
+                  color: "#fff",
+                  fontWeight: "bold",
+                  fontSize: 16,
+                  textAlign: "center",
                 }}
               >
-                <Text
-                  style={{
-                    color: "#fff",
-                    fontWeight: "bold",
-                    fontSize: 16,
-                    textAlign: "center",
-                  }}
-                >
-                  {brand}
-                </Text>
-              </TouchableOpacity>
-            </View>
+                {brand}
+              </Text>
+            </TouchableOpacity>
             {/* Mute button */}
             <TouchableOpacity
               style={{
