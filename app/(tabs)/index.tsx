@@ -1,16 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Video } from "expo-av";
 import { Image as ExpoImage } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
   FlatList,
-  PanResponder,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -118,6 +117,9 @@ const BRANDS = [
   "youngchickenpox",
 ];
 
+// Sanitize brand names to remove file extensions
+const sanitizedBrands = BRANDS.map((b) => b.replace(/\.[^/.]+$/, ""));
+
 // Seeded random number generator (Mulberry32)
 function mulberry32(seed: number) {
   return function () {
@@ -136,6 +138,12 @@ function shuffleArraySeeded<T>(array: T[], seed: number): T[] {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
+}
+
+function getMediaType(filename: string): "video" | "image" | null {
+  if (VIDEO_EXTENSIONS.some((ext) => filename.endsWith(ext))) return "video";
+  if (IMAGE_EXTENSIONS.some((ext) => filename.endsWith(ext))) return "image";
+  return null;
 }
 
 async function fetchBrandMediaFromIndex(brand: string) {
@@ -226,21 +234,63 @@ const MediaItem = React.memo(
 );
 MediaItem.displayName = "MediaItem";
 
+// 1. Fetch all media for all brands at once
+async function fetchAllBrandsMedia(brands: string[]) {
+  const all = await Promise.all(
+    brands.map(async (brand) => {
+      const indexUrl = `${BUCKET_URL}/${brand}/index.json`;
+      try {
+        const res = await fetch(indexUrl);
+        if (!res.ok) return null;
+        const data = await res.json();
+        if (!Array.isArray(data.files)) return null;
+        const files = data.files
+          .map((f: any) => (typeof f === "string" ? f : f?.name))
+          .filter(Boolean)
+          .map((name: string) => {
+            const type = getMediaType(name);
+            return type
+              ? {
+                  type,
+                  url: `${BUCKET_URL}/${brand}/${name}`,
+                  name,
+                }
+              : null;
+          })
+          .filter(Boolean);
+        return { brand, media: files };
+      } catch {
+        return null;
+      }
+    })
+  );
+  // Type guard to filter out nulls
+  return all.filter(
+    (
+      b
+    ): b is {
+      brand: string;
+      media: { type: "video" | "image"; url: string; name: string }[];
+    } => !!b
+  );
+}
+
 export default function HomeScreen() {
-  const [mediaItems, setMediaItems] = useState<
-    { id: string; type: "video" | "image"; url: string }[]
+  const [brandsMedia, setBrandsMedia] = useState<
+    {
+      brand: string;
+      media: { type: "video" | "image"; url: string; name: string }[];
+    }[]
   >([]);
   const [loading, setLoading] = useState(true);
-  const [visibleIndex, setVisibleIndex] = useState(0);
+  const [verticalIndex, setVerticalIndex] = useState(0); // Which brand
+  const [horizontalIndices, setHorizontalIndices] = useState<{
+    [brand: string]: number;
+  }>({}); // Which media per brand
   const [muted, setMuted] = useState(false);
-  const [imagesPrefetched, setImagesPrefetched] = useState(false);
-  const [firstImageLoaded, setFirstImageLoaded] = useState(false);
   const [isScreenFocused, setIsScreenFocused] = useState(true);
-  const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 80 });
   const router = useRouter();
-  const SWIPE_THRESHOLD = 120;
 
-  // Handle screen focus/blur to pause/resume videos
   useFocusEffect(
     React.useCallback(() => {
       setIsScreenFocused(true);
@@ -252,194 +302,170 @@ export default function HomeScreen() {
 
   useEffect(() => {
     (async () => {
-      // Use a time-based seed for a different order on every app load
       const seed = Date.now() % 1000000000;
-      const shuffledBrands = shuffleArraySeeded(BRANDS, seed);
-      const mediaPromises = shuffledBrands.map((brand) =>
-        fetchBrandMediaFromIndex(brand)
+      const shuffledBrands = shuffleArraySeeded(sanitizedBrands, seed);
+      const all = await fetchAllBrandsMedia(shuffledBrands);
+      setBrandsMedia(
+        all.filter(
+          (
+            b
+          ): b is {
+            brand: string;
+            media: { type: "video" | "image"; url: string; name: string }[];
+          } => !!b
+        )
       );
-      const allMedia = (await Promise.all(mediaPromises)).filter(Boolean) as {
-        id: string;
-        type: "video" | "image";
-        url: string;
-      }[];
-      setMediaItems(allMedia);
       setLoading(false);
     })();
   }, []);
 
-  // Prefetch all images once mediaItems are loaded
-  useEffect(() => {
-    if (!loading && mediaItems.length > 0) {
-      const imageUrls = mediaItems
-        .filter((item) => item.type === "image")
-        .map((item) => item.url);
-      if (imageUrls.length > 0) {
-        ExpoImage.prefetch(imageUrls[0])
-          .then(() => setFirstImageLoaded(true))
-          .catch(() => setFirstImageLoaded(true));
-        Promise.all(imageUrls.slice(1).map((url) => ExpoImage.prefetch(url)))
-          .then(() => setImagesPrefetched(true))
-          .catch(() => setImagesPrefetched(true));
-      } else {
-        setFirstImageLoaded(true);
-        setImagesPrefetched(true);
-      }
-    }
-  }, [loading, mediaItems]);
-
-  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
-    if (viewableItems && viewableItems.length > 0) {
-      setVisibleIndex(viewableItems[0].index ?? 0);
-    }
-  });
-
-  // Load mute preference on mount
-  useEffect(() => {
-    (async () => {
-      const stored = await AsyncStorage.getItem("globalMute");
-      if (stored !== null) setMuted(stored === "true");
-    })();
-  }, []);
-
-  // Save mute preference when changed
-  useEffect(() => {
-    AsyncStorage.setItem("globalMute", muted ? "true" : "false");
-  }, [muted]);
-
-  // PanResponder for left swipe on visible media item
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: (evt, gesture) => {
-        // Only allow swipe if touch starts in the middle 70% of the screen
-        const x = evt.nativeEvent.pageX;
-        const screenWidth = Dimensions.get("window").width;
-        const margin = screenWidth * 0.15;
-        const inMiddle = x > margin && x < screenWidth - margin;
-        return inMiddle && Math.abs(gesture.dx) > 8;
-      },
-      onMoveShouldSetPanResponder: (evt, gesture) => {
-        const x = evt.nativeEvent.pageX;
-        const screenWidth = Dimensions.get("window").width;
-        const margin = screenWidth * 0.15;
-        const inMiddle = x > margin && x < screenWidth - margin;
-        return (
-          inMiddle &&
-          Math.abs(gesture.dx) > Math.abs(gesture.dy) &&
-          Math.abs(gesture.dx) > 8
-        );
-      },
-      onPanResponderMove: () => {}, // No visual feedback
-      onPanResponderRelease: (_, gesture) => {
-        console.log("PanResponderRelease dx:", gesture.dx);
-        if (gesture.dx < -SWIPE_THRESHOLD) {
-          // Left swipe detected, extract brand from URL
-          const url = mediaItems[visibleIndex]?.url;
-          const brand = url
-            ? url.split("/brand_content/")[1].split("/")[0]
-            : undefined;
-          console.log("Left swipe detected for brand:", brand);
-          if (brand) {
-            try {
-              console.log(
-                "Attempting navigation to /brand/[brand] with brand:",
-                brand
-              );
-              router.push({ pathname: "/brand/[brand]", params: { brand } });
-            } catch (err) {
-              console.error("Navigation to brand page failed:", err);
-            }
-          } else {
-            console.error("No brand found for current media item.");
-          }
-        }
-        // Do nothing on insufficient swipe (no bounce back)
-      },
-    })
-  ).current;
-
-  if (loading || !firstImageLoaded) {
+  if (loading || brandsMedia.length === 0) {
     return <ActivityIndicator size="large" className="flex-1 self-center" />;
   }
 
-  return (
-    <View style={{ flex: 1 }} {...panResponder.panHandlers}>
-      {/* Mute button: bright white icon, moved further down from the NavBar */}
-      <View
-        style={{
-          position: "absolute",
-          top: 112,
-          right: 12,
-          zIndex: 50,
-          width: 44,
-          height: 44,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-        pointerEvents="box-none"
-      >
-        <Ionicons
-          name={muted ? "volume-mute" : "volume-high"}
-          size={20}
-          color="#fff"
-          style={{
-            opacity: 1,
-            backgroundColor: "transparent",
-            borderRadius: 22,
-            padding: 6,
-            overflow: "hidden",
-          }}
-          onPress={() => setMuted((m) => !m)}
-        />
-      </View>
-      {/* Brand name overlay at bottom */}
-      {mediaItems[visibleIndex] && (
-        <View
-          className="absolute bottom-24 left-5 right-5 bg-black/30 px-4 py-2 rounded-full items-center justify-center z-50"
-          pointerEvents="box-none"
-        >
-          <Text className="text-white text-sm font-semibold text-center">
-            {mediaItems[visibleIndex].id}
-          </Text>
-        </View>
-      )}
+  // Render a single brand's media as a horizontal FlatList
+  const renderBrandMedia = ({
+    item: { brand, media },
+  }: {
+    item: { brand: string; media: any[] };
+  }) => {
+    const horizontalIndex = horizontalIndices[brand] || 0;
+    return (
       <FlatList
-        data={mediaItems}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item, index }) => {
-          if (index === visibleIndex) {
-            console.log("Attaching panHandlers to media item:", item.id);
-          }
-          return (
-            <MediaItem
-              item={item}
-              isVisible={index === visibleIndex}
-              muted={muted}
-              isScreenFocused={isScreenFocused}
-              panHandlers={
-                index === visibleIndex ? panResponder.panHandlers : undefined
-              }
-            />
-          );
-        }}
-        pagingEnabled={true}
-        showsVerticalScrollIndicator={false}
-        snapToInterval={screenHeight}
-        snapToAlignment="start"
+        data={media}
+        keyExtractor={(item) => item.url}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        snapToAlignment="center"
+        snapToInterval={Dimensions.get("window").width}
         decelerationRate="fast"
-        className="flex-1"
-        removeClippedSubviews={true}
-        windowSize={3}
-        initialNumToRender={3}
-        maxToRenderPerBatch={3}
-        onViewableItemsChanged={onViewableItemsChanged.current}
-        viewabilityConfig={viewabilityConfig.current}
+        initialScrollIndex={horizontalIndex}
         getItemLayout={(_, index) => ({
-          length: screenHeight,
-          offset: screenHeight * index,
+          length: Dimensions.get("window").width,
+          offset: Dimensions.get("window").width * index,
           index,
         })}
+        onMomentumScrollEnd={(e) => {
+          const newIndex = Math.round(
+            e.nativeEvent.contentOffset.x / Dimensions.get("window").width
+          );
+          setHorizontalIndices((prev) => ({ ...prev, [brand]: newIndex }));
+        }}
+        renderItem={({ item, index }) => (
+          <View
+            style={{
+              width: Dimensions.get("window").width,
+              height: screenHeight,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {item.type === "image" ? (
+              <ExpoImage
+                source={{ uri: item.url }}
+                style={{ width: "100%", height: screenHeight, borderRadius: 0 }}
+                contentFit="cover"
+              />
+            ) : (
+              <Video
+                source={{ uri: item.url }}
+                style={{ width: "100%", height: screenHeight, borderRadius: 0 }}
+                resizeMode={"cover" as any}
+                shouldPlay={index === horizontalIndex && isScreenFocused}
+                useNativeControls={false}
+                isLooping={true}
+                isMuted={muted}
+                volume={1.0}
+              />
+            )}
+            {/* Brand name overlay bubble above the bottom navbar */}
+            <View
+              style={{
+                position: "absolute",
+                bottom: 80, // fixed distance above TabBar
+                left: 0,
+                right: 0,
+                alignItems: "center",
+                zIndex: 50,
+              }}
+              pointerEvents="box-none"
+            >
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() =>
+                  router.push({ pathname: "/brand/[brand]", params: { brand } })
+                }
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.6)",
+                  height: 32,
+                  minWidth: 180,
+                  paddingHorizontal: 32,
+                  borderRadius: 16,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontWeight: "bold",
+                    fontSize: 16,
+                    textAlign: "center",
+                  }}
+                >
+                  {brand}
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {/* Mute button */}
+            <TouchableOpacity
+              style={{
+                position: "absolute",
+                top: 96,
+                right: 12,
+                zIndex: 50,
+                width: 44,
+                height: 44,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+              onPress={() => setMuted((m) => !m)}
+            >
+              <Ionicons
+                name={muted ? "volume-mute" : "volume-high"}
+                size={20}
+                color="#fff"
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       />
-    </View>
+    );
+  };
+
+  return (
+    <FlatList
+      data={brandsMedia}
+      keyExtractor={(item) => item.brand}
+      pagingEnabled
+      showsVerticalScrollIndicator={false}
+      snapToAlignment="start"
+      snapToInterval={screenHeight}
+      decelerationRate="fast"
+      getItemLayout={(_, index) => ({
+        length: screenHeight,
+        offset: screenHeight * index,
+        index,
+      })}
+      onMomentumScrollEnd={(e) => {
+        const newIndex = Math.round(
+          e.nativeEvent.contentOffset.y / screenHeight
+        );
+        setVerticalIndex(newIndex);
+      }}
+      renderItem={renderBrandMedia}
+      initialScrollIndex={verticalIndex}
+    />
   );
 }
