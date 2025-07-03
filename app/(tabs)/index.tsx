@@ -262,9 +262,29 @@ export default function HomeScreen() {
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
       const offsetY = e.nativeEvent.contentOffset.y;
       const newIndex = Math.round(offsetY / screenHeight);
-      setVerticalIndex((prev) => (prev !== newIndex ? newIndex : prev));
+      if (brandsMedia.length > 0 && newIndex >= brandsMedia.length - 1) {
+        // Reshuffle brands and reset to top
+        const seed = Date.now() % 1000000000;
+        const shuffledBrands = shuffleArraySeeded(sanitizedBrands, seed);
+        (async () => {
+          const all = await fetchAllBrandsMedia(shuffledBrands);
+          setBrandsMedia(
+            all.filter(
+              (
+                b
+              ): b is {
+                brand: string;
+                media: { type: "video" | "image"; url: string; name: string }[];
+              } => !!b
+            )
+          );
+          setVerticalIndex(0);
+        })();
+      } else {
+        setVerticalIndex((prev) => (prev !== newIndex ? newIndex : prev));
+      }
     },
-    []
+    [brandsMedia.length]
   );
 
   useFocusEffect(
@@ -277,7 +297,7 @@ export default function HomeScreen() {
   );
 
   useEffect(() => {
-    (async () => {
+    const loadBrands = async () => {
       const seed = Date.now() % 1000000000;
       const shuffledBrands = shuffleArraySeeded(sanitizedBrands, seed);
       const all = await fetchAllBrandsMedia(shuffledBrands);
@@ -292,128 +312,153 @@ export default function HomeScreen() {
         )
       );
       setLoading(false);
-    })();
+    };
+    loadBrands();
   }, []);
+
+  const renderBrandMedia = React.useCallback(
+    ({
+      item: { brand, media },
+      index: vIndex,
+    }: {
+      item: { brand: string; media: any[] };
+      index: number;
+    }) => {
+      const horizontalIndex = horizontalIndices[brand] || 0;
+      return (
+        <FlatList
+          data={media}
+          keyExtractor={(item) => item.url}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          snapToAlignment="center"
+          snapToInterval={Dimensions.get("window").width}
+          decelerationRate="fast"
+          initialScrollIndex={horizontalIndex}
+          getItemLayout={(_, index) => ({
+            length: Dimensions.get("window").width,
+            offset: Dimensions.get("window").width * index,
+            index,
+          })}
+          onMomentumScrollEnd={(e) => {
+            const newIndex = Math.round(
+              e.nativeEvent.contentOffset.x / Dimensions.get("window").width
+            );
+            setHorizontalIndices((prev) => ({ ...prev, [brand]: newIndex }));
+          }}
+          renderItem={({ item, index }) => (
+            <View
+              style={{
+                width: Dimensions.get("window").width,
+                height: screenHeight,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {item.type === "image" ? (
+                <ExpoImage
+                  source={{ uri: item.url }}
+                  style={{
+                    width: "100%",
+                    height: screenHeight,
+                    borderRadius: 0,
+                  }}
+                  contentFit="cover"
+                />
+              ) : (
+                <Video
+                  source={{ uri: item.url }}
+                  style={{
+                    width: "100%",
+                    height: screenHeight,
+                    borderRadius: 0,
+                  }}
+                  resizeMode={"cover" as any}
+                  shouldPlay={
+                    vIndex === verticalIndex &&
+                    index === horizontalIndex &&
+                    isScreenFocused
+                  }
+                  useNativeControls={false}
+                  isLooping={true}
+                  isMuted={muted}
+                  volume={1.0}
+                />
+              )}
+              {/* Brand name overlay bubble above the bottom navbar */}
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() =>
+                  router.push({
+                    pathname: "/brand/[brand]",
+                    params: { brand: brandsMedia[verticalIndex].brand },
+                  })
+                }
+                style={{
+                  position: "absolute",
+                  left: 40,
+                  right: 40,
+                  bottom: (insets.bottom || 0) + 40,
+                  backgroundColor: "rgba(0,0,0,0.3)",
+                  paddingHorizontal: 12,
+                  paddingVertical: 4,
+                  borderRadius: 9999,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 50,
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#fff",
+                    fontWeight: "400",
+                    fontSize: 16,
+                    textAlign: "center",
+                  }}
+                >
+                  {brandsMedia[verticalIndex].brand}
+                </Text>
+              </TouchableOpacity>
+              {/* Mute button */}
+              <TouchableOpacity
+                style={{
+                  position: "absolute",
+                  top: 96,
+                  right: 12,
+                  zIndex: 50,
+                  width: 44,
+                  height: 44,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+                onPress={() => setMuted((m) => !m)}
+              >
+                <Ionicons
+                  name={muted ? "volume-mute" : "volume-high"}
+                  size={20}
+                  color="#fff"
+                />
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      );
+    },
+    [
+      horizontalIndices,
+      insets.bottom,
+      isScreenFocused,
+      muted,
+      router,
+      brandsMedia,
+      verticalIndex,
+    ]
+  );
 
   if (loading || brandsMedia.length === 0) {
     return <ActivityIndicator size="large" className="flex-1 self-center" />;
   }
-
-  // Render a single brand's media as a horizontal FlatList
-  const renderBrandMedia = ({
-    item: { brand, media },
-  }: {
-    item: { brand: string; media: any[] };
-  }) => {
-    const horizontalIndex = horizontalIndices[brand] || 0;
-    return (
-      <FlatList
-        data={media}
-        keyExtractor={(item) => item.url}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        snapToAlignment="center"
-        snapToInterval={Dimensions.get("window").width}
-        decelerationRate="fast"
-        initialScrollIndex={horizontalIndex}
-        getItemLayout={(_, index) => ({
-          length: Dimensions.get("window").width,
-          offset: Dimensions.get("window").width * index,
-          index,
-        })}
-        onMomentumScrollEnd={(e) => {
-          const newIndex = Math.round(
-            e.nativeEvent.contentOffset.x / Dimensions.get("window").width
-          );
-          setHorizontalIndices((prev) => ({ ...prev, [brand]: newIndex }));
-        }}
-        renderItem={({ item, index }) => (
-          <View
-            style={{
-              width: Dimensions.get("window").width,
-              height: screenHeight,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            {item.type === "image" ? (
-              <ExpoImage
-                source={{ uri: item.url }}
-                style={{ width: "100%", height: screenHeight, borderRadius: 0 }}
-                contentFit="cover"
-              />
-            ) : (
-              <Video
-                source={{ uri: item.url }}
-                style={{ width: "100%", height: screenHeight, borderRadius: 0 }}
-                resizeMode={"cover" as any}
-                shouldPlay={index === horizontalIndex && isScreenFocused}
-                useNativeControls={false}
-                isLooping={true}
-                isMuted={muted}
-                volume={1.0}
-              />
-            )}
-            {/* Brand name overlay bubble above the bottom navbar */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() =>
-                router.push({
-                  pathname: "/brand/[brand]",
-                  params: { brand: brandsMedia[verticalIndex].brand },
-                })
-              }
-              style={{
-                position: "absolute",
-                left: 32,
-                right: 32,
-                bottom: (insets.bottom || 0) + 56, // always above the bottom navbar
-                backgroundColor: "rgba(0,0,0,0.3)",
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-                borderRadius: 9999,
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 50,
-              }}
-            >
-              <Text
-                style={{
-                  color: "#fff",
-                  fontWeight: "400",
-                  fontSize: 16,
-                  textAlign: "center",
-                }}
-              >
-                {brandsMedia[verticalIndex].brand}
-              </Text>
-            </TouchableOpacity>
-            {/* Mute button */}
-            <TouchableOpacity
-              style={{
-                position: "absolute",
-                top: 96,
-                right: 12,
-                zIndex: 50,
-                width: 44,
-                height: 44,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-              onPress={() => setMuted((m) => !m)}
-            >
-              <Ionicons
-                name={muted ? "volume-mute" : "volume-high"}
-                size={20}
-                color="#fff"
-              />
-            </TouchableOpacity>
-          </View>
-        )}
-      />
-    );
-  };
 
   return (
     <FlatList
