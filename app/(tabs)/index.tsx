@@ -392,11 +392,11 @@ export default function HomeScreen() {
               }
               style={{
                 position: "absolute",
-                left: 20,
-                right: 20,
+                left: 32,
+                right: 32,
                 bottom: (insets.bottom || 0) + 56, // always above the bottom navbar
                 backgroundColor: "rgba(0,0,0,0.3)",
-                paddingHorizontal: 20,
+                paddingHorizontal: 16,
                 paddingVertical: 8,
                 borderRadius: 9999,
                 alignItems: "center",
@@ -407,12 +407,12 @@ export default function HomeScreen() {
               <Text
                 style={{
                   color: "#fff",
-                  fontWeight: "bold",
+                  fontWeight: "400",
                   fontSize: 16,
                   textAlign: "center",
                 }}
               >
-                {brand}
+                {brandsMedia[verticalIndex].brand}
               </Text>
             </TouchableOpacity>
             {/* Mute button */}

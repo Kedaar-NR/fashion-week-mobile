@@ -182,6 +182,8 @@ export default function BrandDetailScreen() {
                 height: 440,
                 justifyContent: "center",
                 alignItems: "center",
+                alignSelf: "center",
+                marginHorizontal: "auto",
               }}
             >
               {item.type === "image" ? (
@@ -192,6 +194,7 @@ export default function BrandDetailScreen() {
                     height: 400,
                     borderRadius: 32,
                     backgroundColor: "#eee",
+                    alignSelf: "center",
                   }}
                   resizeMode="cover"
                 />
@@ -203,6 +206,7 @@ export default function BrandDetailScreen() {
                     height: 400,
                     borderRadius: 32,
                     backgroundColor: "#000",
+                    alignSelf: "center",
                   }}
                   resizeMode={"cover" as any}
                   useNativeControls={true}
@@ -217,15 +221,18 @@ export default function BrandDetailScreen() {
           pagingEnabled
           showsHorizontalScrollIndicator={false}
           style={{ flexGrow: 0 }}
-          contentContainerStyle={{ alignItems: "center" }}
+          contentContainerStyle={{
+            justifyContent: "center",
+            alignItems: "center",
+          }}
           initialScrollIndex={currentIndex}
           onViewableItemsChanged={onViewableItemsChanged.current}
           snapToAlignment="center"
-          snapToInterval={Dimensions.get("window").width * 0.8}
+          snapToInterval={Dimensions.get("window").width * 0.9}
           decelerationRate="fast"
           getItemLayout={(_, index) => ({
-            length: Dimensions.get("window").width * 0.8,
-            offset: Dimensions.get("window").width * 0.8 * index,
+            length: Dimensions.get("window").width * 0.9,
+            offset: Dimensions.get("window").width * 0.9 * index,
             index,
           })}
         />
