@@ -25,7 +25,6 @@ export function NavBar({
   const colorScheme = useColorScheme();
   const pathname = usePathname();
   const isHome = pathname === "/";
-  const isBrandPage = showBackButton && customTitle;
   const iconColor = isHome ? (invertTitle ? "#222" : "#fff") : "#222";
   const titleColor = isHome ? (invertTitle ? "#222" : "#fff") : "#222";
   const appTitle = customTitle || "fashion:week";

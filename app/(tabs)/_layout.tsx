@@ -1,15 +1,12 @@
-import { Tabs, usePathname, useRouter } from "expo-router";
+import { Tabs, usePathname } from "expo-router";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { IconSymbol } from "../../components/ui/IconSymbol";
 import { NavBar } from "../../components/ui/NavBar";
 import TabBar from "../../components/ui/TabBar";
-import { useColorScheme } from "../../hooks/useColorScheme";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const pathname = usePathname();
-  const router = useRouter();
 
   // Add top padding for all non-home pages
   const isHome = pathname === "/";

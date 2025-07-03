@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Video } from "expo-av";
 import * as Linking from "expo-linking";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import {
   ActivityIndicator,
@@ -23,11 +23,8 @@ function getMediaType(filename: string): "video" | "image" | null {
   return null;
 }
 
-const screenHeight = Dimensions.get("window").height;
-
 export default function BrandDetailScreen() {
   const { brand } = useLocalSearchParams<{ brand: string }>();
-  const router = useRouter();
   const safeBrand = brand?.replace(/^\/+|\/+$/g, "").replace(/\.[^/.]+$/, "");
   const profilePic = `https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/profile-pics/${safeBrand}.jpg`;
   const [imgError, setImgError] = React.useState(false);
@@ -92,17 +89,19 @@ export default function BrandDetailScreen() {
   // Gallery navigation handlers
   const goLeft = () => {
     if (media.length === 0) return;
-    setCurrentIndex((prev) => (prev === 0 ? media.length - 1 : prev - 1));
+    if (currentIndex === 0) return; // Don't reshow the first image
+    setCurrentIndex((prev) => prev - 1);
     flatListRef.current?.scrollToIndex({
-      index: currentIndex === 0 ? media.length - 1 : currentIndex - 1,
+      index: currentIndex - 1,
       animated: true,
     });
   };
   const goRight = () => {
     if (media.length === 0) return;
-    setCurrentIndex((prev) => (prev === media.length - 1 ? 0 : prev + 1));
+    if (currentIndex === media.length - 1) return; // Don't go past the last image
+    setCurrentIndex((prev) => prev + 1);
     flatListRef.current?.scrollToIndex({
-      index: currentIndex === media.length - 1 ? 0 : currentIndex + 1,
+      index: currentIndex + 1,
       animated: true,
     });
   };
@@ -175,7 +174,7 @@ export default function BrandDetailScreen() {
           ref={flatListRef}
           data={media}
           keyExtractor={(item) => item.url}
-          renderItem={({ item }) => (
+          renderItem={({ item, index }) => (
             <View
               style={{
                 width: Dimensions.get("window").width * 0.9,
@@ -210,7 +209,7 @@ export default function BrandDetailScreen() {
                   }}
                   resizeMode={"cover" as any}
                   useNativeControls={true}
-                  shouldPlay={false}
+                  shouldPlay={index === currentIndex}
                   isMuted={true}
                   isLooping={true}
                 />

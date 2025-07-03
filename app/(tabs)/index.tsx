@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Dimensions,
   FlatList,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Text,
   TouchableOpacity,
   View,
@@ -147,43 +149,6 @@ function getMediaType(filename: string): "video" | "image" | null {
   return null;
 }
 
-async function fetchBrandMediaFromIndex(brand: string) {
-  // Fetch index.json from the brand's folder
-  const indexUrl = `${BUCKET_URL}/${brand}/index.json`;
-  try {
-    const res = await fetch(indexUrl);
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!Array.isArray(data.files)) return null;
-
-    // Normalize: get array of filenames (strings)
-    const filenames = data.files
-      .map((f: any) => (typeof f === "string" ? f : f?.name))
-      .filter(Boolean);
-
-    // Prioritize video
-    let file = filenames.find((name: string) =>
-      VIDEO_EXTENSIONS.some((ext) => name.endsWith(ext))
-    );
-    let type: "video" | "image" | null = null;
-    if (file) type = "video";
-    if (!file) {
-      file = filenames.find((name: string) =>
-        IMAGE_EXTENSIONS.some((ext) => name.endsWith(ext))
-      );
-      if (file) type = "image";
-    }
-    if (!file || !type) return null;
-    return {
-      id: brand,
-      type,
-      url: `${BUCKET_URL}/${brand}/${file}`,
-    };
-  } catch {
-    return null;
-  }
-}
-
 const MediaItem = React.memo(
   ({
     item,
@@ -292,6 +257,15 @@ export default function HomeScreen() {
   const [isScreenFocused, setIsScreenFocused] = useState(true);
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  const handleVerticalScroll = React.useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const offsetY = e.nativeEvent.contentOffset.y;
+      const newIndex = Math.round(offsetY / screenHeight);
+      setVerticalIndex((prev) => (prev !== newIndex ? newIndex : prev));
+    },
+    []
+  );
 
   useFocusEffect(
     React.useCallback(() => {
@@ -455,12 +429,8 @@ export default function HomeScreen() {
         offset: screenHeight * index,
         index,
       })}
-      onMomentumScrollEnd={(e) => {
-        const newIndex = Math.round(
-          e.nativeEvent.contentOffset.y / screenHeight
-        );
-        setVerticalIndex(newIndex);
-      }}
+      onScroll={handleVerticalScroll}
+      scrollEventThrottle={16}
       renderItem={renderBrandMedia}
       initialScrollIndex={verticalIndex}
     />
