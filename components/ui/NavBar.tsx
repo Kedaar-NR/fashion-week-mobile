@@ -1,4 +1,4 @@
-import { router, usePathname, useSegments } from "expo-router";
+import { router, usePathname } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Keyboard,
@@ -8,42 +8,27 @@ import {
   View,
 } from "react-native";
 
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useColorScheme } from "../../hooks/useColorScheme";
+import { IconSymbol } from "./IconSymbol";
 
-export function NavBar() {
+export function NavBar({
+  customTitle,
+  showBackButton,
+  onBack,
+  invertTitle,
+}: {
+  customTitle?: string;
+  showBackButton?: boolean;
+  onBack?: () => void;
+  invertTitle?: boolean;
+} = {}) {
   const colorScheme = useColorScheme();
   const pathname = usePathname();
-  // console.log("pathname", pathname);
-  const segments = useSegments();
-  // console.log("segments", segments);
-  // const isHomePage = pathname === "/";
-
-  // Function to get page display name based on pathname
-  const getPageDisplayName = (path: string, segments: string[]): string => {
-    if (path === "/") {
-      if (segments && segments.includes("(collections)")) return "COLLECTIONS";
-      if (segments && segments.includes("(drops)")) return "DROP TRACKER";
-      return "fashion:week";
-    }
-    if (path.includes("/collection")) return "COLLECTIONS";
-    if (path.includes("/drops")) return "DROP TRACKER";
-    if (path.includes("/user")) return "ACCOUNT";
-    if (path.includes("/archive")) return "ARCHIVE";
-    if (path.includes("/style-quiz")) return "STYLE QUIZ";
-    if (path.includes("/search-results")) return "SEARCH RESULTS";
-    console.log("path", path);
-
-    // Default fallback
-    return path.split("/").slice(-1)[0].toUpperCase();
-  };
-
-  const pageDisplayName = getPageDisplayName(pathname, segments);
-
-  // Set icon color based on current page
-  const iconColor = pageDisplayName === "fashion:week" ? "#FFFFFF" : "#000000"; // White on homepage, black elsewhere
-  // console.log("isHomePage", isHomePage);
-
+  const isHome = pathname === "/";
+  const isBrandPage = showBackButton && customTitle;
+  const iconColor = isHome ? (invertTitle ? "#222" : "#fff") : "#222";
+  const titleColor = isHome ? (invertTitle ? "#222" : "#fff") : "#222";
+  const appTitle = customTitle || "fashion:week";
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState("");
   const inputRef = useRef<TextInput>(null);
@@ -57,7 +42,7 @@ export function NavBar() {
     setSearchActive(true);
     setTimeout(() => {
       inputRef.current?.focus();
-    }, 100); // Ensure focus after render
+    }, 100);
   };
 
   const handleCancelSearch = () => {
@@ -68,7 +53,6 @@ export function NavBar() {
 
   const handleSearchSubmit = () => {
     if (searchText.trim()) {
-      // Navigate to search results page with the query
       router.push({
         pathname: "/(tabs)/search-results",
         params: { query: searchText.trim() },
@@ -81,7 +65,15 @@ export function NavBar() {
 
   return (
     <View
-      className={`flex-row items-center justify-between px-4 py-3 pt-16 ${pageDisplayName === "fashion:week" ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "bg-transparent"}`}
+      className="flex-row items-center justify-between px-4 py-3 pt-16"
+      style={{
+        backgroundColor: "transparent",
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+      }}
     >
       {searchActive ? (
         <View className="flex-1 flex-row items-center gap-2 h-11">
@@ -105,30 +97,43 @@ export function NavBar() {
         </View>
       ) : (
         <>
-          <TouchableOpacity
-            className="w-11 h-11 justify-center items-center"
-            onPress={handleMenuPress}
-          >
-            <View className="w-4 h-3 justify-between">
-              <View
-                className="h-0.5 w-full rounded-sm"
-                style={{ backgroundColor: iconColor }}
-              />
-              <View
-                className="h-0.5 w-full rounded-sm"
-                style={{ backgroundColor: iconColor }}
-              />
-              <View
-                className="h-0.5 w-full rounded-sm"
-                style={{ backgroundColor: iconColor }}
-              />
-            </View>
-          </TouchableOpacity>
+          {showBackButton ? (
+            <TouchableOpacity
+              className="w-11 h-11 justify-center items-center"
+              onPress={onBack}
+              style={{ zIndex: 10 }}
+              accessibilityLabel="Back"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <IconSymbol name="chevron.left" size={24} color={iconColor} />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              className="w-11 h-11 justify-center items-center"
+              onPress={handleMenuPress}
+            >
+              <View className="w-4 h-3 justify-between">
+                <View
+                  className="h-0.5 w-full rounded-sm"
+                  style={{ backgroundColor: iconColor }}
+                />
+                <View
+                  className="h-0.5 w-full rounded-sm"
+                  style={{ backgroundColor: iconColor }}
+                />
+                <View
+                  className="h-0.5 w-full rounded-sm"
+                  style={{ backgroundColor: iconColor }}
+                />
+              </View>
+            </TouchableOpacity>
+          )}
 
           <Text
-            className={`text-lg font-semibold tracking-wider ${pageDisplayName === "fashion:week" ? "text-white" : "text-black"}`}
+            className="text-lg font-semibold tracking-wider"
+            style={{ color: titleColor }}
           >
-            {pageDisplayName}
+            {appTitle}
           </Text>
 
           <TouchableOpacity
