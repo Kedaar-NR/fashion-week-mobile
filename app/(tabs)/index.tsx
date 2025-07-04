@@ -149,6 +149,44 @@ function getMediaType(filename: string): "video" | "image" | null {
   return null;
 }
 
+async function fetchBrandMediaFromIndex(brand: string) {
+  // Fetch index.json from the brand's folder
+  const indexUrl = `${BUCKET_URL}/${brand}/index.json`;
+  try {
+    const res = await fetch(indexUrl);
+    if (!res.ok) return null;
+    const data = await res.json();
+    // console.log(data);
+    if (!Array.isArray(data.files)) return null;
+
+    // Normalize: get array of filenames (strings)
+    const filenames = data.files
+      .map((f: any) => (typeof f === "string" ? f : f?.name))
+      .filter(Boolean);
+
+    // Prioritize video
+    let file = filenames.find((name: string) =>
+      VIDEO_EXTENSIONS.some((ext) => name.endsWith(ext))
+    );
+    let type: "video" | "image" | null = null;
+    if (file) type = "video";
+    if (!file) {
+      file = filenames.find((name: string) =>
+        IMAGE_EXTENSIONS.some((ext) => name.endsWith(ext))
+      );
+      if (file) type = "image";
+    }
+    if (!file || !type) return null;
+    return {
+      id: brand,
+      type,
+      url: `${BUCKET_URL}/${brand}/${file}`,
+    };
+  } catch {
+    return null;
+  }
+}
+
 const MediaItem = React.memo(
   ({
     item,
@@ -461,23 +499,64 @@ export default function HomeScreen() {
   }
 
   return (
-    <FlatList
-      data={brandsMedia}
-      keyExtractor={(item) => item.brand}
-      pagingEnabled
-      showsVerticalScrollIndicator={false}
-      snapToAlignment="start"
-      snapToInterval={screenHeight}
-      decelerationRate="fast"
-      getItemLayout={(_, index) => ({
-        length: screenHeight,
-        offset: screenHeight * index,
-        index,
-      })}
-      onScroll={handleVerticalScroll}
-      scrollEventThrottle={16}
-      renderItem={renderBrandMedia}
-      initialScrollIndex={verticalIndex}
-    />
+    <View style={{ flex: 1 }}>
+      {/* Mute button: bright white icon, moved further down from the NavBar */}
+      <View
+        style={{
+          position: "absolute",
+          top: 112,
+          right: 12,
+          zIndex: 50,
+          width: 44,
+          height: 44,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+        pointerEvents="box-none"
+      >
+        <Ionicons
+          name={muted ? "volume-mute" : "volume-high"}
+          size={20}
+          color="#fff"
+          style={{
+            opacity: 1,
+            backgroundColor: "transparent",
+            borderRadius: 22,
+            padding: 6,
+            overflow: "hidden",
+          }}
+          onPress={() => setMuted((m) => !m)}
+        />
+      </View>
+      {/* Brand name overlay at bottom */}
+      {brandsMedia[verticalIndex] && (
+        <View
+          className="absolute bottom-24 left-5 right-5 bg-black/30 px-4 py-2 rounded-full items-center justify-center z-50"
+          pointerEvents="box-none"
+        >
+          <Text className="text-white text-sm font-semibold text-center">
+            {brandsMedia[verticalIndex].brand}
+          </Text>
+        </View>
+      )}
+      <FlatList
+        data={brandsMedia}
+        keyExtractor={(item) => item.brand}
+        pagingEnabled
+        showsVerticalScrollIndicator={false}
+        snapToAlignment="start"
+        snapToInterval={screenHeight}
+        decelerationRate="fast"
+        getItemLayout={(_, index) => ({
+          length: screenHeight,
+          offset: screenHeight * index,
+          index,
+        })}
+        onScroll={handleVerticalScroll}
+        scrollEventThrottle={16}
+        renderItem={renderBrandMedia}
+        initialScrollIndex={verticalIndex}
+      />
+    </View>
   );
 }

@@ -25,6 +25,9 @@ export const icons: Record<string, React.FC<IconProps>> = {
   user: ({ color, size = 20 }) => (
     <Feather name="user" size={size} color={color} />
   ),
+  "(user)": ({ color, size = 20 }) => (
+    <Feather name="user" size={size} color={color} />
+  ),
   default: ({ color, size = 20 }) => (
     <AntDesign name="question" size={size} color={color} />
   ),

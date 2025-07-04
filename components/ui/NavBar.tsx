@@ -1,4 +1,4 @@
-import { router, usePathname } from "expo-router";
+import { router, usePathname, useSegments } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Keyboard,
@@ -24,10 +24,33 @@ export function NavBar({
 } = {}) {
   const colorScheme = useColorScheme();
   const pathname = usePathname();
-  const isHome = pathname === "/";
-  const iconColor = isHome ? (invertTitle ? "#222" : "#fff") : "#222";
-  const titleColor = isHome ? (invertTitle ? "#222" : "#fff") : "#222";
-  const appTitle = customTitle || "fashion:week";
+  const segments = useSegments();
+
+  // Function to get page display name based on pathname
+  const getPageDisplayName = (path: string, segments: string[]): string => {
+    if (path === "/") {
+      if (segments && segments.includes("(collections)")) return "COLLECTIONS";
+      if (segments && segments.includes("(drops)")) return "DROP TRACKER";
+      if (segments && segments.includes("(user)")) return "ACCOUNT";
+      return "fashion:week";
+    }
+    if (path.includes("/collection")) return "COLLECTIONS";
+    if (path.includes("/drops")) return "DROP TRACKER";
+    if (path.includes("/user")) return "ACCOUNT";
+    if (path.includes("/archive")) return "ARCHIVE";
+    if (path.includes("/style-quiz")) return "STYLE QUIZ";
+    if (path.includes("/search-results")) return "SEARCH RESULTS";
+    console.log("path", path);
+
+    // Default fallback
+    return path.split("/").slice(-1)[0].toUpperCase();
+  };
+
+  const pageDisplayName = getPageDisplayName(pathname, segments);
+
+  // Set icon color based on current page
+  const iconColor = pageDisplayName === "fashion:week" ? "#FFFFFF" : "#000000"; // White on homepage, black elsewhere
+
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState("");
   const inputRef = useRef<TextInput>(null);
@@ -130,9 +153,9 @@ export function NavBar({
 
           <Text
             className="text-lg font-semibold tracking-wider"
-            style={{ color: titleColor }}
+            style={{ color: iconColor }}
           >
-            {appTitle}
+            {pageDisplayName}
           </Text>
 
           <TouchableOpacity

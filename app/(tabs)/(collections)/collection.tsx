@@ -1,6 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
+import { Session } from "@supabase/supabase-js";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -9,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { supabase } from "../../../lib/supabase";
 
 interface FashionPiece {
   id: string;
@@ -21,7 +23,7 @@ interface FashionPiece {
 
 interface Collection {
   id: string;
-  name: string;
+  collection_name: string;
   description: string;
   itemCount: number;
   image: string;
@@ -70,50 +72,47 @@ const mockFashionPieces: FashionPiece[] = [
   },
 ];
 
-const mockCollections: Collection[] = [
-  {
-    id: "1",
-    name: "Summer Vibes",
-    description: "Light and breezy summer collection",
-    itemCount: 12,
-    image: "placeholder",
-  },
-  {
-    id: "2",
-    name: "Work Outfits",
-    description: "Professional and polished looks",
-    itemCount: 8,
-    image: "placeholder",
-  },
-  {
-    id: "3",
-    name: "Weekend Casual",
-    description: "Comfortable weekend wear",
-    itemCount: 15,
-    image: "placeholder",
-  },
-  {
-    id: "4",
-    name: "Evening Glam",
-    description: "Elegant evening wear",
-    itemCount: 6,
-    image: "placeholder",
-  },
-  {
-    id: "5",
-    name: "Athleisure",
-    description: "Sporty and stylish",
-    itemCount: 10,
-    image: "placeholder",
-  },
-];
-
 const { width } = Dimensions.get("window");
 const gridItemWidth = (width - 64) / 3; // 3 columns with padding
 
 export default function CollectionScreen() {
   const [fashionPieces] = useState<FashionPiece[]>(mockFashionPieces);
-  const [collections] = useState<Collection[]>(mockCollections);
+  const [session, setSession] = useState<Session | null>(null);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  useFocusEffect(React.useCallback(() => {
+    if (!session) return;
+
+    setLoading(true);
+    supabase
+      .from("collections")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .then(({ data, error }) => {
+        if (error) {
+          console.log("Error fetching collections:", error);
+          setCollections([]);
+        } else {
+          setCollections(data || []);
+        }
+        setLoading(false);
+      });
+  }, [session]));
 
   useFocusEffect(
     React.useCallback(() => {
@@ -147,7 +146,7 @@ export default function CollectionScreen() {
       onPress={() =>
         router.push({
           pathname: "/(tabs)/(collections)/[collection]",
-          params: { collection: item.name },
+          params: { collection: item.collection_name },
         })
       }
     >
@@ -158,7 +157,7 @@ export default function CollectionScreen() {
         <Text className="text-xs opacity-50">Image</Text>
       </View>
       <Text className="text-xs font-medium text-left" numberOfLines={1}>
-        {item.name}
+        {item.collection_name}
       </Text>
     </TouchableOpacity>
   );
@@ -195,24 +194,30 @@ export default function CollectionScreen() {
         <View className="flex-row items-center gap-4 mb-4">
           <Text className="text-xl font-bold">COLLECTIONS</Text>
           <TouchableOpacity onPress={() => {}}>
-            <Text className="text-sm font-bold">FILTER+</Text>
+            <Text className="text-sm font-bold">CREATE+</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => {}}>
             <Text className="text-sm font-bold">SORT BY+</Text>
           </TouchableOpacity>
         </View>
-        <FlatList
-          data={collections}
-          keyExtractor={(item) => item.id}
-          renderItem={renderGridItem}
-          numColumns={3}
-          columnWrapperStyle={{
-            gap: 16,
-            marginBottom: 16,
-          }}
-          scrollEnabled={false}
-          contentContainerStyle={{ paddingBottom: 20 }}
-        />
+        {loading ? (
+          <Text className="text-center py-8">Loading collections...</Text>
+        ) : collections.length === 0 ? (
+          <Text className="text-center py-8">No collections found</Text>
+        ) : (
+          <FlatList
+            data={collections}
+            keyExtractor={(item) => item.id}
+            renderItem={renderGridItem}
+            numColumns={3}
+            columnWrapperStyle={{
+              gap: 16,
+              marginBottom: 16,
+            }}
+            scrollEnabled={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          />
+        )}
       </View>
     </ScrollView>
   );
