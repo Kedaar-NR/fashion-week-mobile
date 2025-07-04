@@ -67,7 +67,7 @@ export default function SearchResultsScreen() {
 
   return (
     <ScrollView ref={scrollViewRef} className="flex-1 bg-transparent">
-      <View className="px-4 py-0">
+      <View className="px-4 py-0 mb-16">
         {/* Search Results Header */}
         <View className="mb-2">
           <Text className="text-gray-600">
