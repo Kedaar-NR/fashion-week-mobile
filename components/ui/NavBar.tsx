@@ -47,11 +47,26 @@ export function NavBar() {
 
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   const handleMenuPress = () => {
-    // TODO: Implement menu functionality
-    console.log("Menu pressed");
+    setMenuOpen(!menuOpen);
+  };
+
+  const handleOption1 = () => {
+    console.log("Option 1 pressed");
+    setMenuOpen(false);
+  };
+
+  const handleOption2 = () => {
+    console.log("Option 2 pressed");
+    setMenuOpen(false);
+  };
+
+  const handleOption3 = () => {
+    console.log("Option 3 pressed");
+    setMenuOpen(false);
   };
 
   const handleSearchPress = () => {
@@ -81,64 +96,81 @@ export function NavBar() {
   };
 
   return (
-    <View
-      className={`flex-row items-center justify-between px-4 py-3 pt-16 ${pageDisplayName === "fashion:week" ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "bg-transparent"}`}
-    >
-      {searchActive ? (
-        <View className="flex-1 flex-row items-center gap-2 h-11">
-          <TextInput
-            ref={inputRef}
-            className="flex-1 h-9 rounded-lg px-3 text-base text-gray-900 bg-gray-100"
-            value={searchText}
-            onChangeText={setSearchText}
-            placeholder="Search..."
-            placeholderTextColor={colorScheme === "light" ? "#999" : "#aaa"}
-            autoFocus={true}
-            returnKeyType="search"
-            onSubmitEditing={handleSearchSubmit}
-          />
-          <TouchableOpacity
-            className="ml-2 px-2 py-1"
-            onPress={handleCancelSearch}
-          >
-            <IconSymbol name="chevron.left" size={20} color={iconColor} />
+    <View>
+      <View
+        className={`flex-row items-center justify-between px-4 py-3 pt-16 ${pageDisplayName === "fashion:week" ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "bg-transparent"}`}
+      >
+        {searchActive ? (
+          <View className="flex-1 flex-row items-center gap-2 h-11">
+            <TextInput
+              ref={inputRef}
+              className="flex-1 h-9 rounded-lg px-3 text-base text-gray-900 bg-gray-100"
+              value={searchText}
+              onChangeText={setSearchText}
+              placeholder="Search..."
+              placeholderTextColor={colorScheme === "light" ? "#999" : "#aaa"}
+              autoFocus={true}
+              returnKeyType="search"
+              onSubmitEditing={handleSearchSubmit}
+            />
+            <TouchableOpacity
+              className="ml-2 px-2 py-1"
+              onPress={handleCancelSearch}
+            >
+              <IconSymbol name="chevron.left" size={20} color={iconColor} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <TouchableOpacity
+              className="w-11 h-11 justify-center items-center"
+              onPress={handleMenuPress}
+            >
+              {!menuOpen ? (<View className="w-4 h-3 justify-between">
+                <View
+                  className="h-0.5 w-full rounded-sm"
+                  style={{ backgroundColor: iconColor }}
+                />
+                <View
+                  className="h-0.5 w-full rounded-sm"
+                  style={{ backgroundColor: iconColor }}
+                />
+                <View
+                  className="h-0.5 w-full rounded-sm"
+                  style={{ backgroundColor: iconColor }}
+                />
+              </View>) : (<IconSymbol name="xmark" size={16} color={iconColor} />)}
+            </TouchableOpacity>
+
+            <Text
+              className={`text-lg font-semibold tracking-wider ${pageDisplayName === "fashion:week" ? "text-white" : "text-black"}`}
+            >
+              {pageDisplayName}
+            </Text>
+
+            <TouchableOpacity
+              className="w-11 h-11 justify-center items-center"
+              onPress={handleSearchPress}
+            >
+              <IconSymbol name="magnifyingglass" size={20} color={iconColor} />
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+
+      {/* Dropdown Menu */}
+      {menuOpen && (
+        <View className="mx-4 mb-4 bg-transparent flex-row justify-start flex-wrap">
+          <TouchableOpacity onPress={handleOption1}>
+            <Text className="px-4 py-0 text-sm font-bold">ADD FRIENDS</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleOption2}>
+            <Text className="px-4 py-0 text-sm font-bold">SETTINGS</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleOption3}>
+            <Text className="px-4 py-0 text-sm font-bold">BLAH BLAH BLAH</Text>
           </TouchableOpacity>
         </View>
-      ) : (
-        <>
-          <TouchableOpacity
-            className="w-11 h-11 justify-center items-center"
-            onPress={handleMenuPress}
-          >
-            <View className="w-4 h-3 justify-between">
-              <View
-                className="h-0.5 w-full rounded-sm"
-                style={{ backgroundColor: iconColor }}
-              />
-              <View
-                className="h-0.5 w-full rounded-sm"
-                style={{ backgroundColor: iconColor }}
-              />
-              <View
-                className="h-0.5 w-full rounded-sm"
-                style={{ backgroundColor: iconColor }}
-              />
-            </View>
-          </TouchableOpacity>
-
-          <Text
-            className={`text-lg font-semibold tracking-wider ${pageDisplayName === "fashion:week" ? "text-white" : "text-black"}`}
-          >
-            {pageDisplayName}
-          </Text>
-
-          <TouchableOpacity
-            className="w-11 h-11 justify-center items-center"
-            onPress={handleSearchPress}
-          >
-            <IconSymbol name="magnifyingglass" size={20} color={iconColor} />
-          </TouchableOpacity>
-        </>
       )}
     </View>
   );
