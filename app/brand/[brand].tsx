@@ -2,12 +2,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { Video } from "expo-av";
 import * as Linking from "expo-linking";
 import { useLocalSearchParams } from "expo-router";
-import React from "react";
+import React, { useRef } from "react";
 import {
   ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
+  PanResponder,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -35,6 +36,27 @@ export default function BrandDetailScreen() {
   const [firstLoaded, setFirstLoaded] = React.useState(false);
   const flatListRef = React.useRef<FlatList<any>>(null);
   const [currentIndex, setCurrentIndex] = React.useState(0);
+  const router = require("expo-router").useRouter();
+
+  // PanResponder for swipe-to-go-back
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only trigger if gesture starts near left edge and is a rightward swipe
+        return (
+          evt.nativeEvent.pageX < 40 &&
+          gestureState.dx > 10 &&
+          Math.abs(gestureState.dy) < 20
+        );
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        if (gestureState.dx > 60 && Math.abs(gestureState.dy) < 30) {
+          // Go back if swiped right enough
+          if (router && router.back) router.back();
+        }
+      },
+    })
+  ).current;
 
   React.useEffect(() => {
     async function fetchMedia() {
@@ -125,7 +147,10 @@ export default function BrandDetailScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff", paddingTop: 80 }}>
+    <View
+      style={{ flex: 1, backgroundColor: "#fff", paddingTop: 80 }}
+      {...panResponder.panHandlers}
+    >
       {/* Profile Picture */}
       <View style={{ alignItems: "center", marginBottom: 8 }}>
         <Image
