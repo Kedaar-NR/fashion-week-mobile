@@ -1,4 +1,4 @@
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -52,10 +52,8 @@ const quizImages = [
 ];
 const SWIPE_THRESHOLD = 120;
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 // Adjust card height to leave space for header and buttons
-const HEADER_HEIGHT = 70; // estimate for title/subtitle spacing
-const BUTTONS_HEIGHT = 90; // estimate for larger buttons
 const CARD_WIDTH = width * 0.88;
 const CARD_HEIGHT = width * 1.08;
 
@@ -75,18 +73,12 @@ export default function StyleQuizScreen() {
     shuffleArray(quizImages)
   );
   const [current, setCurrent] = useState(0);
-  const [responses, setResponses] = useState<
-    { idx: number; answer: "yes" | "no" }[]
-  >([]);
-  const [showConfirm, setShowConfirm] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [loaded, setLoaded] = useState(Array(quizImages.length).fill(false));
   const [transitioning, setTransitioning] = useState(false);
   const [preloaded, setPreloaded] = useState<Record<string, boolean>>({});
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
   const [firstImageLoaded, setFirstImageLoaded] = useState(false);
-  const router = useRouter();
 
   const pan = useRef(new Animated.ValueXY()).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -99,10 +91,8 @@ export default function StyleQuizScreen() {
     React.useCallback(() => {
       setShuffledImages(shuffleArray(quizImages));
       setCurrent(0);
-      setResponses([]);
       setDone(false);
       setImageError(false);
-      setLoaded(Array(quizImages.length).fill(false));
       pan.setValue({ x: 0, y: 0 });
       fadeAnim.setValue(1);
       scaleAnim.setValue(1);
@@ -305,7 +295,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-start",
     backgroundColor: "#f3f4f6",
-    paddingTop: 0,
+    paddingTop: 40,
   },
   title: {
     fontSize: 28,

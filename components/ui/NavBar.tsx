@@ -8,16 +8,23 @@ import {
   View,
 } from "react-native";
 
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { useColorScheme } from "../../hooks/useColorScheme";
+import { IconSymbol } from "./IconSymbol";
 
-export function NavBar() {
+export function NavBar({
+  customTitle,
+  showBackButton,
+  onBack,
+  invertTitle,
+}: {
+  customTitle?: string;
+  showBackButton?: boolean;
+  onBack?: () => void;
+  invertTitle?: boolean;
+} = {}) {
   const colorScheme = useColorScheme();
   const pathname = usePathname();
-  // console.log("pathname", pathname);
   const segments = useSegments();
-  // console.log("segments", segments);
-  // const isHomePage = pathname === "/";
 
   // Function to get page display name based on pathname
   const getPageDisplayName = (path: string, segments: string[]): string => {
@@ -43,7 +50,6 @@ export function NavBar() {
 
   // Set icon color based on current page
   const iconColor = pageDisplayName === "fashion:week" ? "#FFFFFF" : "#000000"; // White on homepage, black elsewhere
-  // console.log("isHomePage", isHomePage);
 
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -73,7 +79,7 @@ export function NavBar() {
     setSearchActive(true);
     setTimeout(() => {
       inputRef.current?.focus();
-    }, 100); // Ensure focus after render
+    }, 100);
   };
 
   const handleCancelSearch = () => {
@@ -84,7 +90,6 @@ export function NavBar() {
 
   const handleSearchSubmit = () => {
     if (searchText.trim()) {
-      // Navigate to search results page with the query
       router.push({
         pathname: "/(tabs)/search-results",
         params: { query: searchText.trim() },
@@ -126,20 +131,24 @@ export function NavBar() {
               className="w-11 h-11 justify-center items-center"
               onPress={handleMenuPress}
             >
-              {!menuOpen ? (<View className="w-4 h-3 justify-between">
-                <View
-                  className="h-0.5 w-full rounded-sm"
-                  style={{ backgroundColor: iconColor }}
-                />
-                <View
-                  className="h-0.5 w-full rounded-sm"
-                  style={{ backgroundColor: iconColor }}
-                />
-                <View
-                  className="h-0.5 w-full rounded-sm"
-                  style={{ backgroundColor: iconColor }}
-                />
-              </View>) : (<IconSymbol name="xmark" size={16} color={iconColor} />)}
+              {!menuOpen ? (
+                <View className="w-4 h-3 justify-between">
+                  <View
+                    className="h-0.5 w-full rounded-sm"
+                    style={{ backgroundColor: iconColor }}
+                  />
+                  <View
+                    className="h-0.5 w-full rounded-sm"
+                    style={{ backgroundColor: iconColor }}
+                  />
+                  <View
+                    className="h-0.5 w-full rounded-sm"
+                    style={{ backgroundColor: iconColor }}
+                  />
+                </View>
+              ) : (
+                <IconSymbol name="xmark" size={16} color={iconColor} />
+              )}
             </TouchableOpacity>
 
             <Text
