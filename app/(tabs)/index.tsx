@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { supabase } from "../../lib/supabase";
 
 const { height: screenHeight } = Dimensions.get("window");
 
@@ -354,6 +355,15 @@ export default function HomeScreen() {
     loadBrands();
   }, []);
 
+  useEffect(() => {
+    if (__DEV__) {
+      supabase.auth.signInWithPassword({
+        email: "test@example.com",
+        password: "testpassword",
+      });
+    }
+  }, []);
+
   const renderBrandMedia = React.useCallback(
     ({
       item: { brand, media },
@@ -438,21 +448,27 @@ export default function HomeScreen() {
                   left: 40,
                   right: 40,
                   bottom: (insets.bottom || 0) + 40,
-                  backgroundColor: "rgba(0,0,0,0.3)",
-                  paddingHorizontal: 12,
-                  paddingVertical: 4,
+                  backgroundColor: "#fff",
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
                   borderRadius: 9999,
                   alignItems: "center",
                   justifyContent: "center",
                   zIndex: 50,
+                  shadowColor: "#000",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.15,
+                  shadowRadius: 8,
+                  elevation: 4,
                 }}
               >
                 <Text
                   style={{
-                    color: "#fff",
-                    fontWeight: "400",
-                    fontSize: 16,
+                    color: "#222",
+                    fontWeight: "600",
+                    fontSize: 18,
                     textAlign: "center",
+                    letterSpacing: 1,
                   }}
                 >
                   {brandsMedia[verticalIndex].brand}

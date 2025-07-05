@@ -71,7 +71,7 @@ export default function SearchResultsScreen() {
       className="flex-1 bg-transparent"
       style={{ paddingTop: 40 }}
     >
-      <View className="px-4 py-0">
+      <View className="px-4 py-0 mb-16">
         {/* Search Results Header */}
         <View className="mb-2">
           <Text className="text-gray-600">
