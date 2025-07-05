@@ -429,7 +429,7 @@ export default function HomeScreen() {
         snapToAlignment="start"
         decelerationRate="fast"
         className="flex-1"
-        removeClippedSubviews={true}       
+        removeClippedSubviews={true}
         windowSize={3}
         initialNumToRender={3}
         maxToRenderPerBatch={3}

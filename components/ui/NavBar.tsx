@@ -1,5 +1,5 @@
 import { router, usePathname, useSegments } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Keyboard,
   Text,
@@ -50,6 +50,11 @@ export function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
+  // Close menu when pathname changes
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
   const handleMenuPress = () => {
     setMenuOpen(!menuOpen);
   };
@@ -71,6 +76,7 @@ export function NavBar() {
 
   const handleSearchPress = () => {
     setSearchActive(true);
+    setMenuOpen(false);
     setTimeout(() => {
       inputRef.current?.focus();
     }, 100); // Ensure focus after render
@@ -126,20 +132,24 @@ export function NavBar() {
               className="w-11 h-11 justify-center items-center"
               onPress={handleMenuPress}
             >
-              {!menuOpen ? (<View className="w-4 h-3 justify-between">
-                <View
-                  className="h-0.5 w-full rounded-sm"
-                  style={{ backgroundColor: iconColor }}
-                />
-                <View
-                  className="h-0.5 w-full rounded-sm"
-                  style={{ backgroundColor: iconColor }}
-                />
-                <View
-                  className="h-0.5 w-full rounded-sm"
-                  style={{ backgroundColor: iconColor }}
-                />
-              </View>) : (<IconSymbol name="xmark" size={16} color={iconColor} />)}
+              {!menuOpen ? (
+                <View className="w-4 h-3 justify-between">
+                  <View
+                    className="h-0.5 w-full rounded-sm"
+                    style={{ backgroundColor: iconColor }}
+                  />
+                  <View
+                    className="h-0.5 w-full rounded-sm"
+                    style={{ backgroundColor: iconColor }}
+                  />
+                  <View
+                    className="h-0.5 w-full rounded-sm"
+                    style={{ backgroundColor: iconColor }}
+                  />
+                </View>
+              ) : (
+                <IconSymbol name="xmark" size={16} color={iconColor} />
+              )}
             </TouchableOpacity>
 
             <Text
@@ -160,15 +170,21 @@ export function NavBar() {
 
       {/* Dropdown Menu */}
       {menuOpen && (
-        <View className="mx-4 mb-4 bg-transparent flex-row justify-start flex-wrap">
+        <View
+          className={`mx-4 mb-4 bg-transparent flex-col justify-start ${
+            pageDisplayName === "fashion:week"
+              ? "absolute top-0 left-0 right-0 z-40 mt-32"
+              : ""
+          }`}
+        >
           <TouchableOpacity onPress={handleOption1}>
-            <Text className="px-4 py-0 text-sm font-bold">ADD FRIENDS</Text>
+            <Text className="px-4 py-1 text-sm font-bold">ADD FRIENDS</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleOption2}>
-            <Text className="px-4 py-0 text-sm font-bold">SETTINGS</Text>
+            <Text className="px-4 py-1 text-sm font-bold">SETTINGS</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleOption3}>
-            <Text className="px-4 py-0 text-sm font-bold">BLAH BLAH BLAH</Text>
+            <Text className="px-4 py-1 text-sm font-bold">BLAH BLAH BLAH</Text>
           </TouchableOpacity>
         </View>
       )}
