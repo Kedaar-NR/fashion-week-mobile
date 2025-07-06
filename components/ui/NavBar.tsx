@@ -11,6 +11,174 @@ import {
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
+// Define the structure for menu options
+interface MenuOption {
+  label: string;
+  onPress: () => void;
+}
+
+// Define menu configurations for different pages
+const menuConfigs: Record<string, MenuOption[]> = {
+  "fashion:week": [
+    {
+      label: "ADD FRIENDS",
+      onPress: () => {
+        console.log("Add friends pressed on homepage");
+        // Add your custom logic here
+      },
+    },
+    {
+      label: "SETTINGS",
+      onPress: () => {
+        console.log("Settings pressed on homepage");
+        // Add your custom logic here
+      },
+    },
+    {
+      label: "ABOUT",
+      onPress: () => {
+        console.log("About pressed on homepage");
+        // Add your custom logic here
+      },
+    },
+  ],
+  COLLECTIONS: [
+    {
+      label: "CREATE COLLECTION",
+      onPress: () => {
+        console.log("Create collection pressed");
+        // Add your custom logic here
+      },
+    },
+    {
+      label: "SHARE COLLECTION",
+      onPress: () => {
+        console.log("Share collection pressed");
+        // Add your custom logic here
+      },
+    },
+    {
+      label: "SETTINGS",
+      onPress: () => {
+        console.log("Settings pressed on collections");
+        // Add your custom logic here
+      },
+    },
+  ],
+  "DROP TRACKER": [
+    {
+      label: "ADD NEW DROP",
+      onPress: () => {
+        console.log("Add new drop pressed");
+        // Add your custom logic here
+      },
+    },
+    {
+      label: "DROP HISTORY",
+      onPress: () => {
+        console.log("Drop history pressed");
+        // Add your custom logic here
+      },
+    },
+    {
+      label: "NOTIFICATIONS",
+      onPress: () => {
+        console.log("Notifications pressed");
+        // Add your custom logic here
+      },
+    },
+  ],
+  ACCOUNT: [
+    {
+      label: "EDIT PROFILE",
+      onPress: () => {
+        console.log("Edit profile pressed");
+        // Add your custom logic here
+      },
+    },
+    {
+      label: "PRIVACY SETTINGS",
+      onPress: () => {
+        console.log("Privacy settings pressed");
+        // Add your custom logic here
+      },
+    },
+    {
+      label: "LOGOUT",
+      onPress: () => {
+        console.log("Logout pressed");
+        // Add your custom logic here
+      },
+    },
+  ],
+  ARCHIVE: [
+    {
+      label: "CLEAR ARCHIVE",
+      onPress: () => {
+        console.log("Clear archive pressed");
+        // Add your custom logic here
+      },
+    },
+    {
+      label: "EXPORT DATA",
+      onPress: () => {
+        console.log("Export data pressed");
+        // Add your custom logic here
+      },
+    },
+  ],
+  "STYLE QUIZ": [
+    {
+      label: "RESTART QUIZ",
+      onPress: () => {
+        console.log("Restart quiz pressed");
+        // Add your custom logic here
+      },
+    },
+    {
+      label: "VIEW RESULTS",
+      onPress: () => {
+        console.log("View results pressed");
+        // Add your custom logic here
+      },
+    },
+  ],
+  "SEARCH RESULTS": [
+    {
+      label: "CLEAR SEARCH",
+      onPress: () => {
+        console.log("Clear search pressed");
+        // Add your custom logic here
+      },
+    },
+    {
+      label: "SAVE SEARCH",
+      onPress: () => {
+        console.log("Save search pressed");
+        // Add your custom logic here
+      },
+    },
+  ],
+};
+
+// Default menu options for pages not explicitly configured
+const defaultMenuOptions: MenuOption[] = [
+  {
+    label: "SETTINGS",
+    onPress: () => {
+      console.log("Default settings pressed");
+      // Add your custom logic here
+    },
+  },
+  {
+    label: "HELP",
+    onPress: () => {
+      console.log("Default help pressed");
+      // Add your custom logic here
+    },
+  },
+];
+
 export function NavBar() {
   const colorScheme = useColorScheme();
   const pathname = usePathname();
@@ -41,6 +209,9 @@ export function NavBar() {
 
   const pageDisplayName = getPageDisplayName(pathname, segments);
 
+  // Get menu options for current page
+  const currentMenuOptions = menuConfigs[pageDisplayName] || defaultMenuOptions;
+
   // Set icon color based on current page
   const iconColor = pageDisplayName === "fashion:week" ? "#FFFFFF" : "#000000"; // White on homepage, black elsewhere
   // console.log("isHomePage", isHomePage);
@@ -57,21 +228,6 @@ export function NavBar() {
 
   const handleMenuPress = () => {
     setMenuOpen(!menuOpen);
-  };
-
-  const handleOption1 = () => {
-    console.log("Option 1 pressed");
-    setMenuOpen(false);
-  };
-
-  const handleOption2 = () => {
-    console.log("Option 2 pressed");
-    setMenuOpen(false);
-  };
-
-  const handleOption3 = () => {
-    console.log("Option 3 pressed");
-    setMenuOpen(false);
   };
 
   const handleSearchPress = () => {
@@ -177,15 +333,13 @@ export function NavBar() {
               : ""
           }`}
         >
-          <TouchableOpacity onPress={handleOption1}>
-            <Text className="px-4 py-1 text-sm font-bold">ADD FRIENDS</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleOption2}>
-            <Text className="px-4 py-1 text-sm font-bold">SETTINGS</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleOption3}>
-            <Text className="px-4 py-1 text-sm font-bold">BLAH BLAH BLAH</Text>
-          </TouchableOpacity>
+          {currentMenuOptions.map((option, index) => (
+            <TouchableOpacity key={index} onPress={option.onPress}>
+              <Text className="px-4 py-1 text-sm font-bold">
+                {option.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
       )}
     </View>
