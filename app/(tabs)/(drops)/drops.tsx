@@ -88,7 +88,7 @@ export default function DropTrackerScreen() {
   );
 
   return (
-    <ScrollView className="flex-1 bg-transparent" style={{ paddingTop: 80 }}>
+    <ScrollView className="flex-1 bg-transparent">
       <View className="px-4">
         {/* Recent Drops Section */}
         <View className="mb-4">
