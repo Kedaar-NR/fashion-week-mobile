@@ -563,6 +563,13 @@ export default function HomeScreen() {
         snapToAlignment="start"
         snapToInterval={screenHeight}
         decelerationRate="fast"
+        className="flex-1"
+        removeClippedSubviews={true}
+        windowSize={3}
+        initialNumToRender={3}
+        maxToRenderPerBatch={3}
+        onViewableItemsChanged={onViewableItemsChanged.current}
+        viewabilityConfig={viewabilityConfig.current}
         getItemLayout={(_, index) => ({
           length: screenHeight,
           offset: screenHeight * index,
