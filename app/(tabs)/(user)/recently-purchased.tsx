@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { supabase } from "../../../lib/supabase";
 
-interface RecentlyPurchasedItem {
+interface PurchasedItem {
   id: string;
   name: string;
   type: string;
@@ -20,6 +20,7 @@ interface RecentlyPurchasedItem {
   image: string;
   price: string;
   color: string;
+  purchase_date: string;
   is_showing: boolean;
 }
 
@@ -28,9 +29,7 @@ const gridItemWidth = (width - 64) / 3; // 3 columns with padding
 
 export default function RecentlyPurchasedScreen() {
   const [session, setSession] = useState<Session | null>(null);
-  const [recentlyPurchasedItems, setRecentlyPurchasedItems] = useState<
-    RecentlyPurchasedItem[]
-  >([]);
+  const [purchasedItems, setPurchasedItems] = useState<PurchasedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [localShowingState, setLocalShowingState] = useState<
     Record<string, boolean>
@@ -55,25 +54,71 @@ export default function RecentlyPurchasedScreen() {
   useEffect(() => {
     if (!session) return;
 
-    setLoading(true);
-    supabase
-      .from("recently_purchased")
-      .select("*")
-      .eq("user_id", session.user.id)
-      .then(({ data, error }) => {
+    const fetchPurchasedItems = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from("purchased_pieces")
+          .select(
+            `
+            id,
+            created_at,
+            is_showing,
+            product!purchased_pieces_product_id_fkey (
+              id,
+              product_name,
+              product_desc,
+              media_filepath,
+              price,
+              type,
+              color,
+              brand:brand_id (
+                id,
+                brand_name,
+                brand_tagline
+              )
+            )
+          `
+          )
+          .eq("user_id", session.user.id)
+          .order("created_at", { ascending: false });
+
         if (error) {
-          console.log("Error fetching recently purchased items:", error);
-          setRecentlyPurchasedItems([]);
+          console.log("Error fetching purchased items:", error);
+          setPurchasedItems([]);
         } else {
-          setRecentlyPurchasedItems(data || []);
+          // Transform the data to match our interface
+          const transformedData: PurchasedItem[] = (data || []).map(
+            (item: any) => ({
+              id: item.id.toString(),
+              name: item.product?.product_name || "Unknown Product",
+              type: item.product?.type || "Unknown Type",
+              designer: item.product?.brand?.brand_name || "Unknown Brand",
+              image: item.product?.media_filepath || "placeholder",
+              price: `$${item.product?.price || 0}`,
+              color: item.product?.color || "Unknown Color",
+              purchase_date: new Date(item.created_at).toLocaleDateString(),
+              is_showing: item.is_showing,
+            })
+          );
+          setPurchasedItems(transformedData);
+
+          // Initialize local showing state
           const initialShowingState: Record<string, boolean> = {};
-          (data || []).forEach((item) => {
+          transformedData.forEach((item) => {
             initialShowingState[item.id] = item.is_showing;
           });
           setLocalShowingState(initialShowingState);
         }
+      } catch (error) {
+        console.log("Unexpected error fetching purchased items:", error);
+        setPurchasedItems([]);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchPurchasedItems();
   }, [session]);
 
   const toggleShowing = (itemId: string) => {
@@ -86,7 +131,7 @@ export default function RecentlyPurchasedScreen() {
 
   const hideAll = () => {
     const newShowingState: Record<string, boolean> = {};
-    recentlyPurchasedItems.forEach((item) => {
+    purchasedItems.forEach((item) => {
       newShowingState[item.id] = false;
     });
     setLocalShowingState(newShowingState);
@@ -98,10 +143,10 @@ export default function RecentlyPurchasedScreen() {
 
     setLoading(true);
     try {
-      // Update all recently purchased items with their new showing status
-      const updatePromises = recentlyPurchasedItems.map((item) =>
+      // Update all purchased items with their new showing status
+      const updatePromises = purchasedItems.map((item) =>
         supabase
-          .from("recently_purchased")
+          .from("purchased_pieces")
           .update({ is_showing: localShowingState[item.id] })
           .eq("id", item.id)
           .eq("user_id", session.user.id)
@@ -109,8 +154,8 @@ export default function RecentlyPurchasedScreen() {
 
       await Promise.all(updatePromises);
 
-      // Update local recently purchased items data
-      setRecentlyPurchasedItems((prev) =>
+      // Update local purchased items data
+      setPurchasedItems((prev) =>
         prev.map((item) => ({
           ...item,
           is_showing: localShowingState[item.id],
@@ -134,7 +179,7 @@ export default function RecentlyPurchasedScreen() {
     }, [])
   );
 
-  const renderGridItem = ({ item }: { item: RecentlyPurchasedItem }) => (
+  const renderGridItem = ({ item }: { item: PurchasedItem }) => (
     <TouchableOpacity
       className="items-center"
       style={{ width: gridItemWidth }}
@@ -150,42 +195,50 @@ export default function RecentlyPurchasedScreen() {
       >
         <Text className="text-xs opacity-50">Image</Text>
       </View>
-      <Text className="text-xs font-medium text-left" numberOfLines={1}>
-        {item.name}
-      </Text>
+      <View className="flex-row justify-between items-start w-full">
+        <View className="flex-1 mr-2">
+          <Text className="text-xs font-medium" numberOfLines={1}>
+            {item.name}
+          </Text>
+          <Text className="text-xs text-gray-600" numberOfLines={1}>
+            {item.designer}
+          </Text>
+        </View>
+        <Text className="text-xs font-bold" numberOfLines={1}>
+          {item.price}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 
   return (
     <ScrollView className="flex-1 px-4">
-      {/* Recently Purchased Items Grid Section */}
-      <View className="flex-1">
-        <View className="flex-row items-center gap-4 mb-4">
-          <TouchableOpacity onPress={hideAll}>
-            <Text className="text-sm font-bold">HIDE ALL</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={saveChanges}
-            disabled={!hasChanges || loading}
+      {/* Header */}
+      <View className="flex-row items-center gap-4 mb-4">
+        <TouchableOpacity onPress={hideAll}>
+          <Text className="text-sm font-bold">HIDE ALL</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={saveChanges}
+          disabled={!hasChanges || loading}
+        >
+          <Text
+            className={`text-sm font-bold ${!hasChanges || loading ? "opacity-50" : ""}`}
           >
-            <Text
-              className={`text-sm font-bold ${!hasChanges || loading ? "opacity-50" : ""}`}
-            >
-              SAVE CHANGES
-            </Text>
-          </TouchableOpacity>
-        </View>
+            SAVE CHANGES
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Purchased Items Grid Section */}
+      <View className="flex-1">
         {loading ? (
-          <Text className="text-center py-8">
-            Loading recently purchased items...
-          </Text>
-        ) : recentlyPurchasedItems.length === 0 ? (
-          <Text className="text-center py-8">
-            No recently purchased items found
-          </Text>
+          <Text className="text-center py-8">Loading purchased items...</Text>
+        ) : purchasedItems.length === 0 ? (
+          <Text className="text-center py-8">No purchased items found</Text>
         ) : (
           <FlatList
-            data={recentlyPurchasedItems}
+            data={purchasedItems}
             keyExtractor={(item) => item.id}
             renderItem={renderGridItem}
             numColumns={3}

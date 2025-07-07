@@ -3,7 +3,6 @@ import { Session } from "@supabase/supabase-js";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Button,
   Dimensions,
   FlatList,
   Image,
@@ -32,6 +31,10 @@ export default function UserScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [styleCollections, setStyleCollections] = useState<any[]>([]);
   const [loadingCollections, setLoadingCollections] = useState(true);
+  const [recentlyPurchased, setRecentlyPurchased] = useState<FashionPiece[]>(
+    []
+  );
+  const [loadingPurchased, setLoadingPurchased] = useState(true);
 
   const fetchPinnedCollections = async () => {
     if (!session) return;
@@ -52,50 +55,70 @@ export default function UserScreen() {
       });
   };
 
-  const recentlyPurchased: FashionPiece[] = [
-    {
-      id: "1",
-      name: "Classic White Tee",
-      type: "Tops",
-      designer: "Stolen Arts",
-      image: "placeholder",
-      price: "$45",
-      color: "White",
-    },
-    {
-      id: "2",
-      name: "Distressed Denim Jacket",
-      type: "Outerwear",
-      designer: "Urban Collective",
-      image: "placeholder",
-      price: "$120",
-      color: "Blue",
-    },
-    {
-      id: "3",
-      name: "Minimalist Sneakers",
-      type: "Footwear",
-      designer: "Minimalist Studio",
-      image: "placeholder",
-      price: "$85",
-      color: "Gray",
-    },
-    {
-      id: "4",
-      name: "Silk Blouse",
-      type: "Tops",
-      designer: "Luxury Lane",
-      image: "placeholder",
-      price: "$95",
-      color: "Cream",
-    },
-  ];
+  const fetchRecentlyPurchased = async () => {
+    if (!session) return;
+
+    setLoadingPurchased(true);
+    try {
+      const { data, error } = await supabase
+        .from("purchased_pieces")
+        .select(
+          `
+          id,
+          created_at,
+          is_showing,
+          product!purchased_pieces_product_id_fkey (
+            id,
+            product_name,
+            product_desc,
+            media_filepath,
+            price,
+            type,
+            color,
+            brand:brand_id (
+              id,
+              brand_name,
+              brand_tagline
+            )
+          )
+        `
+        )
+        .eq("user_id", session.user.id)
+        .eq("is_showing", true)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.log("Error fetching purchased items:", error);
+        setRecentlyPurchased([]);
+      } else {
+        // Transform the data to match our interface
+        const transformedData: FashionPiece[] = (data || []).map(
+          (item: any) => ({
+            id: item.id.toString(),
+            name: item.product?.product_name || "Unknown Product",
+            type: item.product?.type || "Unknown Type",
+            designer: item.product?.brand?.brand_name || "Unknown Brand",
+            image: item.product?.media_filepath || "placeholder",
+            price: `$${item.product?.price || 0}`,
+            color: item.product?.color || "Unknown Color",
+          })
+        );
+        setRecentlyPurchased(transformedData);
+      }
+    } catch (error) {
+      console.log("Unexpected error fetching purchased items:", error);
+      setRecentlyPurchased([]);
+    } finally {
+      setLoadingPurchased(false);
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
       console.log("📍 Current path: /(tabs)/user");
       if (session) {
         fetchPinnedCollections();
+        fetchRecentlyPurchased();
       }
     }, [session])
   );
@@ -297,22 +320,32 @@ export default function UserScreen() {
           <View className="pb-16">
             <View className="flex-row items-center gap-4 mb-4">
               <Text className="text-xl font-bold">RECENTLY PURCHASED</Text>
-              <TouchableOpacity onPress={() => {}}>
+              <TouchableOpacity
+                onPress={() => router.push("/(tabs)/(user)/recently-purchased")}
+              >
                 <Text className="text-sm font-bold">(HIDE)</Text>
               </TouchableOpacity>
             </View>
-            <FlatList
-              data={recentlyPurchased}
-              keyExtractor={(item) => item.id}
-              renderItem={renderRecentlyPurchasedItem}
-              numColumns={3}
-              columnWrapperStyle={{
-                gap: 16,
-                marginBottom: 16,
-              }}
-              scrollEnabled={false}
-              contentContainerStyle={{ paddingBottom: 8 }}
-            />
+            {loadingPurchased ? (
+              <Text>Loading purchased items...</Text>
+            ) : recentlyPurchased.length === 0 ? (
+              <Text className="text-center py-8 text-gray-500">
+                No purchased items to show
+              </Text>
+            ) : (
+              <FlatList
+                data={recentlyPurchased}
+                keyExtractor={(item) => item.id}
+                renderItem={renderRecentlyPurchasedItem}
+                numColumns={3}
+                columnWrapperStyle={{
+                  gap: 16,
+                  marginBottom: 16,
+                }}
+                scrollEnabled={false}
+                contentContainerStyle={{ paddingBottom: 8 }}
+              />
+            )}
           </View>
         </View>
       </ScrollView>
