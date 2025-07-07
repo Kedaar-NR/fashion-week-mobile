@@ -163,7 +163,7 @@ export default function CollectionScreen() {
   );
 
   return (
-    <ScrollView className="flex-1 px-4">
+    <ScrollView className="flex-1 px-4" style={{ paddingTop: 80 }}>
       {/* Recently Liked Section */}
       <View className="mb-8">
         <View className="flex-row items-center gap-4 mb-4">

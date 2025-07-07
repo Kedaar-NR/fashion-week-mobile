@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { supabase } from "@/lib/supabase";
@@ -39,10 +38,7 @@ const defaultMenuOptions: MenuOption[] = [
 export function NavBar() {
   const colorScheme = useColorScheme();
   const pathname = usePathname();
-  // console.log("pathname", pathname);
   const segments = useSegments();
-  // console.log("segments", segments);
-  // const isHomePage = pathname === "/";
 
   // Function to get page display name based on pathname
   const getPageDisplayName = (path: string, segments: string[]): string => {
@@ -68,7 +64,6 @@ export function NavBar() {
 
   // Set icon color based on current page
   const iconColor = pageDisplayName === "fashion:week" ? "#FFFFFF" : "#000000"; // White on homepage, black elsewhere
-  // console.log("isHomePage", isHomePage);
 
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -89,7 +84,7 @@ export function NavBar() {
     setMenuOpen(false);
     setTimeout(() => {
       inputRef.current?.focus();
-    }, 100); // Ensure focus after render
+    }, 100);
   };
 
   const handleCancelSearch = () => {
@@ -100,7 +95,6 @@ export function NavBar() {
 
   const handleSearchSubmit = () => {
     if (searchText.trim()) {
-      // Navigate to search results page with the query
       router.push({
         pathname: "/(tabs)/search-results",
         params: { query: searchText.trim() },

@@ -35,6 +35,16 @@ export default function RootLayout() {
     };
   }, []);
 
+  // Auto sign-in for development
+  useEffect(() => {
+    if (__DEV__) {
+      supabase.auth.signInWithPassword({
+        email: "test@example.com",
+        password: "testpassword",
+      });
+    }
+  }, []);
+
   if (!loaded) {
     // Async font loading only occurs in development.
     return null;
