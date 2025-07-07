@@ -9,6 +9,7 @@ import {
 } from "react-native";
 
 import { useColorScheme } from "../../hooks/useColorScheme";
+import { supabase } from "../../lib/supabase";
 import { IconSymbol } from "./IconSymbol";
 
 export function NavBar({
@@ -60,20 +61,224 @@ export function NavBar({
     setMenuOpen(!menuOpen);
   };
 
-  const handleOption1 = () => {
-    console.log("Option 1 pressed");
-    setMenuOpen(false);
+  // Page-specific menu options
+  const getMenuOptions = (pageName: string) => {
+    switch (pageName) {
+      case "fashion:week":
+        return [
+          {
+            label: "ADD FRIENDS",
+            onPress: () => {
+              console.log("Add friends pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "SETTINGS",
+            onPress: () => {
+              console.log("Settings pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "SHARE APP",
+            onPress: () => {
+              console.log("Share app pressed");
+              setMenuOpen(false);
+            },
+          },
+        ];
+      case "COLLECTIONS":
+        return [
+          {
+            label: "CREATE COLLECTION",
+            onPress: () => {
+              console.log("Create collection pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "SORT BY",
+            onPress: () => {
+              console.log("Sort by pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "FILTER",
+            onPress: () => {
+              console.log("Filter pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "EXPORT",
+            onPress: () => {
+              console.log("Export pressed");
+              setMenuOpen(false);
+            },
+          },
+        ];
+      case "DROP TRACKER":
+        return [
+          {
+            label: "ADD DROP",
+            onPress: () => {
+              console.log("Add drop pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "SETTINGS",
+            onPress: () => {
+              console.log("Settings pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "NOTIFICATIONS",
+            onPress: () => {
+              console.log("Notifications pressed");
+              setMenuOpen(false);
+            },
+          },
+        ];
+      case "ACCOUNT":
+        return [
+          {
+            label: "EDIT PROFILE",
+            onPress: () => {
+              console.log("Edit profile pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "SETTINGS",
+            onPress: () => {
+              console.log("Settings pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "HELP & SUPPORT",
+            onPress: () => {
+              console.log("Help & support pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "LOGOUT",
+            onPress: async () => {
+              console.log("Logout pressed");
+              try {
+                const { error } = await supabase.auth.signOut();
+                if (error) {
+                  console.error("Error signing out:", error.message);
+                } else {
+                  console.log("Successfully signed out");
+                  // Navigate to login or home page after logout
+                  router.replace("/");
+                }
+              } catch (error) {
+                console.error("Unexpected error during logout:", error);
+              }
+              setMenuOpen(false);
+            },
+          },
+        ];
+      case "ARCHIVE":
+        return [
+          {
+            label: "RESTORE ITEMS",
+            onPress: () => {
+              console.log("Restore items pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "CLEAR ARCHIVE",
+            onPress: () => {
+              console.log("Clear archive pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "EXPORT",
+            onPress: () => {
+              console.log("Export pressed");
+              setMenuOpen(false);
+            },
+          },
+        ];
+      case "STYLE QUIZ":
+        return [
+          {
+            label: "RESTART QUIZ",
+            onPress: () => {
+              console.log("Restart quiz pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "VIEW RESULTS",
+            onPress: () => {
+              console.log("View results pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "SHARE RESULTS",
+            onPress: () => {
+              console.log("Share results pressed");
+              setMenuOpen(false);
+            },
+          },
+        ];
+      case "SEARCH RESULTS":
+        return [
+          {
+            label: "SAVE SEARCH",
+            onPress: () => {
+              console.log("Save search pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "FILTER RESULTS",
+            onPress: () => {
+              console.log("Filter results pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "SORT BY",
+            onPress: () => {
+              console.log("Sort by pressed");
+              setMenuOpen(false);
+            },
+          },
+        ];
+      default:
+        return [
+          {
+            label: "SETTINGS",
+            onPress: () => {
+              console.log("Settings pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "HELP",
+            onPress: () => {
+              console.log("Help pressed");
+              setMenuOpen(false);
+            },
+          },
+        ];
+    }
   };
 
-  const handleOption2 = () => {
-    console.log("Option 2 pressed");
-    setMenuOpen(false);
-  };
-
-  const handleOption3 = () => {
-    console.log("Option 3 pressed");
-    setMenuOpen(false);
-  };
+  const menuOptions = getMenuOptions(pageDisplayName);
 
   const handleSearchPress = () => {
     setSearchActive(true);
@@ -169,16 +374,16 @@ export function NavBar({
 
       {/* Dropdown Menu */}
       {menuOpen && (
-        <View className="mx-4 mb-4 bg-transparent flex-row justify-start flex-wrap">
-          <TouchableOpacity onPress={handleOption1}>
-            <Text className="px-4 py-0 text-sm font-bold">ADD FRIENDS</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleOption2}>
-            <Text className="px-4 py-0 text-sm font-bold">SETTINGS</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleOption3}>
-            <Text className="px-4 py-0 text-sm font-bold">BLAH BLAH BLAH</Text>
-          </TouchableOpacity>
+        <View className="mx-4 mb-4 bg-transparent">
+          {menuOptions.map((option, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={option.onPress}
+              className="py-2"
+            >
+              <Text className="text-sm font-bold">{option.label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       )}
     </View>

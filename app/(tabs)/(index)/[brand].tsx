@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Video } from "expo-av";
 import * as Linking from "expo-linking";
-import { useLocalSearchParams } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useRef } from "react";
 import {
   ActivityIndicator,
@@ -37,6 +37,13 @@ export default function BrandDetailScreen() {
   const flatListRef = React.useRef<FlatList<any>>(null);
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const router = require("expo-router").useRouter();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log(`📍 Current path: /(tabs)/(index)/[brand]`);
+      console.log(`📍 Brand parameter: ${brand}`);
+    }, [brand])
+  );
 
   // PanResponder for swipe-to-go-back
   const panResponder = useRef(
@@ -148,7 +155,7 @@ export default function BrandDetailScreen() {
 
   return (
     <View
-      style={{ flex: 1, backgroundColor: "#fff", paddingTop: 80 }}
+      style={{ flex: 1, backgroundColor: "#fff" }}
       {...panResponder.panHandlers}
     >
       {/* Profile Picture */}
@@ -156,7 +163,7 @@ export default function BrandDetailScreen() {
         <Image
           source={
             imgError
-              ? require("../../assets/images/icon.png")
+              ? require("../../../assets/images/icon.png")
               : { uri: profilePic }
           }
           style={{
