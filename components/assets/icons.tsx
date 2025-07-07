@@ -10,6 +10,9 @@ export const icons: Record<string, React.FC<IconProps>> = {
   index: ({ color, size = 20 }) => (
     <AntDesign name="home" size={size} color={color} />
   ),
+  "(index)": ({ color, size = 20 }) => (
+    <AntDesign name="home" size={size} color={color} />
+  ),
   "(collections)": ({ color, size = 20 }) => (
     <Feather name="grid" size={size} color={color} />
   ),
