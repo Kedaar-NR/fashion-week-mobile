@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Alert, Button, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Button,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { supabase } from "../lib/supabase";
 
 export default function Auth() {
@@ -8,6 +15,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function signInWithEmail() {
     setLoading(true);
@@ -36,6 +44,10 @@ export default function Auth() {
     setLoading(false);
   }
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   if (mode === "landing") {
     return (
       <View className="flex-1 justify-center items-center px-4">
@@ -59,13 +71,23 @@ export default function Auth() {
           value={email}
           onChangeText={setEmail}
         />
-        <TextInput
-          className="border border-gray-300 rounded px-3 py-2 w-full mb-4"
-          placeholder="Password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        <View className="relative w-full mb-4">
+          <TextInput
+            className="border border-gray-300 rounded px-3 py-2 w-full pr-12"
+            placeholder="Password"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            className="absolute right-3 top-0 bottom-0 justify-center"
+            onPress={togglePasswordVisibility}
+          >
+            <Text className="text-gray-500 text-lg">
+              {showPassword ? "👁️" : "👁️‍🗨️"}
+            </Text>
+          </TouchableOpacity>
+        </View>
         <Button title="Sign In" onPress={signInWithEmail} disabled={loading} />
         <View className="h-2" />
         <Button
@@ -96,13 +118,23 @@ export default function Auth() {
         value={email}
         onChangeText={setEmail}
       />
-      <TextInput
-        className="border border-gray-300 rounded px-3 py-2 w-full mb-4"
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      <View className="relative w-full mb-4">
+        <TextInput
+          className="border border-gray-300 rounded px-3 py-2 w-full pr-12"
+          placeholder="Password"
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <TouchableOpacity
+          className="absolute right-3 top-0 bottom-0 justify-center"
+          onPress={togglePasswordVisibility}
+        >
+          <Text className="text-gray-500 text-lg">
+            {showPassword ? "👁️" : "👁️‍🗨️"}
+          </Text>
+        </TouchableOpacity>
+      </View>
       <Button title="Sign Up" onPress={signUpWithEmail} disabled={loading} />
       <View className="h-2" />
       <Button
