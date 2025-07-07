@@ -496,7 +496,7 @@ export default function HomeScreen() {
           activeOpacity={0.7}
           onPress={() =>
             router.push({
-              pathname: "/(tabs)/(index)/[brand]",
+              pathname: "../(index)/[brand]",
               params: { brand: brandsMedia[verticalIndex].brand },
             })
           }
