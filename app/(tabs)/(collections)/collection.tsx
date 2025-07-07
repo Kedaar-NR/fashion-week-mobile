@@ -95,24 +95,26 @@ export default function CollectionScreen() {
     };
   }, []);
 
-  useFocusEffect(React.useCallback(() => {
-    if (!session) return;
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!session) return;
 
-    setLoading(true);
-    supabase
-      .from("collections")
-      .select("*")
-      .eq("user_id", session.user.id)
-      .then(({ data, error }) => {
-        if (error) {
-          console.log("Error fetching collections:", error);
-          setCollections([]);
-        } else {
-          setCollections(data || []);
-        }
-        setLoading(false);
-      });
-  }, [session]));
+      setLoading(true);
+      supabase
+        .from("collections")
+        .select("*")
+        .eq("user_id", session.user.id)
+        .then(({ data, error }) => {
+          if (error) {
+            console.log("Error fetching collections:", error);
+            setCollections([]);
+          } else {
+            setCollections(data || []);
+          }
+          setLoading(false);
+        });
+    }, [session])
+  );
 
   useFocusEffect(
     React.useCallback(() => {
@@ -163,7 +165,7 @@ export default function CollectionScreen() {
   );
 
   return (
-    <ScrollView className="flex-1 px-4" style={{ paddingTop: 80 }}>
+    <ScrollView className="flex-1 px-4">
       {/* Recently Liked Section */}
       <View className="mb-8">
         <View className="flex-row items-center gap-4 mb-4">

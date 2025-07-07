@@ -16,7 +16,7 @@ export default function TabLayout() {
       <NavBar
       // Always show default NavBar
       />
-      <View style={!isHome ? { paddingTop: 80, flex: 1 } : { flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <Tabs
           tabBar={(props) => <TabBar {...props} />}
           screenOptions={{

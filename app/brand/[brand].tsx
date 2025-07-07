@@ -148,7 +148,7 @@ export default function BrandDetailScreen() {
 
   return (
     <View
-      style={{ flex: 1, backgroundColor: "#fff", paddingTop: 80 }}
+      style={{ flex: 1, backgroundColor: "#fff" }}
       {...panResponder.panHandlers}
     >
       {/* Profile Picture */}
