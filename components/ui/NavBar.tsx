@@ -1,4 +1,4 @@
-import { router, usePathname, useSegments } from "expo-router";
+import { router, useFocusEffect, usePathname, useSegments } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Keyboard,
@@ -57,6 +57,15 @@ export function NavBar({
   const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
+  // Close dropdown when page changes
+  useFocusEffect(
+    React.useCallback(() => {
+      if (menuOpen) {
+        setMenuOpen(false);
+      }
+    }, [pathname])
+  );
+
   const handleMenuPress = () => {
     setMenuOpen(!menuOpen);
   };
@@ -67,23 +76,30 @@ export function NavBar({
       case "fashion:week":
         return [
           {
-            label: "ADD FRIENDS",
+            label: "BRANDS",
             onPress: () => {
               console.log("Add friends pressed");
               setMenuOpen(false);
             },
           },
           {
-            label: "SETTINGS",
+            label: "PIECES",
             onPress: () => {
               console.log("Settings pressed");
               setMenuOpen(false);
             },
           },
           {
-            label: "SHARE APP",
+            label: "FOLLOWING",
             onPress: () => {
               console.log("Share app pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "FEATURED",
+            onPress: () => {
+              console.log("Collections pressed");
               setMenuOpen(false);
             },
           },
@@ -374,7 +390,13 @@ export function NavBar({
 
       {/* Dropdown Menu */}
       {menuOpen && (
-        <View className="mx-4 mb-4 bg-transparent">
+        <View
+          className={`mx-4 mb-4 bg-transparent ${
+            pageDisplayName === "fashion:week"
+              ? "absolute top-32 left-0 right-0 z-40"
+              : ""
+          }`}
+        >
           {menuOptions.map((option, index) => (
             <TouchableOpacity
               key={index}
