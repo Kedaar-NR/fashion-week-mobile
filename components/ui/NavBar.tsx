@@ -10,156 +10,13 @@ import {
 
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { supabase } from "@/lib/supabase";
 
 // Define the structure for menu options
 interface MenuOption {
   label: string;
   onPress: () => void;
 }
-
-// Define menu configurations for different pages
-const menuConfigs: Record<string, MenuOption[]> = {
-  "fashion:week": [
-    {
-      label: "ADD FRIENDS",
-      onPress: () => {
-        console.log("Add friends pressed on homepage");
-        // Add your custom logic here
-      },
-    },
-    {
-      label: "SETTINGS",
-      onPress: () => {
-        console.log("Settings pressed on homepage");
-        // Add your custom logic here
-      },
-    },
-    {
-      label: "ABOUT",
-      onPress: () => {
-        console.log("About pressed on homepage");
-        // Add your custom logic here
-      },
-    },
-  ],
-  COLLECTIONS: [
-    {
-      label: "CREATE COLLECTION",
-      onPress: () => {
-        console.log("Create collection pressed");
-        // Add your custom logic here
-      },
-    },
-    {
-      label: "SHARE COLLECTION",
-      onPress: () => {
-        console.log("Share collection pressed");
-        // Add your custom logic here
-      },
-    },
-    {
-      label: "SETTINGS",
-      onPress: () => {
-        console.log("Settings pressed on collections");
-        // Add your custom logic here
-      },
-    },
-  ],
-  "DROP TRACKER": [
-    {
-      label: "ADD NEW DROP",
-      onPress: () => {
-        console.log("Add new drop pressed");
-        // Add your custom logic here
-      },
-    },
-    {
-      label: "DROP HISTORY",
-      onPress: () => {
-        console.log("Drop history pressed");
-        // Add your custom logic here
-      },
-    },
-    {
-      label: "NOTIFICATIONS",
-      onPress: () => {
-        console.log("Notifications pressed");
-        // Add your custom logic here
-      },
-    },
-  ],
-  ACCOUNT: [
-    {
-      label: "EDIT PROFILE",
-      onPress: () => {
-        console.log("Edit profile pressed");
-        // Add your custom logic here
-      },
-    },
-    {
-      label: "PRIVACY SETTINGS",
-      onPress: () => {
-        console.log("Privacy settings pressed");
-        // Add your custom logic here
-      },
-    },
-    {
-      label: "LOGOUT",
-      onPress: () => {
-        console.log("Logout pressed");
-        // Add your custom logic here
-      },
-    },
-  ],
-  ARCHIVE: [
-    {
-      label: "CLEAR ARCHIVE",
-      onPress: () => {
-        console.log("Clear archive pressed");
-        // Add your custom logic here
-      },
-    },
-    {
-      label: "EXPORT DATA",
-      onPress: () => {
-        console.log("Export data pressed");
-        // Add your custom logic here
-      },
-    },
-  ],
-  "STYLE QUIZ": [
-    {
-      label: "RESTART QUIZ",
-      onPress: () => {
-        console.log("Restart quiz pressed");
-        // Add your custom logic here
-      },
-    },
-    {
-      label: "VIEW RESULTS",
-      onPress: () => {
-        console.log("View results pressed");
-        // Add your custom logic here
-      },
-    },
-  ],
-  "SEARCH RESULTS": [
-    {
-      label: "CLEAR SEARCH",
-      onPress: () => {
-        console.log("Clear search pressed");
-        // Add your custom logic here
-      },
-    },
-    {
-      label: "SAVE SEARCH",
-      onPress: () => {
-        console.log("Save search pressed");
-        // Add your custom logic here
-      },
-    },
-  ],
-};
 
 // Default menu options for pages not explicitly configured
 const defaultMenuOptions: MenuOption[] = [
@@ -209,9 +66,6 @@ export function NavBar() {
 
   const pageDisplayName = getPageDisplayName(pathname, segments);
 
-  // Get menu options for current page
-  const currentMenuOptions = menuConfigs[pageDisplayName] || defaultMenuOptions;
-
   // Set icon color based on current page
   const iconColor = pageDisplayName === "fashion:week" ? "#FFFFFF" : "#000000"; // White on homepage, black elsewhere
   // console.log("isHomePage", isHomePage);
@@ -256,6 +110,173 @@ export function NavBar() {
       Keyboard.dismiss();
     }
   };
+
+  // Logout handler
+  const handleLogout = async () => {
+    console.log("Logout pressed");
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Error signing out:", error.message);
+      } else {
+        console.log("Successfully signed out");
+      }
+    } catch (error) {
+      console.error("Error during sign out:", error);
+    }
+  };
+
+  // Get menu options for current page with dynamic handlers
+  const getCurrentMenuOptions = (): MenuOption[] => {
+    const baseConfigs = {
+      "fashion:week": [
+        {
+          label: "ADD FRIENDS",
+          onPress: () => {
+            console.log("Add friends pressed on homepage");
+            // Add your custom logic here
+          },
+        },
+        {
+          label: "SETTINGS",
+          onPress: () => {
+            console.log("Settings pressed on homepage");
+            // Add your custom logic here
+          },
+        },
+        {
+          label: "ABOUT",
+          onPress: () => {
+            console.log("About pressed on homepage");
+            // Add your custom logic here
+          },
+        },
+      ],
+      COLLECTIONS: [
+        {
+          label: "CREATE COLLECTION",
+          onPress: () => {
+            console.log("Create collection pressed");
+            // Add your custom logic here
+          },
+        },
+        {
+          label: "SHARE COLLECTION",
+          onPress: () => {
+            console.log("Share collection pressed");
+            // Add your custom logic here
+          },
+        },
+        {
+          label: "SETTINGS",
+          onPress: () => {
+            console.log("Settings pressed on collections");
+            // Add your custom logic here
+          },
+        },
+      ],
+      "DROP TRACKER": [
+        {
+          label: "ADD NEW DROP",
+          onPress: () => {
+            console.log("Add new drop pressed");
+            // Add your custom logic here
+          },
+        },
+        {
+          label: "DROP HISTORY",
+          onPress: () => {
+            console.log("Drop history pressed");
+            // Add your custom logic here
+          },
+        },
+        {
+          label: "NOTIFICATIONS",
+          onPress: () => {
+            console.log("Notifications pressed");
+            // Add your custom logic here
+          },
+        },
+      ],
+      ACCOUNT: [
+        {
+          label: "EDIT PROFILE",
+          onPress: () => {
+            console.log("Edit profile pressed");
+            router.push("/(tabs)/(user)/edit-profile");
+            setMenuOpen(false);
+          },
+        },
+        {
+          label: "PRIVACY SETTINGS",
+          onPress: () => {
+            console.log("Privacy settings pressed");
+            router.push("/(tabs)/(user)/settings");
+            setMenuOpen(false);
+          },
+        },
+        {
+          label: "LOGOUT",
+          onPress: handleLogout,
+        },
+      ],
+      ARCHIVE: [
+        {
+          label: "CLEAR ARCHIVE",
+          onPress: () => {
+            console.log("Clear archive pressed");
+            // Add your custom logic here
+          },
+        },
+        {
+          label: "EXPORT DATA",
+          onPress: () => {
+            console.log("Export data pressed");
+            // Add your custom logic here
+          },
+        },
+      ],
+      "STYLE QUIZ": [
+        {
+          label: "RESTART QUIZ",
+          onPress: () => {
+            console.log("Restart quiz pressed");
+            // Add your custom logic here
+          },
+        },
+        {
+          label: "VIEW RESULTS",
+          onPress: () => {
+            console.log("View results pressed");
+            // Add your custom logic here
+          },
+        },
+      ],
+      "SEARCH RESULTS": [
+        {
+          label: "CLEAR SEARCH",
+          onPress: () => {
+            console.log("Clear search pressed");
+            // Add your custom logic here
+          },
+        },
+        {
+          label: "SAVE SEARCH",
+          onPress: () => {
+            console.log("Save search pressed");
+            // Add your custom logic here
+          },
+        },
+      ],
+    };
+
+    return (
+      baseConfigs[pageDisplayName as keyof typeof baseConfigs] ||
+      defaultMenuOptions
+    );
+  };
+
+  const currentMenuOptions = getCurrentMenuOptions();
 
   return (
     <View>

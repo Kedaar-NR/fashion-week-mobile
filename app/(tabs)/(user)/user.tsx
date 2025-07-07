@@ -297,7 +297,11 @@ export default function UserScreen() {
           <View className="pb-16">
             <View className="flex-row items-center gap-4 mb-4">
               <Text className="text-xl font-bold">RECENTLY PURCHASED</Text>
-              <TouchableOpacity onPress={() => {}}>
+              <TouchableOpacity
+                onPress={() => {
+                  router.push("/(tabs)/(user)/recently-purchased");
+                }}
+              >
                 <Text className="text-sm font-bold">(HIDE)</Text>
               </TouchableOpacity>
             </View>
