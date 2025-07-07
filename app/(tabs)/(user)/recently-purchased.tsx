@@ -57,17 +57,39 @@ export default function RecentlyPurchasedScreen() {
 
     setLoading(true);
     supabase
-      .from("recently_purchased")
-      .select("*")
+      .from("purchased_pieces")
+      .select(
+        `
+        *,
+        product!purchased_pieces_product_id_fkey (
+          *,
+          brand:product-metadata_brand_id_fkey (
+            id,
+            brand_name
+          )
+        )
+      `
+      )
       .eq("user_id", session.user.id)
       .then(({ data, error }) => {
         if (error) {
           console.log("Error fetching recently purchased items:", error);
           setRecentlyPurchasedItems([]);
         } else {
-          setRecentlyPurchasedItems(data || []);
+          // Transform the data to match the RecentlyPurchasedItem interface
+          const transformedData = (data || []).map((item: any) => ({
+            id: item.id,
+            name: item.product?.product_name || "Unknown Product",
+            type: item.product?.type || "Unknown Type",
+            designer: item.product?.brand?.brand_name || "Unknown Brand",
+            image: item.product?.media_filepath || "placeholder",
+            price: `$${item.product?.price || 0}`,
+            color: item.product?.color || "Unknown Color",
+            is_showing: item.is_showing,
+          }));
+          setRecentlyPurchasedItems(transformedData);
           const initialShowingState: Record<string, boolean> = {};
-          (data || []).forEach((item) => {
+          (transformedData || []).forEach((item) => {
             initialShowingState[item.id] = item.is_showing;
           });
           setLocalShowingState(initialShowingState);
@@ -101,7 +123,7 @@ export default function RecentlyPurchasedScreen() {
       // Update all recently purchased items with their new showing status
       const updatePromises = recentlyPurchasedItems.map((item) =>
         supabase
-          .from("recently_purchased")
+          .from("purchased_pieces")
           .update({ is_showing: localShowingState[item.id] })
           .eq("id", item.id)
           .eq("user_id", session.user.id)
@@ -150,9 +172,19 @@ export default function RecentlyPurchasedScreen() {
       >
         <Text className="text-xs opacity-50">Image</Text>
       </View>
-      <Text className="text-xs font-medium text-left" numberOfLines={1}>
-        {item.name}
-      </Text>
+      <View className="flex-row justify-between items-start w-full">
+        <View className="flex-1 mr-2">
+          <Text className="text-xs font-medium" numberOfLines={1}>
+            {item.name}
+          </Text>
+          <Text className="text-xs text-gray-600" numberOfLines={1}>
+            {item.designer}
+          </Text>
+        </View>
+        <Text className="text-xs font-bold" numberOfLines={1}>
+          {item.price}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 
