@@ -15,7 +15,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { supabase } from "../../lib/supabase";
+import { supabase } from "../../../lib/supabase";
 
 const { height: screenHeight } = Dimensions.get("window");
 
@@ -297,6 +297,12 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log("📍 Current path: /(tabs)/(index)/index");
+    }, [])
+  );
+
   const handleVerticalScroll = React.useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
       const offsetY = e.nativeEvent.contentOffset.y;
@@ -434,66 +440,6 @@ export default function HomeScreen() {
                   volume={1.0}
                 />
               )}
-              {/* Brand name overlay bubble above the bottom navbar */}
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() =>
-                  router.push({
-                    pathname: "/brand/[brand]",
-                    params: { brand: brandsMedia[verticalIndex].brand },
-                  })
-                }
-                style={{
-                  position: "absolute",
-                  left: 40,
-                  right: 40,
-                  bottom: (insets.bottom || 0) + 40,
-                  backgroundColor: "#fff",
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  borderRadius: 9999,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 50,
-                  shadowColor: "#000",
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 8,
-                  elevation: 4,
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#222",
-                    fontWeight: "600",
-                    fontSize: 18,
-                    textAlign: "center",
-                    letterSpacing: 1,
-                  }}
-                >
-                  {brandsMedia[verticalIndex].brand}
-                </Text>
-              </TouchableOpacity>
-              {/* Mute button */}
-              <TouchableOpacity
-                style={{
-                  position: "absolute",
-                  top: 96,
-                  right: 12,
-                  zIndex: 50,
-                  width: 44,
-                  height: 44,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-                onPress={() => setMuted((m) => !m)}
-              >
-                <Ionicons
-                  name={muted ? "volume-mute" : "volume-high"}
-                  size={20}
-                  color="#fff"
-                />
-              </TouchableOpacity>
             </View>
           )}
         />
@@ -546,14 +492,20 @@ export default function HomeScreen() {
       </View>
       {/* Brand name overlay at bottom */}
       {brandsMedia[verticalIndex] && (
-        <View
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() =>
+            router.push({
+              pathname: "/(tabs)/(index)/[brand]",
+              params: { brand: brandsMedia[verticalIndex].brand },
+            })
+          }
           className="absolute bottom-24 left-5 right-5 bg-black/30 px-4 py-2 rounded-full items-center justify-center z-50"
-          pointerEvents="box-none"
         >
           <Text className="text-white text-sm font-semibold text-center">
             {brandsMedia[verticalIndex].brand}
           </Text>
-        </View>
+        </TouchableOpacity>
       )}
       <FlatList
         data={brandsMedia}
