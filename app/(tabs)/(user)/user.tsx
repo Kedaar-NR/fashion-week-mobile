@@ -3,6 +3,7 @@ import { Session } from "@supabase/supabase-js";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  Button,
   Dimensions,
   FlatList,
   Image,
@@ -22,7 +23,6 @@ interface FashionPiece {
   image: string;
   price: string;
   color: string;
-  is_showing: boolean;
 }
 
 const { width } = Dimensions.get("window");
@@ -32,10 +32,6 @@ export default function UserScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [styleCollections, setStyleCollections] = useState<any[]>([]);
   const [loadingCollections, setLoadingCollections] = useState(true);
-  const [recentlyPurchased, setRecentlyPurchased] = useState<FashionPiece[]>(
-    []
-  );
-  const [loadingPurchases, setLoadingPurchases] = useState(true);
 
   const fetchPinnedCollections = async () => {
     if (!session) return;
@@ -56,55 +52,50 @@ export default function UserScreen() {
       });
   };
 
-  const fetchRecentlyPurchased = async () => {
-    if (!session) return;
-
-    setLoadingPurchases(true);
-    supabase
-      .from("purchased_pieces")
-      .select(
-        `
-        *,
-        product!purchased_pieces_product_id_fkey (
-          *,
-          brand:product-metadata_brand_id_fkey (
-            id,
-            brand_name
-          )
-        )
-      `
-      )
-      .eq("user_id", session.user.id)
-      .eq("is_showing", true)
-      .then(({ data, error }) => {
-        if (error) {
-          console.log("Error fetching recently purchased items:", error);
-          setRecentlyPurchased([]);
-        } else {
-          // Transform the data to match the FashionPiece interface
-          const transformedData = (data || []).map((item: any) => ({
-            id: item.id,
-            name: item.product?.product_name || "Unknown Product",
-            type: item.product?.type || "Unknown Type",
-            designer: item.product?.brand?.brand_name || "Unknown Brand",
-            image: item.product?.media_filepath || "placeholder",
-            price: `$${item.product?.price || 0}`,
-            color: item.product?.color || "Unknown Color",
-            is_showing: item.is_showing,
-          }));
-          setRecentlyPurchased(transformedData);
-        }
-        setLoadingPurchases(false);
-      });
-    // console.log("🔍 Recently purchased:", recentlyPurchased);
-  };
+  const recentlyPurchased: FashionPiece[] = [
+    {
+      id: "1",
+      name: "Classic White Tee",
+      type: "Tops",
+      designer: "Stolen Arts",
+      image: "placeholder",
+      price: "$45",
+      color: "White",
+    },
+    {
+      id: "2",
+      name: "Distressed Denim Jacket",
+      type: "Outerwear",
+      designer: "Urban Collective",
+      image: "placeholder",
+      price: "$120",
+      color: "Blue",
+    },
+    {
+      id: "3",
+      name: "Minimalist Sneakers",
+      type: "Footwear",
+      designer: "Minimalist Studio",
+      image: "placeholder",
+      price: "$85",
+      color: "Gray",
+    },
+    {
+      id: "4",
+      name: "Silk Blouse",
+      type: "Tops",
+      designer: "Luxury Lane",
+      image: "placeholder",
+      price: "$95",
+      color: "Cream",
+    },
+  ];
 
   useFocusEffect(
     React.useCallback(() => {
       console.log("📍 Current path: /(tabs)/user");
       if (session) {
         fetchPinnedCollections();
-        fetchRecentlyPurchased();
       }
     }, [session])
   );
@@ -134,7 +125,7 @@ export default function UserScreen() {
       onPress={() => {
         // Handle collection selection
         router.push({
-          pathname: "/(tabs)/(user)/[collection]",
+          pathname: "/(tabs)/(collections)/[collection]",
           params: { collection: item.collection_name },
         });
         console.log("Select collection:", item.collection_name);
@@ -314,22 +305,18 @@ export default function UserScreen() {
                 <Text className="text-sm font-bold">(HIDE)</Text>
               </TouchableOpacity>
             </View>
-            {loadingPurchases ? (
-              <Text>Loading purchases...</Text>
-            ) : (
-              <FlatList
-                data={recentlyPurchased}
-                keyExtractor={(item) => item.id}
-                renderItem={renderRecentlyPurchasedItem}
-                numColumns={3}
-                columnWrapperStyle={{
-                  gap: 16,
-                  marginBottom: 16,
-                }}
-                scrollEnabled={false}
-                contentContainerStyle={{ paddingBottom: 8 }}
-              />
-            )}
+            <FlatList
+              data={recentlyPurchased}
+              keyExtractor={(item) => item.id}
+              renderItem={renderRecentlyPurchasedItem}
+              numColumns={3}
+              columnWrapperStyle={{
+                gap: 16,
+                marginBottom: 16,
+              }}
+              scrollEnabled={false}
+              contentContainerStyle={{ paddingBottom: 8 }}
+            />
           </View>
         </View>
       </ScrollView>

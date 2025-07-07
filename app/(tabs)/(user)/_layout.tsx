@@ -8,7 +8,6 @@ export default function UserLayout() {
       <Stack.Screen name="settings" options={{ headerShown: false }} />
       <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
       <Stack.Screen name="recently-purchased" options={{ headerShown: false }} />
-      <Stack.Screen name="[collection]" options={{ headerShown: false }} />
     </Stack>
   );
 }

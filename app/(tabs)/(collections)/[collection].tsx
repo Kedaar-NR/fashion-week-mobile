@@ -1,7 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { Session } from "@supabase/supabase-js";
 import { useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -10,7 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { supabase } from "../../../lib/supabase";
 
 interface FashionPiece {
   id: string;
@@ -22,93 +20,156 @@ interface FashionPiece {
   color: string;
 }
 
+const mockPieces: FashionPiece[] = [
+  {
+    id: "1",
+    name: "Classic White Tee",
+    type: "Tops",
+    designer: "Stolen Arts",
+    image: "placeholder",
+    price: "$45",
+    color: "White",
+  },
+  {
+    id: "2",
+    name: "Distressed Denim Jacket",
+    type: "Outerwear",
+    designer: "Urban Collective",
+    image: "placeholder",
+    price: "$120",
+    color: "Blue",
+  },
+  {
+    id: "3",
+    name: "Minimalist Sneakers",
+    type: "Footwear",
+    designer: "Minimalist Studio",
+    image: "placeholder",
+    price: "$85",
+    color: "Gray",
+  },
+  {
+    id: "4",
+    name: "Silk Blouse",
+    type: "Tops",
+    designer: "Luxury Lane",
+    image: "placeholder",
+    price: "$95",
+    color: "Cream",
+  },
+  {
+    id: "5",
+    name: "Cargo Pants",
+    type: "Bottoms",
+    designer: "Street Style Co.",
+    image: "placeholder",
+    price: "$75",
+    color: "Olive",
+  },
+  {
+    id: "6",
+    name: "Leather Crossbody",
+    type: "Accessories",
+    designer: "Design District",
+    image: "placeholder",
+    price: "$150",
+    color: "Black",
+  },
+  {
+    id: "7",
+    name: "Oversized Sweater",
+    type: "Tops",
+    designer: "Fashion Forward",
+    image: "placeholder",
+    price: "$65",
+    color: "Beige",
+  },
+  {
+    id: "8",
+    name: "High-Waist Jeans",
+    type: "Bottoms",
+    designer: "Urban Essentials",
+    image: "placeholder",
+    price: "$90",
+    color: "Indigo",
+  },
+  {
+    id: "9",
+    name: "Statement Earrings",
+    type: "Accessories",
+    designer: "Stolen Arts",
+    image: "placeholder",
+    price: "$35",
+    color: "Gold",
+  },
+  {
+    id: "10",
+    name: "Puffer Vest",
+    type: "Outerwear",
+    designer: "Urban Collective",
+    image: "placeholder",
+    price: "$110",
+    color: "Navy",
+  },
+  {
+    id: "11",
+    name: "Slip Dress",
+    type: "Dresses",
+    designer: "Luxury Lane",
+    image: "placeholder",
+    price: "$125",
+    color: "Black",
+  },
+  {
+    id: "12",
+    name: "Canvas Tote",
+    type: "Accessories",
+    designer: "Minimalist Studio",
+    image: "placeholder",
+    price: "$55",
+    color: "Natural",
+  },
+  {
+    id: "13",
+    name: "Crop Top",
+    type: "Tops",
+    designer: "Street Style Co.",
+    image: "placeholder",
+    price: "$40",
+    color: "Pink",
+  },
+  {
+    id: "14",
+    name: "Wide-Leg Pants",
+    type: "Bottoms",
+    designer: "Design District",
+    image: "placeholder",
+    price: "$85",
+    color: "Charcoal",
+  },
+  {
+    id: "15",
+    name: "Chunky Boots",
+    type: "Footwear",
+    designer: "Fashion Forward",
+    image: "placeholder",
+    price: "$180",
+    color: "Brown",
+  },
+];
+
 const { width } = Dimensions.get("window");
 const gridItemWidth = (width - 64) / 3; // 3 columns with padding
 
 export default function CollectionDetailScreen() {
   const { collection } = useLocalSearchParams<{ collection: string }>();
-  const [session, setSession] = useState<Session | null>(null);
-  const [pieces, setPieces] = useState<FashionPiece[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-      }
-    );
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
-  const fetchCollectionPieces = async () => {
-    if (!session || !collection) return;
-
-    setLoading(true);
-
-    // First, get the collection ID from the collection name
-    const { data: collectionData, error: collectionError } = await supabase
-      .from("collections")
-      .select("id")
-      .eq("collection_name", collection)
-      .eq("user_id", session.user.id)
-      .single();
-
-    if (collectionError || !collectionData) {
-      console.log("Error fetching collection:", collectionError);
-      setPieces([]);
-      setLoading(false);
-      return;
-    }
-
-    // Then fetch pieces in this collection
-    const { data, error } = await supabase
-      .from("collection_pieces")
-      .select(
-        `
-        *,
-        product!collection_pieces_product_id_fkey (
-          *,
-          brand:product-metadata_brand_id_fkey (
-            id,
-            brand_name
-          )
-        )
-      `
-      )
-      .eq("collection_id", collectionData.id);
-
-    if (error) {
-      console.log("Error fetching collection pieces:", error);
-      setPieces([]);
-    } else {
-      // Transform the data to match the FashionPiece interface
-      const transformedData = (data || []).map((item: any) => ({
-        id: item.id,
-        name: item.product?.product_name || "Unknown Product",
-        type: item.product?.type || "Unknown Type",
-        designer: item.product?.brand?.brand_name || "Unknown Brand",
-        image: item.product?.media_filepath || "placeholder",
-        price: `$${item.product?.price || 0}`,
-        color: item.product?.color || "Unknown Color",
-      }));
-      setPieces(transformedData);
-    }
-    setLoading(false);
-  };
+  const [pieces] = useState<FashionPiece[]>(mockPieces);
 
   useFocusEffect(
     React.useCallback(() => {
       console.log(`📍 Current path: /(tabs)/(collections)/[collection]`);
       console.log(`📍 Collection parameter: ${collection}`);
-      if (session) {
-        fetchCollectionPieces();
-      }
-    }, [session, collection])
+    }, [collection])
   );
 
   // If the collection parameter is "all-liked", show "ALL LIKED", otherwise show the collection name
@@ -160,26 +221,18 @@ export default function CollectionDetailScreen() {
 
       {/* Pieces Grid Section */}
       <View className="flex-1">
-        {loading ? (
-          <Text className="text-center py-8">Loading collection pieces...</Text>
-        ) : pieces.length === 0 ? (
-          <Text className="text-center py-8">
-            No pieces found in this collection
-          </Text>
-        ) : (
-          <FlatList
-            data={pieces}
-            keyExtractor={(item) => item.id}
-            renderItem={renderGridItem}
-            numColumns={3}
-            columnWrapperStyle={{
-              gap: 16,
-              marginBottom: 16,
-            }}
-            scrollEnabled={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
-          />
-        )}
+        <FlatList
+          data={pieces}
+          keyExtractor={(item) => item.id}
+          renderItem={renderGridItem}
+          numColumns={3}
+          columnWrapperStyle={{
+            gap: 16,
+            marginBottom: 16,
+          }}
+          scrollEnabled={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
+        />
       </View>
     </ScrollView>
   );
