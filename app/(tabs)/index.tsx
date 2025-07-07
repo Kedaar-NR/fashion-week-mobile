@@ -15,7 +15,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { supabase } from "../../../lib/supabase";
+import { supabase } from "../../lib/supabase";
 
 const { height: screenHeight } = Dimensions.get("window");
 
@@ -299,7 +299,7 @@ export default function HomeScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      console.log("📍 Current path: /(tabs)/(index)/index");
+      console.log("📍 Current path: /(tabs)/index");
     }, [])
   );
 
@@ -494,12 +494,17 @@ export default function HomeScreen() {
       {brandsMedia[verticalIndex] && (
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() =>
+          onPress={() => {
+            // Navigate to brand detail component
+            console.log(
+              "Navigating to brand:",
+              brandsMedia[verticalIndex].brand
+            );
             router.push({
-              pathname: "../(index)/[brand]",
+              pathname: "/(tabs)/[brand]",
               params: { brand: brandsMedia[verticalIndex].brand },
-            })
-          }
+            });
+          }}
           className="absolute bottom-24 left-5 right-5 bg-black/30 px-4 py-2 rounded-full items-center justify-center z-50"
         >
           <Text className="text-white text-sm font-semibold text-center">

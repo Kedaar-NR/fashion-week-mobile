@@ -163,7 +163,7 @@ export default function BrandDetailScreen() {
         <Image
           source={
             imgError
-              ? require("../../../assets/images/icon.png")
+              ? require("../../assets/images/icon.png")
               : { uri: profilePic }
           }
           style={{
