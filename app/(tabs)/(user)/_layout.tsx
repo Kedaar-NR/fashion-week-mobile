@@ -5,10 +5,6 @@ export default function UserLayout() {
     <Stack>
       <Stack.Screen name="user" options={{ headerShown: false }} />
       <Stack.Screen name="pinnedCollections" options={{ headerShown: false }} />
-      <Stack.Screen name="settings" options={{ headerShown: false }} />
-      <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
-      <Stack.Screen name="recently-purchased" options={{ headerShown: false }} />
-      <Stack.Screen name="[collection]" options={{ headerShown: false }} />
     </Stack>
   );
 }
