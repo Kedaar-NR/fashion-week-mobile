@@ -112,6 +112,14 @@ export default function TabLayout() {
               ),
             }}
           />
+          <Tabs.Screen
+            name="[brand]"
+            options={{
+              href: null,
+              title: "Brand",
+              headerShown: false,
+            }}
+          />
         </Tabs>
       </View>
     </View>
