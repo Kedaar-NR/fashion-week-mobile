@@ -35,6 +35,8 @@ export default function UserScreen() {
     []
   );
   const [loadingPurchased, setLoadingPurchased] = useState(true);
+  const [savedBrandsCount, setSavedBrandsCount] = useState(0);
+  const [loadingSavedBrands, setLoadingSavedBrands] = useState(true);
 
   const fetchPinnedCollections = async () => {
     if (!session) return;
@@ -53,6 +55,30 @@ export default function UserScreen() {
         }
         setLoadingCollections(false);
       });
+  };
+
+  const fetchSavedBrandsCount = async () => {
+    if (!session) return;
+
+    setLoadingSavedBrands(true);
+    try {
+      const { count, error } = await supabase
+        .from("saved_brands")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", session.user.id);
+
+      if (error) {
+        console.log("Error fetching saved brands count:", error);
+        setSavedBrandsCount(0);
+      } else {
+        setSavedBrandsCount(count || 0);
+      }
+    } catch (error) {
+      console.log("Unexpected error fetching saved brands count:", error);
+      setSavedBrandsCount(0);
+    } finally {
+      setLoadingSavedBrands(false);
+    }
   };
 
   const fetchRecentlyPurchased = async () => {
@@ -119,6 +145,7 @@ export default function UserScreen() {
       if (session) {
         fetchPinnedCollections();
         fetchRecentlyPurchased();
+        fetchSavedBrandsCount();
       }
     }, [session])
   );
@@ -259,7 +286,9 @@ export default function UserScreen() {
               className="items-center mr-10"
               onPress={() => router.push("/(tabs)/archive")}
             >
-              <Text className="text-lg font-bold text-gray-800">24</Text>
+              <Text className="text-lg font-bold text-gray-800">
+                {loadingSavedBrands ? "..." : savedBrandsCount}
+              </Text>
               <Text className="text-sm text-gray-600">Archived</Text>
             </TouchableOpacity>
 

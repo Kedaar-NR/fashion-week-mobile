@@ -150,6 +150,91 @@ function getMediaType(filename: string): "video" | "image" | null {
   return null;
 }
 
+// Function to get brand ID from brand name
+async function getBrandId(brandName: string): Promise<number | null> {
+  try {
+    const { data, error } = await supabase
+      .from("brand")
+      .select("id")
+      .eq("brand_name", brandName)
+      .single();
+
+    if (error || !data) {
+      console.log(`Brand not found: ${brandName}`);
+      return null;
+    }
+
+    return data.id;
+  } catch (error) {
+    console.log(`Error getting brand ID for ${brandName}:`, error);
+    return null;
+  }
+}
+
+// Function to check if a brand is saved by the current user
+async function isBrandSaved(brandId: number, userId: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from("saved_brands")
+      .select("id")
+      .eq("brand_id", brandId)
+      .eq("user_id", userId)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      // PGRST116 is "not found" error
+      console.log("Error checking if brand is saved:", error);
+      return false;
+    }
+
+    return !!data;
+  } catch (error) {
+    console.log("Error checking if brand is saved:", error);
+    return false;
+  }
+}
+
+// Function to save a brand
+async function saveBrand(brandId: number, userId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase.from("saved_brands").insert({
+      brand_id: brandId,
+      user_id: userId,
+    });
+
+    if (error) {
+      console.log("Error saving brand:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.log("Error saving brand:", error);
+    return false;
+  }
+}
+
+// Function to unsave a brand
+async function unsaveBrand(brandId: number, userId: string): Promise<boolean> {
+  try {
+    const { error } = await supabase
+      .from("saved_brands")
+      .delete()
+      .eq("brand_id", brandId)
+      .eq("user_id", userId);
+
+    if (error) {
+      console.log("Error unsaving brand:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.log("Error unsaving brand:", error);
+    return false;
+  }
+}
+
 async function fetchBrandMediaFromIndex(brand: string) {
   // Fetch index.json from the brand's folder
   const indexUrl = `${BUCKET_URL}/${brand}/index.json`;
@@ -294,6 +379,9 @@ export default function HomeScreen() {
   }>({}); // Which media per brand
   const [muted, setMuted] = useState(false);
   const [isScreenFocused, setIsScreenFocused] = useState(true);
+  const [savedBrands, setSavedBrands] = useState<Set<string>>(new Set());
+  const [session, setSession] = useState<any>(null);
+  const [showSavedPopup, setShowSavedPopup] = useState(false);
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
@@ -302,6 +390,56 @@ export default function HomeScreen() {
       console.log("📍 Current path: /(tabs)/index");
     }, [])
   );
+
+  // Get current session
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Load saved brands for current user
+  useEffect(() => {
+    if (!session?.user) return;
+
+    const loadSavedBrands = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("saved_brands")
+          .select(
+            `
+            brand_id,
+            brand:brand_id (
+              brand_name
+            )
+          `
+          )
+          .eq("user_id", session.user.id);
+
+        if (error) {
+          console.log("Error loading saved brands:", error);
+          return;
+        }
+
+        const savedBrandNames = new Set(
+          data?.map((item: any) => item.brand?.brand_name).filter(Boolean) || []
+        );
+        setSavedBrands(savedBrandNames);
+      } catch (error) {
+        console.log("Error loading saved brands:", error);
+      }
+    };
+
+    loadSavedBrands();
+  }, [session]);
 
   const handleVerticalScroll = React.useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -369,6 +507,52 @@ export default function HomeScreen() {
       });
     }
   }, []);
+
+  // Handle save/unsave brand
+  const handleSaveBrand = async (brandName: string) => {
+    if (!session?.user) {
+      console.log("User not authenticated");
+      return;
+    }
+
+    try {
+      const brandId = await getBrandId(brandName);
+      if (!brandId) {
+        console.log(`Could not find brand ID for: ${brandName}`);
+        return;
+      }
+
+      const isCurrentlySaved = savedBrands.has(brandName);
+
+      if (isCurrentlySaved) {
+        // Unsave the brand
+        const success = await unsaveBrand(brandId, session.user.id);
+        if (success) {
+          setSavedBrands((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(brandName);
+            return newSet;
+          });
+          console.log(`Unsaved brand: ${brandName}`);
+        }
+      } else {
+        // Save the brand
+        const success = await saveBrand(brandId, session.user.id);
+        if (success) {
+          setSavedBrands((prev) => new Set([...prev, brandName]));
+          console.log(`Saved brand: ${brandName}`);
+
+          // Show popup only when saving (not unsaving)
+          setShowSavedPopup(true);
+          setTimeout(() => {
+            setShowSavedPopup(false);
+          }, 1000); // Hide after 2 seconds
+        }
+      }
+    } catch (error) {
+      console.log("Error handling save/unsave:", error);
+    }
+  };
 
   const renderBrandMedia = React.useCallback(
     ({
@@ -460,6 +644,11 @@ export default function HomeScreen() {
     return <ActivityIndicator size="large" className="flex-1 self-center" />;
   }
 
+  const currentBrand = brandsMedia[verticalIndex]?.brand;
+  const isCurrentBrandSaved = currentBrand
+    ? savedBrands.has(currentBrand)
+    : false;
+
   return (
     <View style={{ flex: 1 }}>
       {/* Mute button: bright white icon, moved further down from the NavBar */}
@@ -490,27 +679,54 @@ export default function HomeScreen() {
           onPress={() => setMuted((m) => !m)}
         />
       </View>
+
+      {/* Saved Brand Popup */}
+      {showSavedPopup && (
+        <View className="absolute bottom-36 left-5 right-5 z-50">
+          <View className="bg-black/30 px-4 py-2 rounded-full flex-row items-center justify-center">
+            <Text className="text-white text-sm font-semibold text-center">
+              Brand saved
+            </Text>
+          </View>
+        </View>
+      )}
+
       {/* Brand name overlay at bottom */}
       {brandsMedia[verticalIndex] && (
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => {
-            // Navigate to brand detail component
-            console.log(
-              "Navigating to brand:",
-              brandsMedia[verticalIndex].brand
-            );
-            router.push({
-              pathname: "/(tabs)/[brand]",
-              params: { brand: brandsMedia[verticalIndex].brand },
-            });
-          }}
-          className="absolute bottom-24 left-5 right-5 bg-black/30 px-4 py-2 rounded-full items-center justify-center z-50"
-        >
-          <Text className="text-white text-sm font-semibold text-center">
-            {brandsMedia[verticalIndex].brand}
-          </Text>
-        </TouchableOpacity>
+        <View className="absolute bottom-24 left-5 right-5 z-50">
+          <View className="bg-black/30 px-4 py-2 rounded-full flex-row items-center justify-between">
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => {
+                // Navigate to brand detail component
+                console.log(
+                  "Navigating to brand:",
+                  brandsMedia[verticalIndex].brand
+                );
+                router.push({
+                  pathname: "/(tabs)/[brand]",
+                  params: { brand: brandsMedia[verticalIndex].brand },
+                });
+              }}
+              className="flex-1 items-center justify-center"
+            >
+              <Text className="text-white text-sm font-semibold text-center">
+                {brandsMedia[verticalIndex].brand}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => handleSaveBrand(brandsMedia[verticalIndex].brand)}
+              className="ml-3 items-center justify-center"
+            >
+              <Ionicons
+                name={isCurrentBrandSaved ? "bookmark" : "bookmark-outline"}
+                size={20}
+                color="#fff"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
       <FlatList
         data={brandsMedia}

@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
-  Button,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useColorScheme } from "../hooks/useColorScheme";
 import { supabase } from "../lib/supabase";
 
 export default function Auth() {
@@ -16,6 +17,7 @@ export default function Auth() {
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const colorScheme = useColorScheme();
 
   async function signInWithEmail() {
     setLoading(true);
@@ -48,100 +50,210 @@ export default function Auth() {
     setShowPassword(!showPassword);
   };
 
+  const CustomButton = ({
+    title,
+    onPress,
+    disabled = false,
+    variant = "primary",
+  }: {
+    title: string;
+    onPress: () => void;
+    disabled?: boolean;
+    variant?: "primary" | "secondary";
+  }) => (
+    <TouchableOpacity
+      className={`px-6 py-4 rounded-xl mb-4 w-full items-center ${
+        disabled
+          ? "opacity-50"
+          : variant === "primary"
+            ? "bg-black"
+            : "bg-gray-100"
+      }`}
+      onPress={onPress}
+      disabled={disabled}
+    >
+      {loading ? (
+        <ActivityIndicator
+          size="small"
+          color={variant === "primary" ? "#FFFFFF" : "#000000"}
+        />
+      ) : (
+        <Text
+          className={`font-bold text-base ${
+            variant === "primary" ? "text-white" : "text-black"
+          }`}
+        >
+          {title}
+        </Text>
+      )}
+    </TouchableOpacity>
+  );
+
+  const CustomInput = ({
+    placeholder,
+    value,
+    onChangeText,
+    secureTextEntry = false,
+    keyboardType = "default",
+    autoCapitalize = "none",
+  }: {
+    placeholder: string;
+    value: string;
+    onChangeText: (text: string) => void;
+    secureTextEntry?: boolean;
+    keyboardType?: "default" | "email-address";
+    autoCapitalize?: "none" | "words";
+  }) => (
+    <View className="relative w-full mb-6">
+      <TextInput
+        className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white"
+        placeholder={placeholder}
+        placeholderTextColor="#9CA3AF"
+        secureTextEntry={secureTextEntry}
+        keyboardType={keyboardType}
+        autoCapitalize={autoCapitalize}
+        value={value}
+        onChangeText={onChangeText}
+      />
+    </View>
+  );
+
+  const PasswordInput = ({
+    placeholder,
+    value,
+    onChangeText,
+  }: {
+    placeholder: string;
+    value: string;
+    onChangeText: (text: string) => void;
+  }) => (
+    <View className="relative w-full mb-6">
+      <TextInput
+        className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white pr-12"
+        placeholder={placeholder}
+        placeholderTextColor="#9CA3AF"
+        secureTextEntry={!showPassword}
+        value={value}
+        onChangeText={onChangeText}
+      />
+      <TouchableOpacity
+        className="absolute right-4 top-0 bottom-0 justify-center"
+        onPress={togglePasswordVisibility}
+      >
+        <Text className="text-gray-400 text-lg">
+          {showPassword ? "👁️" : "👁️‍🗨️"}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
   if (mode === "landing") {
     return (
-      <View className="flex-1 justify-center items-center px-4">
-        <Text className="text-3xl font-bold mb-8">Welcome to Fashion Week</Text>
-        <Button title="Sign In" onPress={() => setMode("signin")} />
-        <View className="h-4" />
-        <Button title="Sign Up" onPress={() => setMode("signup")} />
+      <View className="flex-1 justify-center items-center px-6 bg-white">
+        <View className="w-full max-w-sm">
+          <Text className="text-4xl font-bold text-center mb-2 text-black">
+            fashion:week
+          </Text>
+          <Text className="text-lg text-center mb-12 text-gray-600">
+            Discover the latest in fashion
+          </Text>
+
+          <CustomButton title="SIGN IN" onPress={() => setMode("signin")} />
+          <CustomButton
+            title="CREATE ACCOUNT"
+            onPress={() => setMode("signup")}
+            variant="secondary"
+          />
+        </View>
       </View>
     );
   }
 
   if (mode === "signin") {
     return (
-      <View className="flex-1 justify-center items-center px-4">
-        <Text className="text-2xl font-bold mb-6">Sign In</Text>
-        <TextInput
-          className="border border-gray-300 rounded px-3 py-2 w-full mb-4"
-          placeholder="Email"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <View className="relative w-full mb-4">
-          <TextInput
-            className="border border-gray-300 rounded px-3 py-2 w-full pr-12"
+      <View className="flex-1 justify-center items-center px-6 bg-white">
+        <View className="w-full max-w-sm">
+          <Text className="text-3xl font-bold text-center mb-2 text-black">
+            Welcome Back
+          </Text>
+          <Text className="text-base text-center mb-8 text-gray-600">
+            Sign in to your account
+          </Text>
+
+          <CustomInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+
+          <PasswordInput
             placeholder="Password"
-            secureTextEntry={!showPassword}
             value={password}
             onChangeText={setPassword}
           />
-          <TouchableOpacity
-            className="absolute right-3 top-0 bottom-0 justify-center"
-            onPress={togglePasswordVisibility}
-          >
-            <Text className="text-gray-500 text-lg">
-              {showPassword ? "👁️" : "👁️‍🗨️"}
-            </Text>
-          </TouchableOpacity>
+
+          <CustomButton
+            title="SIGN IN"
+            onPress={signInWithEmail}
+            disabled={loading}
+          />
+
+          <CustomButton
+            title="BACK"
+            onPress={() => setMode("landing")}
+            variant="secondary"
+            disabled={loading}
+          />
         </View>
-        <Button title="Sign In" onPress={signInWithEmail} disabled={loading} />
-        <View className="h-2" />
-        <Button
-          title="Back"
-          onPress={() => setMode("landing")}
-          disabled={loading}
-        />
       </View>
     );
   }
 
   // Sign Up
   return (
-    <View className="flex-1 justify-center items-center px-4">
-      <Text className="text-2xl font-bold mb-6">Sign Up</Text>
-      <TextInput
-        className="border border-gray-300 rounded px-3 py-2 w-full mb-4"
-        placeholder="Username"
-        autoCapitalize="none"
-        value={username}
-        onChangeText={setUsername}
-      />
-      <TextInput
-        className="border border-gray-300 rounded px-3 py-2 w-full mb-4"
-        placeholder="Email"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <View className="relative w-full mb-4">
-        <TextInput
-          className="border border-gray-300 rounded px-3 py-2 w-full pr-12"
+    <View className="flex-1 justify-center items-center px-6 bg-white">
+      <View className="w-full max-w-sm">
+        <Text className="text-3xl font-bold text-center mb-2 text-black">
+          Create Account
+        </Text>
+        <Text className="text-base text-center mb-8 text-gray-600">
+          Join the fashion community
+        </Text>
+
+        <CustomInput
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
+          autoCapitalize="words"
+        />
+
+        <CustomInput
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+
+        <PasswordInput
           placeholder="Password"
-          secureTextEntry={!showPassword}
           value={password}
           onChangeText={setPassword}
         />
-        <TouchableOpacity
-          className="absolute right-3 top-0 bottom-0 justify-center"
-          onPress={togglePasswordVisibility}
-        >
-          <Text className="text-gray-500 text-lg">
-            {showPassword ? "👁️" : "👁️‍🗨️"}
-          </Text>
-        </TouchableOpacity>
+
+        <CustomButton
+          title="CREATE ACCOUNT"
+          onPress={signUpWithEmail}
+          disabled={loading}
+        />
+
+        <CustomButton
+          title="BACK"
+          onPress={() => setMode("landing")}
+          variant="secondary"
+          disabled={loading}
+        />
       </View>
-      <Button title="Sign Up" onPress={signUpWithEmail} disabled={loading} />
-      <View className="h-2" />
-      <Button
-        title="Back"
-        onPress={() => setMode("landing")}
-        disabled={loading}
-      />
     </View>
   );
 }
