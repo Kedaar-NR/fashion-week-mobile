@@ -28,13 +28,15 @@ interface FashionPiece {
 }
 
 interface Collection {
-  id: string;
+  id: number;
   collection_name: string;
-  description: string;
+  description: string | null;
   collection_image: string | null;
   is_pinned: boolean;
   user_id: string;
   created_at: string;
+  updated_at: string | null;
+  pieces: number[];
 }
 
 const mockFashionPieces: FashionPiece[] = [
@@ -106,6 +108,7 @@ export default function CollectionScreen() {
     null
   );
   const [updatingCollection, setUpdatingCollection] = useState(false);
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -130,6 +133,7 @@ export default function CollectionScreen() {
         .from("collections")
         .select("*")
         .eq("user_id", session.user.id)
+        .order("updated_at", { ascending: false })
         .then(({ data, error }) => {
           if (error) {
             console.log("Error fetching collections:", error);
@@ -423,6 +427,46 @@ export default function CollectionScreen() {
     setEditingCollection(null);
   };
 
+  const sortOptions = [
+    {
+      label: "NAME",
+      onPress: () => {
+        setCollections((prev) =>
+          [...prev].sort((a, b) =>
+            a.collection_name.localeCompare(b.collection_name)
+          )
+        );
+        setSortDropdownOpen(false);
+      },
+    },
+    {
+      label: "DATE CREATED",
+      onPress: () => {
+        setCollections((prev) =>
+          [...prev].sort(
+            (a, b) =>
+              new Date(b.created_at).getTime() -
+              new Date(a.created_at).getTime()
+          )
+        );
+        setSortDropdownOpen(false);
+      },
+    },
+    {
+      label: "MOST ITEMS",
+      onPress: () => {
+        setCollections((prev) =>
+          [...prev].sort((a, b) => {
+            const aCount = a.pieces?.length || 0;
+            const bCount = b.pieces?.length || 0;
+            return bCount - aCount;
+          })
+        );
+        setSortDropdownOpen(false);
+      },
+    },
+  ];
+
   // Get the 3 most recently liked pieces
   const recentlyLiked = fashionPieces
     .sort((a, b) => b.likedAt.getTime() - a.likedAt.getTime())
@@ -504,15 +548,33 @@ export default function CollectionScreen() {
 
         {/* Collections Grid Section */}
         <View className="flex-1">
-          <View className="flex-row items-center gap-4 mb-4">
+          <View className="flex-row items-center gap-4 mb-2">
             <Text className="text-xl font-bold">COLLECTIONS</Text>
             <TouchableOpacity onPress={() => setShowCreateModal(true)}>
               <Text className="text-sm font-bold">CREATE+</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity
+              onPress={() => setSortDropdownOpen(!sortDropdownOpen)}
+            >
               <Text className="text-sm font-bold">SORT BY+</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Sort Dropdown */}
+          {sortDropdownOpen && (
+            <View className="mb-4">
+              {sortOptions.map((option, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={option.onPress}
+                  className="py-2"
+                >
+                  <Text className="text-sm font-bold">{option.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
           {loading ? (
             <Text className="text-center py-8">Loading collections...</Text>
           ) : collections.length === 0 ? (
@@ -520,7 +582,7 @@ export default function CollectionScreen() {
           ) : (
             <FlatList
               data={collections}
-              keyExtractor={(item) => item.id}
+              keyExtractor={(item) => item.id.toString()}
               renderItem={renderGridItem}
               numColumns={3}
               columnWrapperStyle={{
