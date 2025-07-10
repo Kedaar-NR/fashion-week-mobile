@@ -26,21 +26,21 @@ export function NavBar({
   const colorScheme = useColorScheme();
   const pathname = usePathname();
   const segments = useSegments();
-  console.log("pathname", pathname);
-  console.log("segments", segments);
+  // console.log("pathname", pathname);
+  // console.log("segments", segments);
 
   useEffect(() => {
     console.log("🔍 NAVBAR MOUNT - pathname:", pathname, "segments:", segments);
   }, []);
 
-  useEffect(() => {
-    console.log(
-      "🔍 PATHNAME CHANGED - pathname:",
-      pathname,
-      "segments:",
-      segments
-    );
-  }, [pathname, segments]);
+  // useEffect(() => {
+  //   console.log(
+  //     "🔍 PATHNAME CHANGED - pathname:",
+  //     pathname,
+  //     "segments:",
+  //     segments
+  //   );
+  // }, [pathname, segments]);
 
   // Function to get page display name based on pathname
   const getPageDisplayName = (path: string, segments: string[]): string => {

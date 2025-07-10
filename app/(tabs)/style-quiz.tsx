@@ -7,7 +7,6 @@ import {
   Image,
   PanResponder,
   Image as RNImage,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -220,20 +219,27 @@ export default function StyleQuizScreen() {
 
   if (done || current >= shuffledImages.length) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.doneText}>Done</Text>
+      <View className="flex-1 items-center justify-center bg-gray-100 p-0">
+        <Text className="text-5xl font-bold text-gray-900">Done</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={{ height: 8 }} />
-      <Text style={styles.title}>WHO ARE YOU?</Text>
-      <Text style={styles.subtitle}>Swipe right for Yes, left for No</Text>
-      <View style={{ alignItems: "center", width: "100%" }}>
-        <View style={styles.swipeContainer}>
-          <View style={{ width: "100%", height: "100%" }}>
+    <View className="flex-1 items-center justify-start bg-gray-100">
+      <View className="h-2" />
+      <Text className="text-3xl font-bold mb-0 mt-2 text-center">
+        WHO ARE YOU?
+      </Text>
+      <Text className="text-base mb-1 text-center">
+        Swipe right for Yes, left for No
+      </Text>
+      <View className="items-center w-full">
+        <View
+          className="items-center justify-center mb-0 bg-transparent"
+          style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
+        >
+          <View className="w-full h-full">
             <QuizCard
               key={cardKey}
               cardKey={cardKey}
@@ -249,145 +255,35 @@ export default function StyleQuizScreen() {
             />
             {/* Overlay spinner only for first image if not loaded */}
             {current === 0 && !firstImageLoaded && (
-              <View
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "rgba(255,255,255,0.18)",
-                  zIndex: 10,
-                }}
-              >
+              <View className="absolute inset-0 items-center justify-center bg-white/20 z-10">
                 <ActivityIndicator size="large" color="#111" />
               </View>
             )}
           </View>
         </View>
       </View>
-      <View style={styles.buttonRow}>
+      <View
+        className="flex-row justify-between mt-[18px] mb-0 items-center h-[70px]"
+        style={{ width: CARD_WIDTH }}
+      >
         <TouchableOpacity
-          style={[styles.actionButton]}
+          className="flex-1 mx-[18px] py-[18px] rounded-2xl items-center bg-gray-900"
+          style={{ elevation: 2 }}
           onPress={() => handleAnswer("no")}
         >
-          <Text style={[styles.buttonText, { color: "#fff" }]}>No</Text>
+          <Text className="text-2xl font-bold text-white">No</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.actionButton]}
+          className="flex-1 mx-[18px] py-[18px] rounded-2xl items-center bg-gray-900"
+          style={{ elevation: 2 }}
           onPress={() => handleAnswer("yes")}
         >
-          <Text style={[styles.buttonText, { color: "#fff" }]}>Yes</Text>
+          <Text className="text-2xl font-bold text-white">Yes</Text>
         </TouchableOpacity>
       </View>
-      <Text style={styles.progress}>
+      <Text className="text-lg text-gray-600 mt-2 font-bold text-center">
         {progressNum} / {shuffledImages.length}
       </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "flex-start",
-    backgroundColor: "#f3f4f6",
-    paddingTop: 40,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 0,
-    marginTop: 8,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 4,
-    textAlign: "center",
-  },
-  swipeContainer: {
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 0,
-    backgroundColor: "transparent",
-  },
-  card: {
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
-    borderRadius: 14,
-    overflow: "hidden",
-    backgroundColor: "transparent",
-    alignItems: "center",
-    justifyContent: "center",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "contain",
-    backgroundColor: "transparent",
-    borderRadius: 14,
-  },
-  buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: CARD_WIDTH,
-    marginTop: 18,
-    marginBottom: 0,
-    alignItems: "center",
-    height: 70,
-  },
-  actionButton: {
-    flex: 1,
-    marginHorizontal: 18,
-    paddingVertical: 18,
-    borderRadius: 16,
-    alignItems: "center",
-    backgroundColor: "#111",
-    elevation: 2,
-  },
-  buttonText: {
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-  progress: {
-    fontSize: 18,
-    color: "#444",
-    marginTop: 8,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  centered: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#f3f4f6",
-    padding: 0,
-  },
-  doneText: {
-    fontSize: 48,
-    fontWeight: "bold",
-    color: "#111",
-  },
-  blurCorners: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 14,
-    borderWidth: 0,
-    // Simulate blur with a white fade at the corners
-    backgroundColor: "rgba(255,255,255,0.13)",
-  },
-});
