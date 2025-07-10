@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import {
   Dimensions,
   FlatList,
+  Image,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -16,9 +17,11 @@ interface Collection {
   id: string;
   collection_name: string;
   description: string;
-  itemCount: number;
+  item_count: number;
+  collection_image: string | null;
   is_pinned: boolean;
-  image: string;
+  user_id: string;
+  created_at: string;
 }
 
 const { width } = Dimensions.get("window");
@@ -137,14 +140,22 @@ export default function PinnedCollectionsScreen() {
       onPress={() => togglePinned(item.id)}
     >
       <View
-        className={`rounded-xl justify-center items-center mb-2 ${
+        className={`rounded-xl justify-center items-center mb-2 overflow-hidden ${
           localPinnedState[item.id]
             ? "bg-blue-100 border-2 border-blue-400"
             : "bg-gray-200"
         }`}
         style={{ width: gridItemWidth, height: gridItemWidth }}
       >
-        <Text className="text-xs opacity-50">Image</Text>
+        {item.collection_image ? (
+          <Image
+            source={{ uri: item.collection_image }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
+        ) : (
+          <Text className="text-xs opacity-50">No Image</Text>
+        )}
       </View>
       <Text className="text-xs font-medium text-left" numberOfLines={1}>
         {item.collection_name}

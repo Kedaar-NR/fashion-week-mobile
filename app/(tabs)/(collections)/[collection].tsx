@@ -1,8 +1,9 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   FlatList,
   ScrollView,
@@ -33,6 +34,7 @@ export default function CollectionDetailScreen() {
   const [pieces, setPieces] = useState<CollectionPiece[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const fetchCollectionPieces = async () => {
     if (!collection || collection === "all-liked") {
@@ -136,6 +138,112 @@ export default function CollectionDetailScreen() {
   const displayText =
     collection === "all-liked" ? "ALL LIKED" : collection?.toUpperCase();
 
+  const handleDeleteCollection = async () => {
+    if (!collection || collection === "all-liked") return;
+
+    Alert.alert(
+      "Delete Collection",
+      `Are you sure you want to delete "${collection}"? This action cannot be undone.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              // Get the current user session
+              const {
+                data: { session },
+              } = await supabase.auth.getSession();
+              if (!session) {
+                Alert.alert(
+                  "Error",
+                  "You must be logged in to delete collections."
+                );
+                return;
+              }
+
+              // First, get the collection ID
+              const { data: collectionData, error: collectionError } =
+                await supabase
+                  .from("collections")
+                  .select("id, collection_image")
+                  .eq("collection_name", collection)
+                  .eq("user_id", session.user.id)
+                  .single();
+
+              if (collectionError || !collectionData) {
+                Alert.alert(
+                  "Error",
+                  "Collection not found or you don't have permission to delete it."
+                );
+                return;
+              }
+
+              // Delete collection pieces first
+              const { error: piecesError } = await supabase
+                .from("collection_pieces")
+                .delete()
+                .eq("collection_id", collectionData.id);
+
+              if (piecesError) {
+                console.error("Error deleting collection pieces:", piecesError);
+              }
+
+              // Delete the collection
+              const { error: deleteError } = await supabase
+                .from("collections")
+                .delete()
+                .eq("id", collectionData.id)
+                .eq("user_id", session.user.id);
+
+              if (deleteError) {
+                Alert.alert(
+                  "Error",
+                  "Failed to delete collection. Please try again."
+                );
+                return;
+              }
+
+              // Delete the collection image from storage if it exists
+              if (collectionData.collection_image) {
+                try {
+                  const imagePath = collectionData.collection_image
+                    .split("/")
+                    .pop();
+                  if (imagePath) {
+                    await supabase.storage
+                      .from("collection-images")
+                      .remove([imagePath]);
+                  }
+                } catch (storageError) {
+                  console.error(
+                    "Error deleting image from storage:",
+                    storageError
+                  );
+                  // Don't fail the whole operation if image deletion fails
+                }
+              }
+
+              Alert.alert("Success", "Collection deleted successfully.", [
+                { text: "OK", onPress: () => router.back() },
+              ]);
+            } catch (error) {
+              console.error("Error deleting collection:", error);
+              Alert.alert(
+                "Error",
+                "An unexpected error occurred. Please try again."
+              );
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderGridItem = ({ item }: { item: CollectionPiece }) => (
     <TouchableOpacity
       className="items-center"
@@ -213,6 +321,16 @@ export default function CollectionDetailScreen() {
         </TouchableOpacity>
         <TouchableOpacity onPress={() => {}}>
           <Text className="text-sm font-bold">SORT BY+</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleDeleteCollection}
+          disabled={deleting || collection === "all-liked"}
+        >
+          <Text
+            className={`text-sm font-bold ${deleting || collection === "all-liked" ? "text-gray-400" : "text-red-500"}`}
+          >
+            {deleting ? "DELETING..." : "DELETE"}
+          </Text>
         </TouchableOpacity>
       </View>
 

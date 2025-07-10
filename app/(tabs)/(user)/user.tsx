@@ -24,12 +24,23 @@ interface FashionPiece {
   color: string;
 }
 
+interface Collection {
+  id: string;
+  collection_name: string;
+  description: string;
+  item_count: number;
+  collection_image: string | null;
+  is_pinned: boolean;
+  user_id: string;
+  created_at: string;
+}
+
 const { width } = Dimensions.get("window");
 const gridItemWidth = (width - 64) / 3; // 3 columns with padding
 
 export default function UserScreen() {
   const [session, setSession] = useState<Session | null>(null);
-  const [styleCollections, setStyleCollections] = useState<any[]>([]);
+  const [styleCollections, setStyleCollections] = useState<Collection[]>([]);
   const [loadingCollections, setLoadingCollections] = useState(true);
   const [recentlyPurchased, setRecentlyPurchased] = useState<FashionPiece[]>(
     []
@@ -168,7 +179,7 @@ export default function UserScreen() {
     return <Auth />;
   }
 
-  const renderStyleItem = ({ item }: { item: any }) => (
+  const renderStyleItem = ({ item }: { item: Collection }) => (
     <TouchableOpacity
       className="items-center"
       style={{ width: gridItemWidth }}
@@ -182,10 +193,18 @@ export default function UserScreen() {
       }}
     >
       <View
-        className="bg-gray-200 rounded-xl justify-center items-center mb-2"
+        className="bg-gray-200 rounded-xl justify-center items-center mb-2 overflow-hidden"
         style={{ width: gridItemWidth, height: gridItemWidth }}
       >
-        <Text className="text-xs opacity-50">Image</Text>
+        {item.collection_image ? (
+          <Image
+            source={{ uri: item.collection_image }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
+        ) : (
+          <Text className="text-xs opacity-50">No Image</Text>
+        )}
       </View>
       <Text className="text-xs font-medium text-left" numberOfLines={1}>
         {item.collection_name}

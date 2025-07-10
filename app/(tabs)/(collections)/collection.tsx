@@ -30,8 +30,11 @@ interface Collection {
   id: string;
   collection_name: string;
   description: string;
-  itemCount: number;
-  image: string;
+  item_count: number;
+  collection_image: string | null;
+  is_pinned: boolean;
+  user_id: string;
+  created_at: string;
 }
 
 const mockFashionPieces: FashionPiece[] = [
@@ -175,20 +178,59 @@ export default function CollectionScreen() {
 
     setCreatingCollection(true);
     try {
+      let imageUrl = null;
+
+      // Upload image to Supabase storage if selected
+      if (newCollectionCover) {
+        try {
+          const fileName = `collection-covers/${session.user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+
+          // Convert local URI to blob
+          const response = await fetch(newCollectionCover);
+          const blob = await response.blob();
+
+          const { data: uploadData, error: uploadError } =
+            await supabase.storage
+              .from("collection-images")
+              .upload(fileName, blob, {
+                contentType: "image/jpeg",
+              });
+
+          if (uploadError) {
+            console.log("Error uploading image:", uploadError);
+            Alert.alert("Error", "Failed to upload image. Please try again.");
+            return;
+          }
+
+          // Get the public URL for the uploaded image
+          const { data: urlData } = supabase.storage
+            .from("collection-images")
+            .getPublicUrl(fileName);
+
+          imageUrl = urlData.publicUrl;
+        } catch (uploadError) {
+          console.log("Error processing image:", uploadError);
+          Alert.alert("Error", "Failed to process image. Please try again.");
+          return;
+        }
+      }
+
       const { data, error } = await supabase
         .from("collections")
         .insert({
           collection_name: newCollectionName.trim(),
           description: newCollectionDescription.trim(),
-          cover_image: newCollectionCover,
+          collection_image: imageUrl,
           user_id: session.user.id,
           is_pinned: false,
+          item_count: 0,
         })
         .select()
         .single();
 
       if (error) {
         console.log("Error creating collection:", error);
+        Alert.alert("Error", "Failed to create collection. Please try again.");
         return;
       }
 
@@ -204,6 +246,7 @@ export default function CollectionScreen() {
       console.log("Collection created successfully:", data);
     } catch (error) {
       console.log("Error creating collection:", error);
+      Alert.alert("Error", "An unexpected error occurred. Please try again.");
     } finally {
       setCreatingCollection(false);
     }
@@ -247,10 +290,18 @@ export default function CollectionScreen() {
       }
     >
       <View
-        className="bg-gray-200 rounded-xl justify-center items-center mb-2"
+        className="bg-gray-200 rounded-xl justify-center items-center mb-2 overflow-hidden"
         style={{ width: gridItemWidth, height: gridItemWidth }}
       >
-        <Text className="text-xs opacity-50">Image</Text>
+        {item.collection_image ? (
+          <Image
+            source={{ uri: item.collection_image }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
+        ) : (
+          <Text className="text-xs opacity-50">No Image</Text>
+        )}
       </View>
       <Text className="text-xs font-medium text-left" numberOfLines={1}>
         {item.collection_name}
