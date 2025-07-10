@@ -1,5 +1,6 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { Session } from "@supabase/supabase-js";
+import { decode } from "base64-arraybuffer";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -185,14 +186,28 @@ export default function CollectionScreen() {
         try {
           const fileName = `collection-covers/${session.user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
 
-          // Convert local URI to blob
+          // Convert local URI to base64
           const response = await fetch(newCollectionCover);
           const blob = await response.blob();
+          const reader = new FileReader();
+
+          const base64Promise = new Promise<string>((resolve, reject) => {
+            reader.onload = () => {
+              const result = reader.result as string;
+              // Remove the data:image/jpeg;base64, prefix
+              const base64 = result.split(",")[1];
+              resolve(base64);
+            };
+            reader.onerror = reject;
+          });
+
+          reader.readAsDataURL(blob);
+          const base64Data = await base64Promise;
 
           const { data: uploadData, error: uploadError } =
             await supabase.storage
               .from("collection-images")
-              .upload(fileName, blob, {
+              .upload(fileName, decode(base64Data), {
                 contentType: "image/jpeg",
               });
 
@@ -376,15 +391,23 @@ export default function CollectionScreen() {
         transparent={true}
         onRequestClose={handleCloseModal}
       >
-        <View className="flex-1 bg-black/50 justify-center items-center p-4">
-          <View className="bg-white rounded-2xl w-full max-w-sm max-h-[80%]">
+        <TouchableOpacity
+          className="flex-1 bg-black/50 justify-center items-center p-4"
+          activeOpacity={1}
+          onPress={handleCloseModal}
+        >
+          <TouchableOpacity
+            className="bg-white rounded-2xl w-full max-w-sm max-h-[80%]"
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
             {/* Header */}
             <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
               <TouchableOpacity onPress={handleCloseModal}>
                 <Text className="text-gray-500 text-lg">Cancel</Text>
               </TouchableOpacity>
               <Text className="text-lg font-semibold">Create Collection</Text>
-              <TouchableOpacity
+              <TouchableOpacity 
                 onPress={handleCreateCollection}
                 disabled={!newCollectionName.trim() || creatingCollection}
               >
@@ -470,8 +493,8 @@ export default function CollectionScreen() {
                 />
               </View>
             </ScrollView>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </View>
   );

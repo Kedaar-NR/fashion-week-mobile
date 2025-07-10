@@ -15,7 +15,6 @@ import { supabase } from "../../../lib/supabase";
 
 interface CollectionPiece {
   id: number;
-  product_id: number;
   product_name: string;
   product_desc: string;
   media_filepath: string;
@@ -46,10 +45,10 @@ export default function CollectionDetailScreen() {
       setLoading(true);
       setError(null);
 
-      // First, get the collection ID from the collection name
+      // Get the collection data including the pieces array
       const { data: collectionData, error: collectionError } = await supabase
         .from("collections")
-        .select("id")
+        .select("id, pieces")
         .eq("collection_name", collection)
         .single();
 
@@ -66,33 +65,36 @@ export default function CollectionDetailScreen() {
         return;
       }
 
-      // Fetch pieces for this collection by joining collection_pieces, product, and brand tables
-      const { data: piecesData, error: piecesError } = await supabase
-        .from("collection_pieces")
+      // If no pieces in the collection, return empty array
+      if (!collectionData.pieces || collectionData.pieces.length === 0) {
+        setPieces([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch products using the pieces array
+      const { data: productsData, error: productsError } = await supabase
+        .from("product")
         .select(
           `
           id,
-          product_id,
-          product:product_id (
+          product_name,
+          product_desc,
+          media_filepath,
+          price,
+          type,
+          color,
+          brand:brand_id (
             id,
-            product_name,
-            product_desc,
-            media_filepath,
-            price,
-            type,
-            color,
-            brand:brand_id (
-              id,
-              brand_name,
-              brand_tagline
-            )
+            brand_name,
+            brand_tagline
           )
         `
         )
-        .eq("collection_id", collectionData.id);
+        .in("id", collectionData.pieces);
 
-      if (piecesError) {
-        console.error("Error fetching collection pieces:", piecesError);
+      if (productsError) {
+        console.error("Error fetching products:", productsError);
         setError("Failed to load collection pieces");
         setLoading(false);
         return;
@@ -100,21 +102,19 @@ export default function CollectionDetailScreen() {
 
       // Transform the data to match our interface
       const transformedPieces: CollectionPiece[] =
-        piecesData?.map((piece: any) => ({
-          id: piece.id,
-          product_id: piece.product_id,
-          product_name: piece.product?.product_name || "",
-          product_desc: piece.product?.product_desc || "",
-          media_filepath: piece.product?.media_filepath || "",
-          price: piece.product?.price || 0,
-          type: piece.product?.type || "",
-          color: piece.product?.color || "",
-          brand_name: piece.product?.brand?.brand_name || "",
-          brand_tagline: piece.product?.brand?.brand_tagline || "",
+        productsData?.map((product: any) => ({
+          id: product.id,
+          product_name: product.product_name || "",
+          product_desc: product.product_desc || "",
+          media_filepath: product.media_filepath || "",
+          price: product.price || 0,
+          type: product.type || "",
+          color: product.color || "",
+          brand_name: product.brand?.brand_name || "",
+          brand_tagline: product.brand?.brand_tagline || "",
         })) || [];
 
       setPieces(transformedPieces);
-      console.log("Fetched pieces:", transformedPieces);
     } catch (err) {
       console.error("Error in fetchCollectionPieces:", err);
       setError("An unexpected error occurred");
@@ -133,10 +133,6 @@ export default function CollectionDetailScreen() {
       console.log(`📍 Collection parameter: ${collection}`);
     }, [collection])
   );
-
-  // If the collection parameter is "all-liked", show "ALL LIKED", otherwise show the collection name
-  const displayText =
-    collection === "all-liked" ? "ALL LIKED" : collection?.toUpperCase();
 
   const handleDeleteCollection = async () => {
     if (!collection || collection === "all-liked") return;
@@ -164,7 +160,7 @@ export default function CollectionDetailScreen() {
                 return;
               }
 
-              // First, get the collection ID
+              // Get the collection data
               const { data: collectionData, error: collectionError } =
                 await supabase
                   .from("collections")
@@ -181,17 +177,7 @@ export default function CollectionDetailScreen() {
                 return;
               }
 
-              // Delete collection pieces first
-              const { error: piecesError } = await supabase
-                .from("collection_pieces")
-                .delete()
-                .eq("collection_id", collectionData.id);
-
-              if (piecesError) {
-                console.error("Error deleting collection pieces:", piecesError);
-              }
-
-              // Delete the collection
+              // Delete the collection (pieces array will be deleted automatically)
               const { error: deleteError } = await supabase
                 .from("collections")
                 .delete()
