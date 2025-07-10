@@ -34,6 +34,9 @@ export default function CollectionDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [selectedPieces, setSelectedPieces] = useState<Set<number>>(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
 
   const fetchCollectionPieces = async () => {
     if (!collection || collection === "all-liked") {
@@ -230,40 +233,147 @@ export default function CollectionDetailScreen() {
     );
   };
 
-  const renderGridItem = ({ item }: { item: CollectionPiece }) => (
-    <TouchableOpacity
-      className="items-center"
-      style={{ width: gridItemWidth }}
-      onPress={() => {
-        // Handle piece selection - can be expanded later
-        console.log("Selected piece:", item.product_name);
-      }}
-    >
-      <View
-        className="bg-gray-200 rounded-xl justify-center items-center mb-2"
-        style={{ width: gridItemWidth, height: gridItemWidth }}
+  const handleRemoveCollection = async () => {
+    if (!collection || collection === "all-liked") return;
+
+    if (!isSelectionMode) {
+      // Enter selection mode
+      setIsSelectionMode(true);
+      setSelectedPieces(new Set());
+    } else {
+      // Confirm removal
+      if (selectedPieces.size === 0) {
+        Alert.alert(
+          "No Selection",
+          "Please select at least one item to remove."
+        );
+        return;
+      }
+
+      setRemoving(true);
+      try {
+        // Get the current user session
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session) {
+          Alert.alert("Error", "You must be logged in to modify collections.");
+          return;
+        }
+
+        // Get the current collection data
+        const { data: collectionData, error: collectionError } = await supabase
+          .from("collections")
+          .select("id, pieces")
+          .eq("collection_name", collection)
+          .eq("user_id", session.user.id)
+          .single();
+
+        if (collectionError || !collectionData) {
+          Alert.alert(
+            "Error",
+            "Collection not found or you don't have permission to modify it."
+          );
+          return;
+        }
+
+        // Remove selected product IDs from the pieces array
+        const updatedPieces = collectionData.pieces.filter(
+          (productId: number) => !selectedPieces.has(productId)
+        );
+
+        // Update the collection with the new pieces array
+        const { error: updateError } = await supabase
+          .from("collections")
+          .update({
+            pieces: updatedPieces,
+          })
+          .eq("id", collectionData.id)
+          .eq("user_id", session.user.id);
+
+        if (updateError) {
+          Alert.alert(
+            "Error",
+            "Failed to remove items from collection. Please try again."
+          );
+          return;
+        }
+
+        // Refresh the pieces list
+        await fetchCollectionPieces();
+
+        // Exit selection mode
+        setIsSelectionMode(false);
+        setSelectedPieces(new Set());
+      } catch (error) {
+        Alert.alert("Error", "An unexpected error occurred. Please try again.");
+      } finally {
+        setRemoving(false);
+      }
+    }
+  };
+
+  const handlePieceSelection = (pieceId: number) => {
+    if (!isSelectionMode) {
+      // Normal mode - would navigate to product page
+      console.log("Selected piece:", pieceId);
+      return;
+    }
+
+    // Selection mode - toggle selection
+    setSelectedPieces((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(pieceId)) {
+        newSet.delete(pieceId);
+      } else {
+        newSet.add(pieceId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleCancelSelection = () => {
+    setIsSelectionMode(false);
+    setSelectedPieces(new Set());
+  };
+
+  const renderGridItem = ({ item }: { item: CollectionPiece }) => {
+    const isSelected = selectedPieces.has(item.id);
+
+    return (
+      <TouchableOpacity
+        className="items-center"
+        style={{ width: gridItemWidth }}
+        onPress={() => handlePieceSelection(item.id)}
       >
-        {item.media_filepath ? (
-          <Text className="text-xs opacity-50">Image</Text>
-        ) : (
-          <Text className="text-xs opacity-50">No Image</Text>
-        )}
-      </View>
-      <View className="flex-row justify-between items-start w-full">
-        <View className="flex-1 mr-2">
-          <Text className="text-xs font-medium" numberOfLines={1}>
-            {item.product_name}
-          </Text>
-          <Text className="text-xs text-gray-600" numberOfLines={1}>
-            {item.brand_name}
+        <View
+          className={`rounded-xl justify-center items-center mb-2 overflow-hidden ${
+            isSelected ? "bg-blue-100 border-2 border-blue-400" : "bg-gray-200"
+          }`}
+          style={{ width: gridItemWidth, height: gridItemWidth }}
+        >
+          {item.media_filepath ? (
+            <Text className="text-xs opacity-50">Image</Text>
+          ) : (
+            <Text className="text-xs opacity-50">No Image</Text>
+          )}
+        </View>
+        <View className="flex-row justify-between items-start w-full">
+          <View className="flex-1 mr-2">
+            <Text className="text-xs font-medium" numberOfLines={1}>
+              {item.product_name}
+            </Text>
+            <Text className="text-xs text-gray-600" numberOfLines={1}>
+              {item.brand_name}
+            </Text>
+          </View>
+          <Text className="text-xs font-bold" numberOfLines={1}>
+            ${item.price}
           </Text>
         </View>
-        <Text className="text-xs font-bold" numberOfLines={1}>
-          ${item.price}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
+      </TouchableOpacity>
+    );
+  };
 
   if (loading) {
     return (
@@ -301,23 +411,42 @@ export default function CollectionDetailScreen() {
   return (
     <ScrollView className="flex-1 px-4">
       {/* Header Section */}
-      <View className="flex-row items-center gap-4 mb-4">
-        <TouchableOpacity onPress={() => {}}>
-          <Text className="text-sm font-bold">FILTER+</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {}}>
-          <Text className="text-sm font-bold">SORT BY+</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleDeleteCollection}
-          disabled={deleting || collection === "all-liked"}
-        >
-          <Text
-            className={`text-sm font-bold ${deleting || collection === "all-liked" ? "text-gray-400" : "text-red-500"}`}
+      <View className="flex-row items-center justify-between mb-4">
+        <View className="flex-row items-center gap-4">
+          <TouchableOpacity onPress={() => {}}>
+            <Text className="text-sm font-bold">FILTER+</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => {}}>
+            <Text className="text-sm font-bold">SORT BY+</Text>
+          </TouchableOpacity>
+        </View>
+        <View className="flex-row items-center gap-4">
+          {isSelectionMode && (
+            <TouchableOpacity onPress={handleCancelSelection}>
+              <Text className="text-sm font-bold text-gray-500">CANCEL</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            onPress={handleDeleteCollection}
+            disabled={deleting || collection === "all-liked"}
           >
-            {deleting ? "DELETING..." : "DELETE"}
-          </Text>
-        </TouchableOpacity>
+            <Text
+              className={`text-sm font-bold ${deleting || collection === "all-liked" ? "text-gray-400" : "text-red-500"}`}
+            >
+              {deleting ? "DELETING..." : "DELETE"}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleRemoveCollection}
+            disabled={removing || collection === "all-liked"}
+          >
+            <Text
+              className={`text-sm font-bold ${removing || collection === "all-liked" ? "text-gray-400" : "text-black"}`}
+            >
+              {isSelectionMode ? "CONFIRM" : "REMOVE"}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Pieces Grid Section */}

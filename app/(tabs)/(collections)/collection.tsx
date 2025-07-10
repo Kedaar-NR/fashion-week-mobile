@@ -31,7 +31,6 @@ interface Collection {
   id: string;
   collection_name: string;
   description: string;
-  item_count: number;
   collection_image: string | null;
   is_pinned: boolean;
   user_id: string;
@@ -96,6 +95,17 @@ export default function CollectionScreen() {
     null
   );
   const [creatingCollection, setCreatingCollection] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingCollection, setEditingCollection] = useState<Collection | null>(
+    null
+  );
+  const [editCollectionName, setEditCollectionName] = useState("");
+  const [editCollectionDescription, setEditCollectionDescription] =
+    useState("");
+  const [editCollectionCover, setEditCollectionCover] = useState<string | null>(
+    null
+  );
+  const [updatingCollection, setUpdatingCollection] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -238,7 +248,6 @@ export default function CollectionScreen() {
           collection_image: imageUrl,
           user_id: session.user.id,
           is_pinned: false,
-          item_count: 0,
         })
         .select()
         .single();
@@ -274,6 +283,146 @@ export default function CollectionScreen() {
     setNewCollectionCover(null);
   };
 
+  const handleSelectEditCoverImage = async () => {
+    const hasPermission = await requestMediaLibraryPermissions();
+    if (!hasPermission) return;
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1], // Square aspect ratio for collection covers
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setEditCollectionCover(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.log("Error picking image:", error);
+      Alert.alert("Error", "Failed to select image. Please try again.", [
+        { text: "OK" },
+      ]);
+    }
+  };
+
+  const handleEditCollection = (collection: Collection) => {
+    setEditingCollection(collection);
+    setEditCollectionName(collection.collection_name);
+    setEditCollectionDescription(collection.description || "");
+    setEditCollectionCover(collection.collection_image);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateCollection = async () => {
+    if (!session?.user || !editingCollection || !editCollectionName.trim())
+      return;
+
+    setUpdatingCollection(true);
+    try {
+      let imageUrl = editingCollection.collection_image;
+
+      // Upload new image to Supabase storage if selected
+      if (
+        editCollectionCover &&
+        editCollectionCover !== editingCollection.collection_image
+      ) {
+        try {
+          const fileName = `collection-covers/${session.user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+
+          // Convert local URI to base64
+          const response = await fetch(editCollectionCover);
+          const blob = await response.blob();
+          const reader = new FileReader();
+
+          const base64Promise = new Promise<string>((resolve, reject) => {
+            reader.onload = () => {
+              const result = reader.result as string;
+              // Remove the data:image/jpeg;base64, prefix
+              const base64 = result.split(",")[1];
+              resolve(base64);
+            };
+            reader.onerror = reject;
+          });
+
+          reader.readAsDataURL(blob);
+          const base64Data = await base64Promise;
+
+          const { data: uploadData, error: uploadError } =
+            await supabase.storage
+              .from("collection-images")
+              .upload(fileName, decode(base64Data), {
+                contentType: "image/jpeg",
+              });
+
+          if (uploadError) {
+            console.log("Error uploading image:", uploadError);
+            Alert.alert("Error", "Failed to upload image. Please try again.");
+            return;
+          }
+
+          // Get the public URL for the uploaded image
+          const { data: urlData } = supabase.storage
+            .from("collection-images")
+            .getPublicUrl(fileName);
+
+          imageUrl = urlData.publicUrl;
+        } catch (uploadError) {
+          console.log("Error processing image:", uploadError);
+          Alert.alert("Error", "Failed to process image. Please try again.");
+          return;
+        }
+      }
+
+      const { data, error } = await supabase
+        .from("collections")
+        .update({
+          collection_name: editCollectionName.trim(),
+          description: editCollectionDescription.trim(),
+          collection_image: imageUrl,
+        })
+        .eq("id", editingCollection.id)
+        .eq("user_id", session.user.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.log("Error updating collection:", error);
+        Alert.alert("Error", "Failed to update collection. Please try again.");
+        return;
+      }
+
+      // Update the collection in local state
+      setCollections((prev) =>
+        prev.map((collection) =>
+          collection.id === editingCollection.id ? data : collection
+        )
+      );
+
+      // Reset form and close modal
+      setEditCollectionName("");
+      setEditCollectionDescription("");
+      setEditCollectionCover(null);
+      setEditingCollection(null);
+      setShowEditModal(false);
+
+      console.log("Collection updated successfully:", data);
+    } catch (error) {
+      console.log("Error updating collection:", error);
+      Alert.alert("Error", "An unexpected error occurred. Please try again.");
+    } finally {
+      setUpdatingCollection(false);
+    }
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditCollectionName("");
+    setEditCollectionDescription("");
+    setEditCollectionCover(null);
+    setEditingCollection(null);
+  };
+
   // Get the 3 most recently liked pieces
   const recentlyLiked = fashionPieces
     .sort((a, b) => b.likedAt.getTime() - a.likedAt.getTime())
@@ -303,6 +452,7 @@ export default function CollectionScreen() {
           params: { collection: item.collection_name },
         })
       }
+      onLongPress={() => handleEditCollection(item)}
     >
       <View
         className="bg-gray-200 rounded-xl justify-center items-center mb-2 overflow-hidden"
@@ -407,7 +557,7 @@ export default function CollectionScreen() {
                 <Text className="text-gray-500 text-lg">Cancel</Text>
               </TouchableOpacity>
               <Text className="text-lg font-semibold">Create Collection</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={handleCreateCollection}
                 disabled={!newCollectionName.trim() || creatingCollection}
               >
@@ -484,6 +634,119 @@ export default function CollectionScreen() {
                 <TextInput
                   value={newCollectionDescription}
                   onChangeText={setNewCollectionDescription}
+                  placeholder="Describe your collection"
+                  className="border border-gray-300 rounded-lg px-4 py-3 text-base"
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                  maxLength={200}
+                />
+              </View>
+            </ScrollView>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Edit Collection Modal */}
+      <Modal
+        visible={showEditModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={handleCloseEditModal}
+      >
+        <TouchableOpacity
+          className="flex-1 bg-black/50 justify-center items-center p-4"
+          activeOpacity={1}
+          onPress={handleCloseEditModal}
+        >
+          <TouchableOpacity
+            className="bg-white rounded-2xl w-full max-w-sm max-h-[80%]"
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
+              <TouchableOpacity onPress={handleCloseEditModal}>
+                <Text className="text-gray-500 text-lg">Cancel</Text>
+              </TouchableOpacity>
+              <Text className="text-lg font-semibold">Edit Collection</Text>
+              <TouchableOpacity
+                onPress={handleUpdateCollection}
+                disabled={!editCollectionName.trim() || updatingCollection}
+              >
+                <Text
+                  className={`text-lg ${
+                    editCollectionName.trim() && !updatingCollection
+                      ? "text-blue-500 font-semibold"
+                      : "text-gray-400"
+                  }`}
+                >
+                  {updatingCollection ? "Updating..." : "Update"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Form */}
+            <ScrollView className="p-4">
+              {/* Cover Image Selection */}
+              <View className="mb-6">
+                <Text className="text-sm font-medium text-gray-700 mb-2">
+                  Cover Image (Optional)
+                </Text>
+                <TouchableOpacity
+                  onPress={handleSelectEditCoverImage}
+                  className="w-full h-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 justify-center items-center overflow-hidden"
+                >
+                  {editCollectionCover ? (
+                    <Image
+                      source={{ uri: editCollectionCover }}
+                      className="w-full h-full"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View className="items-center">
+                      <Text className="text-gray-500 text-sm">
+                        Tap to select cover
+                      </Text>
+                      <Text className="text-gray-400 text-xs mt-1">
+                        from camera roll
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+                {editCollectionCover && (
+                  <TouchableOpacity
+                    onPress={() => setEditCollectionCover(null)}
+                    className="mt-2"
+                  >
+                    <Text className="text-red-500 text-sm text-center">
+                      Remove cover
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <View className="mb-6">
+                <Text className="text-sm font-medium text-gray-700 mb-2">
+                  Collection Name *
+                </Text>
+                <TextInput
+                  value={editCollectionName}
+                  onChangeText={setEditCollectionName}
+                  placeholder="Enter collection name"
+                  className="border border-gray-300 rounded-lg px-4 py-3 text-base"
+                  autoFocus
+                  maxLength={50}
+                />
+              </View>
+
+              <View className="mb-6">
+                <Text className="text-sm font-medium text-gray-700 mb-2">
+                  Description (Optional)
+                </Text>
+                <TextInput
+                  value={editCollectionDescription}
+                  onChangeText={setEditCollectionDescription}
                   placeholder="Describe your collection"
                   className="border border-gray-300 rounded-lg px-4 py-3 text-base"
                   multiline
