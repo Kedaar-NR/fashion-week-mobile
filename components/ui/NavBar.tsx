@@ -191,9 +191,10 @@ export function NavBar({
             },
           },
           {
-            label: "HELP & SUPPORT",
+            label: "ADD FRIENDS",
             onPress: () => {
-              console.log("Help & support pressed");
+              router.push("/(tabs)/(user)/add-friends");
+              console.log("Add friends pressed");
               setMenuOpen(false);
             },
           },

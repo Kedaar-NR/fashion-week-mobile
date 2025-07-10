@@ -49,6 +49,13 @@
         {
           "microphonePermission": "Allow $(fashionweekmobile) to access your microphone."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(fashionweekmobile) to access your photos.",
+          "cameraPermission": "Allow $(fashionweekmobile) to access your camera."
+        }
       ]
     ],
     "experiments": {

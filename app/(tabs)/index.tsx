@@ -685,7 +685,7 @@ export default function HomeScreen() {
         <View className="absolute bottom-36 left-5 right-5 z-50">
           <View className="bg-black/30 px-4 py-2 rounded-full flex-row items-center justify-center">
             <Text className="text-white text-sm font-semibold text-center">
-              Brand saved
+              Brand Archived
             </Text>
           </View>
         </View>

@@ -69,7 +69,6 @@ export default function SearchResultsScreen() {
     <ScrollView
       ref={scrollViewRef}
       className="flex-1 bg-transparent"
-      style={{ paddingTop: 40 }}
     >
       <View className="px-4 py-0 mb-16">
         {/* Search Results Header */}

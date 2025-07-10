@@ -1,12 +1,17 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { Session } from "@supabase/supabase-js";
+import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Dimensions,
   FlatList,
+  Image,
+  Modal,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -80,6 +85,13 @@ export default function CollectionScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newCollectionName, setNewCollectionName] = useState("");
+  const [newCollectionDescription, setNewCollectionDescription] = useState("");
+  const [newCollectionCover, setNewCollectionCover] = useState<string | null>(
+    null
+  );
+  const [creatingCollection, setCreatingCollection] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -121,6 +133,88 @@ export default function CollectionScreen() {
       console.log("📍 Current path: /(tabs)/(collections)/collection");
     }, [])
   );
+
+  const requestMediaLibraryPermissions = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission Required",
+        "Sorry, we need camera roll permissions to select images for your collection cover.",
+        [{ text: "OK" }]
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const handleSelectCoverImage = async () => {
+    const hasPermission = await requestMediaLibraryPermissions();
+    if (!hasPermission) return;
+
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1], // Square aspect ratio for collection covers
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setNewCollectionCover(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.log("Error picking image:", error);
+      Alert.alert("Error", "Failed to select image. Please try again.", [
+        { text: "OK" },
+      ]);
+    }
+  };
+
+  const handleCreateCollection = async () => {
+    if (!session?.user || !newCollectionName.trim()) return;
+
+    setCreatingCollection(true);
+    try {
+      const { data, error } = await supabase
+        .from("collections")
+        .insert({
+          collection_name: newCollectionName.trim(),
+          description: newCollectionDescription.trim(),
+          cover_image: newCollectionCover,
+          user_id: session.user.id,
+          is_pinned: false,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.log("Error creating collection:", error);
+        return;
+      }
+
+      // Add the new collection to the local state
+      setCollections((prev) => [...prev, data]);
+
+      // Reset form and close modal
+      setNewCollectionName("");
+      setNewCollectionDescription("");
+      setNewCollectionCover(null);
+      setShowCreateModal(false);
+
+      console.log("Collection created successfully:", data);
+    } catch (error) {
+      console.log("Error creating collection:", error);
+    } finally {
+      setCreatingCollection(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowCreateModal(false);
+    setNewCollectionName("");
+    setNewCollectionDescription("");
+    setNewCollectionCover(null);
+  };
 
   // Get the 3 most recently liked pieces
   const recentlyLiked = fashionPieces
@@ -165,62 +259,169 @@ export default function CollectionScreen() {
   );
 
   return (
-    <ScrollView className="flex-1 px-4">
-      {/* Recently Liked Section */}
-      <View className="mb-8">
-        <View className="flex-row items-center gap-4 mb-4">
-          <Text className="text-xl font-bold">LIKED</Text>
-          <TouchableOpacity
-            onPress={() =>
-              router.push({
-                pathname: "/(tabs)/(collections)/[collection]",
-                params: { collection: "all-liked" },
-              })
-            }
-          >
-            <Text className="text-sm font-bold">SEE MORE ›</Text>
-          </TouchableOpacity>
-        </View>
-        <FlatList
-          data={recentlyLiked}
-          keyExtractor={(item) => item.id}
-          renderItem={renderRecentlyLikedItem}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 16, paddingRight: 16 }}
-        />
-      </View>
-
-      {/* Collections Grid Section */}
-      <View className="flex-1">
-        <View className="flex-row items-center gap-4 mb-4">
-          <Text className="text-xl font-bold">COLLECTIONS</Text>
-          <TouchableOpacity onPress={() => {}}>
-            <Text className="text-sm font-bold">CREATE+</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => {}}>
-            <Text className="text-sm font-bold">SORT BY+</Text>
-          </TouchableOpacity>
-        </View>
-        {loading ? (
-          <Text className="text-center py-8">Loading collections...</Text>
-        ) : collections.length === 0 ? (
-          <Text className="text-center py-8">No collections found</Text>
-        ) : (
+    <View className="flex-1">
+      <ScrollView className="flex-1 px-4">
+        {/* Recently Liked Section */}
+        <View className="mb-8">
+          <View className="flex-row items-center gap-4 mb-4">
+            <Text className="text-xl font-bold">LIKED</Text>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/(tabs)/(collections)/[collection]",
+                  params: { collection: "all-liked" },
+                })
+              }
+            >
+              <Text className="text-sm font-bold">SEE MORE ›</Text>
+            </TouchableOpacity>
+          </View>
           <FlatList
-            data={collections}
+            data={recentlyLiked}
             keyExtractor={(item) => item.id}
-            renderItem={renderGridItem}
-            numColumns={3}
-            columnWrapperStyle={{
-              gap: 16,
-              marginBottom: 16,
-            }}
-            scrollEnabled={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
+            renderItem={renderRecentlyLikedItem}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 16, paddingRight: 16 }}
           />
-        )}
-      </View>
-    </ScrollView>
+        </View>
+
+        {/* Collections Grid Section */}
+        <View className="flex-1">
+          <View className="flex-row items-center gap-4 mb-4">
+            <Text className="text-xl font-bold">COLLECTIONS</Text>
+            <TouchableOpacity onPress={() => setShowCreateModal(true)}>
+              <Text className="text-sm font-bold">CREATE+</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => {}}>
+              <Text className="text-sm font-bold">SORT BY+</Text>
+            </TouchableOpacity>
+          </View>
+          {loading ? (
+            <Text className="text-center py-8">Loading collections...</Text>
+          ) : collections.length === 0 ? (
+            <Text className="text-center py-8">No collections found</Text>
+          ) : (
+            <FlatList
+              data={collections}
+              keyExtractor={(item) => item.id}
+              renderItem={renderGridItem}
+              numColumns={3}
+              columnWrapperStyle={{
+                gap: 16,
+                marginBottom: 16,
+              }}
+              scrollEnabled={false}
+              contentContainerStyle={{ paddingBottom: 20 }}
+            />
+          )}
+        </View>
+      </ScrollView>
+
+      {/* Create Collection Modal */}
+      <Modal
+        visible={showCreateModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={handleCloseModal}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center p-4">
+          <View className="bg-white rounded-2xl w-full max-w-sm max-h-[80%]">
+            {/* Header */}
+            <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
+              <TouchableOpacity onPress={handleCloseModal}>
+                <Text className="text-gray-500 text-lg">Cancel</Text>
+              </TouchableOpacity>
+              <Text className="text-lg font-semibold">Create Collection</Text>
+              <TouchableOpacity
+                onPress={handleCreateCollection}
+                disabled={!newCollectionName.trim() || creatingCollection}
+              >
+                <Text
+                  className={`text-lg ${
+                    newCollectionName.trim() && !creatingCollection
+                      ? "text-blue-500 font-semibold"
+                      : "text-gray-400"
+                  }`}
+                >
+                  {creatingCollection ? "Creating..." : "Create"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Form */}
+            <ScrollView className="p-4">
+              {/* Cover Image Selection */}
+              <View className="mb-6">
+                <Text className="text-sm font-medium text-gray-700 mb-2">
+                  Cover Image (Optional)
+                </Text>
+                <TouchableOpacity
+                  onPress={handleSelectCoverImage}
+                  className="w-full h-32 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 justify-center items-center overflow-hidden"
+                >
+                  {newCollectionCover ? (
+                    <Image
+                      source={{ uri: newCollectionCover }}
+                      className="w-full h-full"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View className="items-center">
+                      <Text className="text-gray-500 text-sm">
+                        Tap to select cover
+                      </Text>
+                      <Text className="text-gray-400 text-xs mt-1">
+                        from camera roll
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+                {newCollectionCover && (
+                  <TouchableOpacity
+                    onPress={() => setNewCollectionCover(null)}
+                    className="mt-2"
+                  >
+                    <Text className="text-red-500 text-sm text-center">
+                      Remove cover
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <View className="mb-6">
+                <Text className="text-sm font-medium text-gray-700 mb-2">
+                  Collection Name *
+                </Text>
+                <TextInput
+                  value={newCollectionName}
+                  onChangeText={setNewCollectionName}
+                  placeholder="Enter collection name"
+                  className="border border-gray-300 rounded-lg px-4 py-3 text-base"
+                  autoFocus
+                  maxLength={50}
+                />
+              </View>
+
+              <View className="mb-6">
+                <Text className="text-sm font-medium text-gray-700 mb-2">
+                  Description (Optional)
+                </Text>
+                <TextInput
+                  value={newCollectionDescription}
+                  onChangeText={setNewCollectionDescription}
+                  placeholder="Describe your collection"
+                  className="border border-gray-300 rounded-lg px-4 py-3 text-base"
+                  multiline
+                  numberOfLines={4}
+                  textAlignVertical="top"
+                  maxLength={200}
+                />
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 }
