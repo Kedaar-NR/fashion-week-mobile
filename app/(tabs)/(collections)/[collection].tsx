@@ -37,6 +37,8 @@ export default function CollectionDetailScreen() {
   const [removing, setRemoving] = useState(false);
   const [selectedPieces, setSelectedPieces] = useState<Set<number>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
 
   const fetchCollectionPieces = async () => {
     if (!collection || collection === "all-liked") {
@@ -375,6 +377,95 @@ export default function CollectionDetailScreen() {
     );
   };
 
+  const filterOptions = [
+    {
+      label: "ALL ITEMS",
+      onPress: () => {
+        console.log("Filter: All items");
+        setFilterDropdownOpen(false);
+      },
+    },
+    {
+      label: "SHOES",
+      onPress: () => {
+        console.log("Filter: Shoes");
+        setFilterDropdownOpen(false);
+      },
+    },
+    {
+      label: "CLOTHING",
+      onPress: () => {
+        console.log("Filter: Clothing");
+        setFilterDropdownOpen(false);
+      },
+    },
+    {
+      label: "ACCESSORIES",
+      onPress: () => {
+        console.log("Filter: Accessories");
+        setFilterDropdownOpen(false);
+      },
+    },
+    {
+      label: "UNDER $50",
+      onPress: () => {
+        console.log("Filter: Under $50");
+        setFilterDropdownOpen(false);
+      },
+    },
+    {
+      label: "UNDER $100",
+      onPress: () => {
+        console.log("Filter: Under $100");
+        setFilterDropdownOpen(false);
+      },
+    },
+  ];
+
+  const sortOptions = [
+    {
+      label: "NAME",
+      onPress: () => {
+        setPieces((prev) =>
+          [...prev].sort((a, b) => a.product_name.localeCompare(b.product_name))
+        );
+        setSortDropdownOpen(false);
+      },
+    },
+    {
+      label: "PRICE LOW-HIGH",
+      onPress: () => {
+        setPieces((prev) => [...prev].sort((a, b) => a.price - b.price));
+        setSortDropdownOpen(false);
+      },
+    },
+    {
+      label: "PRICE HIGH-LOW",
+      onPress: () => {
+        setPieces((prev) => [...prev].sort((a, b) => b.price - a.price));
+        setSortDropdownOpen(false);
+      },
+    },
+    {
+      label: "BRAND",
+      onPress: () => {
+        setPieces((prev) =>
+          [...prev].sort((a, b) => a.brand_name.localeCompare(b.brand_name))
+        );
+        setSortDropdownOpen(false);
+      },
+    },
+    {
+      label: "TYPE",
+      onPress: () => {
+        setPieces((prev) =>
+          [...prev].sort((a, b) => a.type.localeCompare(b.type))
+        );
+        setSortDropdownOpen(false);
+      },
+    },
+  ];
+
   if (loading) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -411,12 +502,16 @@ export default function CollectionDetailScreen() {
   return (
     <ScrollView className="flex-1 px-4">
       {/* Header Section */}
-      <View className="flex-row items-center justify-between mb-4">
+      <View className={`flex-row items-center justify-between ${filterDropdownOpen || sortDropdownOpen ? 'mb-2' : 'mb-4'}`}>
         <View className="flex-row items-center gap-4">
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity
+            onPress={() => setFilterDropdownOpen(!filterDropdownOpen)}
+          >
             <Text className="text-sm font-bold">FILTER+</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity
+            onPress={() => setSortDropdownOpen(!sortDropdownOpen)}
+          >
             <Text className="text-sm font-bold">SORT BY+</Text>
           </TouchableOpacity>
         </View>
@@ -448,6 +543,36 @@ export default function CollectionDetailScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Filter Dropdown */}
+      {filterDropdownOpen && (
+        <View className="mb-4">
+          {filterOptions.map((option, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={option.onPress}
+              className="py-2"
+            >
+              <Text className="text-sm font-bold">{option.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+      {/* Sort Dropdown */}
+      {sortDropdownOpen && (
+        <View className="mb-4">
+          {sortOptions.map((option, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={option.onPress}
+              className="py-2"
+            >
+              <Text className="text-sm font-bold">{option.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       {/* Pieces Grid Section */}
       <View className="flex-1">

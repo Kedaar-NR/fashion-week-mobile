@@ -326,11 +326,15 @@ export default function CollectionScreen() {
     try {
       let imageUrl = editingCollection.collection_image;
 
-      // Upload new image to Supabase storage if selected
-      if (
+      // Handle image removal or upload
+      if (editCollectionCover === null) {
+        // User wants to remove the image
+        imageUrl = null;
+      } else if (
         editCollectionCover &&
         editCollectionCover !== editingCollection.collection_image
       ) {
+        // Upload new image to Supabase storage if selected
         try {
           const fileName = `collection-covers/${session.user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
 
