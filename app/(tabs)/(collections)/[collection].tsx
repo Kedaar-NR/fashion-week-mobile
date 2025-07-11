@@ -415,29 +415,33 @@ export default function CollectionDetailScreen() {
   const priceRangeOptions = [
     {
       label: "UNDER $50",
-      onPress: () => {
-        console.log("Filter: Under $50");
+      onPress: async () => {
+        await fetchCollectionPieces();
+        setPieces((prev) => prev.filter(piece => piece.price < 50));
         setPriceRangeSubDropdownOpen(false);
       },
     },
     {
       label: "UNDER $100",
-      onPress: () => {
-        console.log("Filter: Under $100");
+      onPress: async () => {
+        await fetchCollectionPieces(); 
+        setPieces((prev) => prev.filter(piece => piece.price < 100));
         setPriceRangeSubDropdownOpen(false);
       },
     },
     {
-      label: "UNDER $200",
-      onPress: () => {
-        console.log("Filter: Under $200");
+      label: "UNDER $200", 
+      onPress: async () => {
+        await fetchCollectionPieces();
+        setPieces((prev) => prev.filter(piece => piece.price < 200));
         setPriceRangeSubDropdownOpen(false);
       },
     },
     {
       label: "UNDER $500",
-      onPress: () => {
-        console.log("Filter: Under $500");
+      onPress: async () => {
+        await fetchCollectionPieces();
+        setPieces((prev) => prev.filter(piece => piece.price < 500));
         setPriceRangeSubDropdownOpen(false);
       },
     },
@@ -446,8 +450,9 @@ export default function CollectionDetailScreen() {
   const filterOptions = [
     {
       label: "ALL ITEMS",
-      onPress: () => {
-        console.log("Filter: All items");
+      onPress: async () => {
+        // Refetch original collection pieces to reset filters
+        await fetchCollectionPieces();
         setFilterDropdownOpen(false);
       },
     },

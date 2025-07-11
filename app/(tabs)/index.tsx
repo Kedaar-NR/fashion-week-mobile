@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import PaginationDots from "../../components/PaginationDots";
 import { supabase } from "../../lib/supabase";
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -701,20 +702,21 @@ export default function HomeScreen() {
         />
       </View>
 
-      {/* Saved Brand Popup */}
-      {showSavedPopup && (
-        <View className="absolute bottom-36 left-5 right-5 z-50">
-          <View className="bg-black/30 px-4 py-2 rounded-full flex-row items-center justify-center">
-            <Text className="text-white text-sm font-semibold text-center">
-              Brand Archived
-            </Text>
+      {/* Brand overlay container at bottom */}
+      <View className="absolute bottom-24 left-5 right-5 z-50">
+        {/* Saved Brand Popup */}
+        {showSavedPopup && (
+          <View className="mb-2">
+            <View className="bg-black/30 px-4 py-2 rounded-full flex-row items-center justify-center">
+              <Text className="text-white text-sm font-semibold text-center">
+                Brand Archived
+              </Text>
+            </View>
           </View>
-        </View>
-      )}
+        )}
 
-      {/* Brand name overlay at bottom */}
-      {brandsMedia[verticalIndex] && (
-        <View className="absolute bottom-24 left-5 right-5 z-50">
+        {/* Brand name overlay */}
+        {brandsMedia[verticalIndex] && (
           <View className="bg-black/30 px-4 py-3 rounded-full flex-row items-center justify-between">
             <TouchableOpacity
               activeOpacity={0.7}
@@ -750,8 +752,24 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
           </View>
-        </View>
-      )}
+        )}
+
+        {/* Pagination Dots */}
+        {brandsMedia[verticalIndex] && (
+          <View className="mt-3">
+            <PaginationDots
+              totalItems={brandsMedia[verticalIndex].media.length}
+              currentIndex={
+                horizontalIndices[brandsMedia[verticalIndex].brand] || 0
+              }
+              dotSize={6}
+              dotSpacing={4}
+              activeColor="#FFFFFF"
+              inactiveColor="rgba(255, 255, 255, 0.4)"
+            />
+          </View>
+        )}
+      </View>
       <FlatList
         data={brandsMedia}
         keyExtractor={(item) => item.brand}

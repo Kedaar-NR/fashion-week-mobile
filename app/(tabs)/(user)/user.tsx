@@ -303,7 +303,7 @@ export default function UserScreen() {
             {/* Brands Archived */}
             <TouchableOpacity
               className="items-center mr-10"
-              onPress={() => router.push("/(tabs)/archive")}
+              onPress={() => router.push("/(tabs)/(user)/archive")}
             >
               <Text className="text-lg font-bold text-gray-800">
                 {loadingSavedBrands ? "..." : savedBrandsCount}
