@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { Session } from "@supabase/supabase-js";
 import { router } from "expo-router";
@@ -11,17 +12,26 @@ import {
   View,
 } from "react-native";
 import { supabase } from "../../../lib/supabase";
-
+``;
 interface ArchiveItem {
   id: string;
   brandName: string;
   tagline: string;
   profileImage: string;
+  brandId: string;
 }
 
-const ArchiveItem = ({ item }: { item: ArchiveItem }) => (
+const ArchiveItem = ({
+  item,
+  onToggle,
+  isUnfilled,
+}: {
+  item: ArchiveItem;
+  onToggle: (itemId: string) => void;
+  isUnfilled: boolean;
+}) => (
   <TouchableOpacity
-    className="flex-row items-center mb-3 ml-4"
+    className="flex-row items-center mb-3 ml-4 mr-4"
     onPress={() => {
       // Navigate to brand detail page
       router.push({
@@ -37,6 +47,21 @@ const ArchiveItem = ({ item }: { item: ArchiveItem }) => (
       </Text>
       <Text className="text-sm text-gray-600">{item.tagline}</Text>
     </View>
+
+    {/* Bookmark icon - filled by default, can be toggled to unfilled */}
+    <TouchableOpacity
+      onPress={(e) => {
+        e.stopPropagation();
+        onToggle(item.id);
+      }}
+      className="ml-2 p-2"
+    >
+      <Ionicons
+        name={isUnfilled ? "bookmark-outline" : "bookmark"}
+        size={20}
+        color="#000000"
+      />
+    </TouchableOpacity>
   </TouchableOpacity>
 );
 
@@ -46,6 +71,9 @@ export default function ArchiveScreen() {
   const [filteredBrands, setFilteredBrands] = useState<ArchiveItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [unfilledBookmarks, setUnfilledBookmarks] = useState<Set<string>>(
+    new Set()
+  );
 
   const fetchSavedBrands = async () => {
     if (!session?.user) return;
@@ -58,6 +86,7 @@ export default function ArchiveScreen() {
           `
           id,
           created_at,
+          brand_id,
           brand:brand_id (
             id,
             brand_name,
@@ -76,6 +105,7 @@ export default function ArchiveScreen() {
         const transformedData: ArchiveItem[] = (data || []).map(
           (item: any) => ({
             id: item.id.toString(),
+            brandId: item.brand_id,
             brandName: item.brand?.brand_name || "Unknown Brand",
             tagline: item.brand?.brand_tagline || "No tagline available",
             profileImage: `https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/profile-pics/${item.brand?.brand_name}.jpg`,
@@ -93,16 +123,56 @@ export default function ArchiveScreen() {
     }
   };
 
+  const handleBookmarkToggle = (itemId: string) => {
+    setUnfilledBookmarks((prev) => {
+      const newSet = new Set(prev);
+      const isCurrentlyUnfilled = newSet.has(itemId);
+
+      if (isCurrentlyUnfilled) {
+        newSet.delete(itemId);
+        console.log("✅ Bookmark filled - will keep archived");
+      } else {
+        newSet.add(itemId);
+        console.log("❌ Bookmark unfilled - will unarchive when leaving page");
+      }
+
+      return newSet;
+    });
+  };
+
+  const handleUnarchive = async (itemId: string) => {
+    if (!session?.user) return;
+
+    try {
+      // Remove from saved_brands table
+      const { error } = await supabase
+        .from("saved_brands")
+        .delete()
+        .eq("id", itemId)
+        .eq("user_id", session.user.id);
+
+      if (error) {
+        console.log("❌ Error unarchiving brand:", error);
+        return;
+      }
+
+      console.log("✅ Unarchived:", itemId);
+    } catch (error) {
+      console.log("❌ Unexpected error unarchiving brand:", error);
+    }
+  };
+
   // Filter brands based on search query
   const filterBrands = (query: string) => {
     if (!query.trim()) {
       setFilteredBrands(savedBrands);
       return;
     }
-    
-    const filtered = savedBrands.filter(brand =>
-      brand.brandName.toLowerCase().includes(query.toLowerCase()) ||
-      brand.tagline.toLowerCase().includes(query.toLowerCase())
+
+    const filtered = savedBrands.filter(
+      (brand) =>
+        brand.brandName.toLowerCase().includes(query.toLowerCase()) ||
+        brand.tagline.toLowerCase().includes(query.toLowerCase())
     );
     setFilteredBrands(filtered);
   };
@@ -112,8 +182,29 @@ export default function ArchiveScreen() {
       console.log("📍 Current path: /(tabs)/archive");
       if (session) {
         fetchSavedBrands();
+        // Clear unfilled bookmarks when entering the page
+        setUnfilledBookmarks(new Set());
       }
     }, [session])
+  );
+
+  // Handle page exit - unarchive all unfilled bookmarks
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        // Capture the current state when cleanup runs
+        const currentUnfilledBookmarks = unfilledBookmarks;
+        console.log(
+          "🚪 Unarchiving items:",
+          Array.from(currentUnfilledBookmarks)
+        );
+
+        // When leaving the page, unarchive all unfilled bookmarks
+        currentUnfilledBookmarks.forEach((itemId) => {
+          handleUnarchive(itemId);
+        });
+      };
+    }, []) // Empty dependency array ensures cleanup only runs when leaving the page
   );
 
   useEffect(() => {
@@ -163,7 +254,12 @@ export default function ArchiveScreen() {
       ) : (
         <View className="space-y-2">
           {filteredBrands.map((brand) => (
-            <ArchiveItem key={brand.id} item={brand} />
+            <ArchiveItem
+              key={brand.id}
+              item={brand}
+              onToggle={handleBookmarkToggle}
+              isUnfilled={unfilledBookmarks.has(brand.id)}
+            />
           ))}
         </View>
       )}
