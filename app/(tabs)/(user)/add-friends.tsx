@@ -242,7 +242,7 @@ export default function AddFriendsScreen() {
       <View className="py-4">
         <TextInput
           className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
-          placeholder="Search users by email..."
+          placeholder="Search users..."
           value={searchQuery}
           onChangeText={(text) => {
             setSearchQuery(text);

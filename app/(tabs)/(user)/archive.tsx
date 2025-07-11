@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -42,7 +43,9 @@ const ArchiveItem = ({ item }: { item: ArchiveItem }) => (
 export default function ArchiveScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [savedBrands, setSavedBrands] = useState<ArchiveItem[]>([]);
+  const [filteredBrands, setFilteredBrands] = useState<ArchiveItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchSavedBrands = async () => {
     if (!session?.user) return;
@@ -79,13 +82,29 @@ export default function ArchiveScreen() {
           })
         );
         setSavedBrands(transformedData);
+        setFilteredBrands(transformedData);
       }
     } catch (error) {
       console.log("Unexpected error fetching saved brands:", error);
       setSavedBrands([]);
+      setFilteredBrands([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Filter brands based on search query
+  const filterBrands = (query: string) => {
+    if (!query.trim()) {
+      setFilteredBrands(savedBrands);
+      return;
+    }
+    
+    const filtered = savedBrands.filter(brand =>
+      brand.brandName.toLowerCase().includes(query.toLowerCase()) ||
+      brand.tagline.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredBrands(filtered);
   };
 
   useFocusEffect(
@@ -113,13 +132,18 @@ export default function ArchiveScreen() {
 
   return (
     <ScrollView className="flex-1 bg-transparent">
-      <View className="flex-row items-center gap-4 ml-4 mb-4">
-        <TouchableOpacity onPress={() => {}}>
-          <Text className="text-sm font-bold">FILTER+</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => {}}>
-          <Text className="text-sm font-bold">SORT BY+</Text>
-        </TouchableOpacity>
+      {/* Search Bar */}
+      <View className="px-4 py-4">
+        <TextInput
+          className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
+          placeholder="Search archived brands..."
+          value={searchQuery}
+          onChangeText={(text) => {
+            setSearchQuery(text);
+            filterBrands(text);
+          }}
+          autoCapitalize="none"
+        />
       </View>
 
       {loading ? (
@@ -138,7 +162,7 @@ export default function ArchiveScreen() {
         </View>
       ) : (
         <View className="space-y-2">
-          {savedBrands.map((brand) => (
+          {filteredBrands.map((brand) => (
             <ArchiveItem key={brand.id} item={brand} />
           ))}
         </View>

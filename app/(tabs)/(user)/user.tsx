@@ -4,7 +4,6 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Dimensions,
-  FlatList,
   Image,
   ScrollView,
   Text,
@@ -48,6 +47,8 @@ export default function UserScreen() {
   const [loadingPurchased, setLoadingPurchased] = useState(true);
   const [savedBrandsCount, setSavedBrandsCount] = useState(0);
   const [loadingSavedBrands, setLoadingSavedBrands] = useState(true);
+  const [friendsCount, setFriendsCount] = useState(0);
+  const [loadingFriendsCount, setLoadingFriendsCount] = useState(true);
 
   const fetchPinnedCollections = async () => {
     if (!session) return;
@@ -89,6 +90,30 @@ export default function UserScreen() {
       setSavedBrandsCount(0);
     } finally {
       setLoadingSavedBrands(false);
+    }
+  };
+
+  const fetchFriendsCount = async () => {
+    if (!session) return;
+
+    setLoadingFriendsCount(true);
+    try {
+      const { count, error } = await supabase
+        .from("user_friends")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", session.user.id);
+
+      if (error) {
+        console.log("Error fetching friends count:", error);
+        setFriendsCount(0);
+      } else {
+        setFriendsCount(count || 0);
+      }
+    } catch (error) {
+      console.log("Unexpected error fetching friends count:", error);
+      setFriendsCount(0);
+    } finally {
+      setLoadingFriendsCount(false);
     }
   };
 
@@ -157,6 +182,7 @@ export default function UserScreen() {
         fetchPinnedCollections();
         fetchRecentlyPurchased();
         fetchSavedBrandsCount();
+        fetchFriendsCount();
       }
     }, [session])
   );
@@ -312,8 +338,13 @@ export default function UserScreen() {
             </TouchableOpacity>
 
             {/* Friends */}
-            <TouchableOpacity className="items-center">
-              <Text className="text-lg font-bold text-gray-800">156</Text>
+            <TouchableOpacity
+              className="items-center"
+              onPress={() => router.push("/(tabs)/(user)/friends")}
+            >
+              <Text className="text-lg font-bold text-gray-800">
+                {loadingFriendsCount ? "..." : friendsCount}
+              </Text>
               <Text className="text-sm text-gray-600">Friends</Text>
             </TouchableOpacity>
           </View>
@@ -349,18 +380,34 @@ export default function UserScreen() {
             {loadingCollections ? (
               <Text>Loading collections...</Text>
             ) : (
-              <FlatList
-                data={styleCollections}
-                keyExtractor={(item) => item.id}
-                renderItem={renderStyleItem}
-                numColumns={3}
-                columnWrapperStyle={{
-                  gap: 16,
-                  marginBottom: 16,
-                }}
-                scrollEnabled={false}
-                contentContainerStyle={{ paddingBottom: 8 }}
-              />
+              <View>
+                {Array.from(
+                  { length: Math.ceil(styleCollections.length / 3) },
+                  (_, rowIndex) => (
+                    <View
+                      key={rowIndex}
+                      style={{ flexDirection: "row", marginBottom: 16 }}
+                    >
+                      {[0, 1, 2].map((colIndex) => {
+                        const itemIndex = rowIndex * 3 + colIndex;
+                        const item = styleCollections[itemIndex];
+
+                        return (
+                          <View
+                            key={colIndex}
+                            style={{
+                              width: gridItemWidth,
+                              marginRight: colIndex < 2 ? 16 : 0,
+                            }}
+                          >
+                            {item ? renderStyleItem({ item }) : null}
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )
+                )}
+              </View>
             )}
           </View>
 
@@ -381,18 +428,36 @@ export default function UserScreen() {
                 No purchased items to show
               </Text>
             ) : (
-              <FlatList
-                data={recentlyPurchased}
-                keyExtractor={(item) => item.id}
-                renderItem={renderRecentlyPurchasedItem}
-                numColumns={3}
-                columnWrapperStyle={{
-                  gap: 16,
-                  marginBottom: 16,
-                }}
-                scrollEnabled={false}
-                contentContainerStyle={{ paddingBottom: 8 }}
-              />
+              <View>
+                {Array.from(
+                  { length: Math.ceil(recentlyPurchased.length / 3) },
+                  (_, rowIndex) => (
+                    <View
+                      key={rowIndex}
+                      style={{ flexDirection: "row", marginBottom: 16 }}
+                    >
+                      {[0, 1, 2].map((colIndex) => {
+                        const itemIndex = rowIndex * 3 + colIndex;
+                        const item = recentlyPurchased[itemIndex];
+
+                        return (
+                          <View
+                            key={colIndex}
+                            style={{
+                              width: gridItemWidth,
+                              marginRight: colIndex < 2 ? 16 : 0,
+                            }}
+                          >
+                            {item
+                              ? renderRecentlyPurchasedItem({ item })
+                              : null}
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )
+                )}
+              </View>
             )}
           </View>
         </View>
