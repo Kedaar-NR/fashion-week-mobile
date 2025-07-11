@@ -348,7 +348,24 @@ async function fetchAllBrandsMedia(brands: string[]) {
               : null;
           })
           .filter(Boolean);
-        return { brand, media: files };
+
+        // Fetch brand tagline from database
+        let tagline = null;
+        try {
+          const { data: brandData, error } = await supabase
+            .from("brand")
+            .select("brand_tagline")
+            .eq("brand_name", brand)
+            .single();
+
+          if (!error && brandData) {
+            tagline = brandData.brand_tagline;
+          }
+        } catch (error) {
+          console.log(`Error fetching tagline for ${brand}:`, error);
+        }
+
+        return { brand, media: files, tagline };
       } catch {
         return null;
       }
@@ -361,6 +378,7 @@ async function fetchAllBrandsMedia(brands: string[]) {
     ): b is {
       brand: string;
       media: { type: "video" | "image"; url: string; name: string }[];
+      tagline: string | null;
     } => !!b
   );
 }
@@ -370,6 +388,7 @@ export default function HomeScreen() {
     {
       brand: string;
       media: { type: "video" | "image"; url: string; name: string }[];
+      tagline: string | null;
     }[]
   >([]);
   const [loading, setLoading] = useState(true);
@@ -458,6 +477,7 @@ export default function HomeScreen() {
               ): b is {
                 brand: string;
                 media: { type: "video" | "image"; url: string; name: string }[];
+                tagline: string | null;
               } => !!b
             )
           );
@@ -491,6 +511,7 @@ export default function HomeScreen() {
           ): b is {
             brand: string;
             media: { type: "video" | "image"; url: string; name: string }[];
+            tagline: string | null;
           } => !!b
         )
       );
@@ -694,7 +715,7 @@ export default function HomeScreen() {
       {/* Brand name overlay at bottom */}
       {brandsMedia[verticalIndex] && (
         <View className="absolute bottom-24 left-5 right-5 z-50">
-          <View className="bg-black/30 px-4 py-2 rounded-full flex-row items-center justify-between">
+          <View className="bg-black/30 px-4 py-3 rounded-full flex-row items-center justify-between">
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => {
@@ -708,10 +729,13 @@ export default function HomeScreen() {
                   params: { brand: brandsMedia[verticalIndex].brand },
                 });
               }}
-              className="flex-1 items-center justify-center"
+              className="flex-1 items-start justify-center pl-2"
             >
-              <Text className="text-white text-sm font-semibold text-center">
+              <Text className="text-white text-sm font-semibold text-left">
                 {brandsMedia[verticalIndex].brand}
+              </Text>
+              <Text className="text-white text-xs opacity-80 text-left mt-1">
+                {brandsMedia[verticalIndex].tagline || "No tagline available"}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity

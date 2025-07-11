@@ -39,6 +39,10 @@ export default function CollectionDetailScreen() {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const [productTypeSubDropdownOpen, setProductTypeSubDropdownOpen] =
+    useState(false);
+  const [priceRangeSubDropdownOpen, setPriceRangeSubDropdownOpen] =
+    useState(false);
 
   const fetchCollectionPieces = async () => {
     if (!collection || collection === "all-liked") {
@@ -377,6 +381,68 @@ export default function CollectionDetailScreen() {
     );
   };
 
+  const productTypeOptions = [
+    {
+      label: "SHOES",
+      onPress: () => {
+        console.log("Filter: Shoes");
+        setProductTypeSubDropdownOpen(false);
+      },
+    },
+    {
+      label: "CLOTHING",
+      onPress: () => {
+        console.log("Filter: Clothing");
+        setProductTypeSubDropdownOpen(false);
+      },
+    },
+    {
+      label: "ACCESSORIES",
+      onPress: () => {
+        console.log("Filter: Accessories");
+        setProductTypeSubDropdownOpen(false);
+      },
+    },
+    {
+      label: "BAGS",
+      onPress: () => {
+        console.log("Filter: Bags");
+        setProductTypeSubDropdownOpen(false);
+      },
+    },
+  ];
+
+  const priceRangeOptions = [
+    {
+      label: "UNDER $50",
+      onPress: () => {
+        console.log("Filter: Under $50");
+        setPriceRangeSubDropdownOpen(false);
+      },
+    },
+    {
+      label: "UNDER $100",
+      onPress: () => {
+        console.log("Filter: Under $100");
+        setPriceRangeSubDropdownOpen(false);
+      },
+    },
+    {
+      label: "UNDER $200",
+      onPress: () => {
+        console.log("Filter: Under $200");
+        setPriceRangeSubDropdownOpen(false);
+      },
+    },
+    {
+      label: "UNDER $500",
+      onPress: () => {
+        console.log("Filter: Under $500");
+        setPriceRangeSubDropdownOpen(false);
+      },
+    },
+  ];
+
   const filterOptions = [
     {
       label: "ALL ITEMS",
@@ -386,38 +452,15 @@ export default function CollectionDetailScreen() {
       },
     },
     {
-      label: "SHOES",
+      label: "PRODUCT TYPE",
       onPress: () => {
-        console.log("Filter: Shoes");
-        setFilterDropdownOpen(false);
+        setProductTypeSubDropdownOpen(!productTypeSubDropdownOpen);
       },
     },
     {
-      label: "CLOTHING",
+      label: "PRICE RANGE",
       onPress: () => {
-        console.log("Filter: Clothing");
-        setFilterDropdownOpen(false);
-      },
-    },
-    {
-      label: "ACCESSORIES",
-      onPress: () => {
-        console.log("Filter: Accessories");
-        setFilterDropdownOpen(false);
-      },
-    },
-    {
-      label: "UNDER $50",
-      onPress: () => {
-        console.log("Filter: Under $50");
-        setFilterDropdownOpen(false);
-      },
-    },
-    {
-      label: "UNDER $100",
-      onPress: () => {
-        console.log("Filter: Under $100");
-        setFilterDropdownOpen(false);
+        setPriceRangeSubDropdownOpen(!priceRangeSubDropdownOpen);
       },
     },
   ];
@@ -443,24 +486,6 @@ export default function CollectionDetailScreen() {
       label: "PRICE HIGH-LOW",
       onPress: () => {
         setPieces((prev) => [...prev].sort((a, b) => b.price - a.price));
-        setSortDropdownOpen(false);
-      },
-    },
-    {
-      label: "BRAND",
-      onPress: () => {
-        setPieces((prev) =>
-          [...prev].sort((a, b) => a.brand_name.localeCompare(b.brand_name))
-        );
-        setSortDropdownOpen(false);
-      },
-    },
-    {
-      label: "TYPE",
-      onPress: () => {
-        setPieces((prev) =>
-          [...prev].sort((a, b) => a.type.localeCompare(b.type))
-        );
         setSortDropdownOpen(false);
       },
     },
@@ -502,7 +527,9 @@ export default function CollectionDetailScreen() {
   return (
     <ScrollView className="flex-1 px-4">
       {/* Header Section */}
-      <View className={`flex-row items-center justify-between ${filterDropdownOpen || sortDropdownOpen ? 'mb-2' : 'mb-4'}`}>
+      <View
+        className={`flex-row items-center justify-between ${filterDropdownOpen || sortDropdownOpen ? "mb-2" : "mb-4"}`}
+      >
         <View className="flex-row items-center gap-4">
           <TouchableOpacity
             onPress={() => setFilterDropdownOpen(!filterDropdownOpen)}
@@ -548,13 +575,61 @@ export default function CollectionDetailScreen() {
       {filterDropdownOpen && (
         <View className="mb-4">
           {filterOptions.map((option, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={option.onPress}
-              className="py-2"
-            >
-              <Text className="text-sm font-bold">{option.label}</Text>
-            </TouchableOpacity>
+            <View key={index}>
+              <TouchableOpacity
+                onPress={option.onPress}
+                className="py-2 flex-row items-center justify-between"
+              >
+                <Text className="text-sm font-bold">{option.label}</Text>
+                {(option.label === "PRODUCT TYPE" ||
+                  option.label === "PRICE RANGE") && (
+                  <Text className="text-sm font-bold">
+                    {option.label === "PRODUCT TYPE" &&
+                    productTypeSubDropdownOpen
+                      ? "▲"
+                      : option.label === "PRICE RANGE" &&
+                          priceRangeSubDropdownOpen
+                        ? "▲"
+                        : "▼"}
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              {/* Product Type Sub-dropdown */}
+              {option.label === "PRODUCT TYPE" &&
+                productTypeSubDropdownOpen && (
+                  <View className="ml-4">
+                    {productTypeOptions.map((subOption, subIndex) => (
+                      <TouchableOpacity
+                        key={subIndex}
+                        onPress={subOption.onPress}
+                        className="py-2"
+                      >
+                        <Text className="text-sm font-bold">
+                          {subOption.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
+              {/* Price Range Sub-dropdown */}
+              {option.label === "PRICE RANGE" && priceRangeSubDropdownOpen && (
+                <View className="ml-4">
+                  {priceRangeOptions.map((subOption, subIndex) => (
+                    <TouchableOpacity
+                      key={subIndex}
+                      onPress={subOption.onPress}
+                      className="py-2"
+                    >
+                      <Text className="text-sm font-bold">
+                        {subOption.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
           ))}
         </View>
       )}
