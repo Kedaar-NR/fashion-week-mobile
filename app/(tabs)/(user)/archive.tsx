@@ -182,7 +182,6 @@ export default function ArchiveScreen() {
       console.log("📍 Current path: /(tabs)/archive");
       if (session) {
         fetchSavedBrands();
-        // Clear unfilled bookmarks when entering the page
         setUnfilledBookmarks(new Set());
       }
     }, [session])
@@ -192,19 +191,17 @@ export default function ArchiveScreen() {
   useFocusEffect(
     React.useCallback(() => {
       return () => {
-        // Capture the current state when cleanup runs
         const currentUnfilledBookmarks = unfilledBookmarks;
         console.log(
           "🚪 Unarchiving items:",
           Array.from(currentUnfilledBookmarks)
         );
 
-        // When leaving the page, unarchive all unfilled bookmarks
         currentUnfilledBookmarks.forEach((itemId) => {
           handleUnarchive(itemId);
         });
       };
-    }, []) // Empty dependency array ensures cleanup only runs when leaving the page
+    }, [])
   );
 
   useEffect(() => {
