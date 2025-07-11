@@ -58,17 +58,6 @@ export default function TabLayout() {
             }}
           />
           <Tabs.Screen
-            name="archive"
-            options={{
-              title: "Archive",
-              headerShown: false,
-              href: null,
-              tabBarIcon: ({ color }) => (
-                <IconSymbol size={20} name="archivebox.fill" color={color} />
-              ),
-            }}
-          />
-          <Tabs.Screen
             name="style-quiz"
             options={{
               title: "Style Quiz",

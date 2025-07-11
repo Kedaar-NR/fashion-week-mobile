@@ -1,41 +1,35 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { Session } from "@supabase/supabase-js";
-import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Dimensions,
+  ActivityIndicator,
   FlatList,
-  ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { supabase } from "../../../lib/supabase";
 
-interface PurchasedItem {
+interface User {
   id: string;
-  name: string;
-  type: string;
-  designer: string;
-  image: string;
-  price: string;
-  color: string;
-  purchase_date: string;
-  is_showing: boolean;
+  email: string;
+  created_at: string;
 }
 
-const { width } = Dimensions.get("window");
-const gridItemWidth = (width - 64) / 3; // 3 columns with padding
+interface SearchResult {
+  user: User;
+  isFriend: boolean;
+  requestSent: boolean;
+  requestReceived: boolean;
+}
 
-export default function RecentlyPurchasedScreen() {
+export default function AddFriendsScreen() {
   const [session, setSession] = useState<Session | null>(null);
-  const [purchasedItems, setPurchasedItems] = useState<PurchasedItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [localShowingState, setLocalShowingState] = useState<
-    Record<string, boolean>
-  >({});
-  const [hasChanges, setHasChanges] = useState(false);
-  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -51,206 +45,242 @@ export default function RecentlyPurchasedScreen() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!session) return;
+  const searchUsers = async (query: string) => {
+    if (!session?.user || !query.trim()) {
+      setSearchResults([]);
+      return;
+    }
 
-    const fetchPurchasedItems = async () => {
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from("purchased_pieces")
-          .select(
-            `
-            id,
-            created_at,
-            is_showing,
-            product!purchased_pieces_product_id_fkey (
-              id,
-              product_name,
-              product_desc,
-              media_filepath,
-              price,
-              type,
-              color,
-              brand:brand_id (
-                id,
-                brand_name,
-                brand_tagline
-              )
-            )
-          `
-          )
-          .eq("user_id", session.user.id)
-          .order("created_at", { ascending: false });
+    setSearching(true);
+    try {
+      // Search for users by email (excluding current user)
+      const { data: users, error } = await supabase
+        .from("auth.users")
+        .select("id, email, created_at")
+        .ilike("email", `%${query}%`)
+        .neq("id", session.user.id)
+        .limit(20);
 
-        if (error) {
-          console.log("Error fetching purchased items:", error);
-          setPurchasedItems([]);
-        } else {
-          // Transform the data to match our interface
-          const transformedData: PurchasedItem[] = (data || []).map(
-            (item: any) => ({
-              id: item.id.toString(),
-              name: item.product?.product_name || "Unknown Product",
-              type: item.product?.type || "Unknown Type",
-              designer: item.product?.brand?.brand_name || "Unknown Brand",
-              image: item.product?.media_filepath || "placeholder",
-              price: `$${item.product?.price || 0}`,
-              color: item.product?.color || "Unknown Color",
-              purchase_date: new Date(item.created_at).toLocaleDateString(),
-              is_showing: item.is_showing,
-            })
-          );
-          setPurchasedItems(transformedData);
-
-          // Initialize local showing state
-          const initialShowingState: Record<string, boolean> = {};
-          transformedData.forEach((item) => {
-            initialShowingState[item.id] = item.is_showing;
-          });
-          setLocalShowingState(initialShowingState);
-        }
-      } catch (error) {
-        console.log("Unexpected error fetching purchased items:", error);
-        setPurchasedItems([]);
-      } finally {
-        setLoading(false);
+      if (error) {
+        console.log("Error searching users:", error);
+        setSearchResults([]);
+        return;
       }
-    };
 
-    fetchPurchasedItems();
-  }, [session]);
+      // For each user, check friendship status
+      const resultsWithStatus = await Promise.all(
+        (users || []).map(async (user) => {
+          // Check if already friends
+          const { data: friendship } = await supabase
+            .from("friendships")
+            .select("*")
+            .or(`user1_id.eq.${session.user.id},user2_id.eq.${session.user.id}`)
+            .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
+            .eq("status", "accepted")
+            .single();
 
-  const toggleShowing = (itemId: string) => {
-    setLocalShowingState((prev) => ({
-      ...prev,
-      [itemId]: !prev[itemId],
-    }));
-    setHasChanges(true);
+          // Check if friend request sent
+          const { data: sentRequest } = await supabase
+            .from("friend_requests")
+            .select("*")
+            .eq("sender_id", session.user.id)
+            .eq("receiver_id", user.id)
+            .eq("status", "pending")
+            .single();
+
+          // Check if friend request received
+          const { data: receivedRequest } = await supabase
+            .from("friend_requests")
+            .select("*")
+            .eq("sender_id", user.id)
+            .eq("receiver_id", session.user.id)
+            .eq("status", "pending")
+            .single();
+
+          return {
+            user,
+            isFriend: !!friendship,
+            requestSent: !!sentRequest,
+            requestReceived: !!receivedRequest,
+          };
+        })
+      );
+
+      setSearchResults(resultsWithStatus);
+    } catch (error) {
+      console.log("Error in searchUsers:", error);
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
   };
 
-  const hideAll = () => {
-    const newShowingState: Record<string, boolean> = {};
-    purchasedItems.forEach((item) => {
-      newShowingState[item.id] = false;
-    });
-    setLocalShowingState(newShowingState);
-    setHasChanges(true);
-  };
-
-  const saveChanges = async () => {
-    if (!session || !hasChanges) return;
+  const sendFriendRequest = async (userId: string) => {
+    if (!session?.user) return;
 
     setLoading(true);
     try {
-      // Update all purchased items with their new showing status
-      const updatePromises = purchasedItems.map((item) =>
-        supabase
-          .from("purchased_pieces")
-          .update({ is_showing: localShowingState[item.id] })
-          .eq("id", item.id)
-          .eq("user_id", session.user.id)
+      const { error } = await supabase.from("friend_requests").insert({
+        sender_id: session.user.id,
+        receiver_id: userId,
+        status: "pending",
+      });
+
+      if (error) {
+        console.log("Error sending friend request:", error);
+        return;
+      }
+
+      // Update local state to show request sent
+      setSearchResults((prev) =>
+        prev.map((result) =>
+          result.user.id === userId ? { ...result, requestSent: true } : result
+        )
       );
 
-      await Promise.all(updatePromises);
-
-      // Update local purchased items data
-      setPurchasedItems((prev) =>
-        prev.map((item) => ({
-          ...item,
-          is_showing: localShowingState[item.id],
-        }))
-      );
-
-      setHasChanges(false);
-      console.log("Changes saved successfully");
-      // Navigate back to user.tsx after successful save
-      router.back();
+      console.log("Friend request sent successfully");
     } catch (error) {
-      console.log("Error saving changes:", error);
+      console.log("Error sending friend request:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  const acceptFriendRequest = async (userId: string) => {
+    if (!session?.user) return;
+
+    setLoading(true);
+    try {
+      // Update friend request status to accepted
+      const { error: updateError } = await supabase
+        .from("friend_requests")
+        .update({ status: "accepted" })
+        .eq("sender_id", userId)
+        .eq("receiver_id", session.user.id)
+        .eq("status", "pending");
+
+      if (updateError) {
+        console.log("Error accepting friend request:", updateError);
+        return;
+      }
+
+      // Create friendship record
+      const { error: friendshipError } = await supabase
+        .from("friendships")
+        .insert({
+          user1_id: session.user.id,
+          user2_id: userId,
+          status: "accepted",
+        });
+
+      if (friendshipError) {
+        console.log("Error creating friendship:", friendshipError);
+        return;
+      }
+
+      // Update local state
+      setSearchResults((prev) =>
+        prev.map((result) =>
+          result.user.id === userId
+            ? { ...result, isFriend: true, requestReceived: false }
+            : result
+        )
+      );
+
+      console.log("Friend request accepted successfully");
+    } catch (error) {
+      console.log("Error accepting friend request:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderSearchResult = ({ item }: { item: SearchResult }) => (
+    <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
+      <View className="flex-1">
+        <Text className="text-base font-medium">{item.user.email}</Text>
+        <Text className="text-sm text-gray-500">
+          Joined {new Date(item.user.created_at).toLocaleDateString()}
+        </Text>
+      </View>
+
+      <View className="flex-row items-center gap-2">
+        {item.isFriend ? (
+          <Text className="text-sm text-green-600 font-medium">Friends</Text>
+        ) : item.requestSent ? (
+          <Text className="text-sm text-gray-500">Request Sent</Text>
+        ) : item.requestReceived ? (
+          <TouchableOpacity
+            onPress={() => acceptFriendRequest(item.user.id)}
+            disabled={loading}
+            className="bg-blue-500 px-3 py-1 rounded-full"
+          >
+            <Text className="text-white text-sm font-medium">Accept</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={() => sendFriendRequest(item.user.id)}
+            disabled={loading}
+            className="bg-blue-500 px-3 py-1 rounded-full"
+          >
+            <Text className="text-white text-sm font-medium">Add Friend</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+
   useFocusEffect(
     React.useCallback(() => {
-      console.log("📍 Current path: /(tabs)/(user)/recently-purchased");
+      console.log("📍 Current path: /(tabs)/(user)/add-friends");
     }, [])
   );
 
-  const renderGridItem = ({ item }: { item: PurchasedItem }) => (
-    <TouchableOpacity
-      className="items-center"
-      style={{ width: gridItemWidth }}
-      onPress={() => toggleShowing(item.id)}
-    >
-      <View
-        className={`rounded-xl justify-center items-center mb-2 ${
-          localShowingState[item.id]
-            ? "bg-blue-100 border-2 border-blue-400"
-            : "bg-gray-200"
-        }`}
-        style={{ width: gridItemWidth, height: gridItemWidth }}
-      >
-        <Text className="text-xs opacity-50">Image</Text>
+  return (
+    <View className="flex-1 px-4">
+      {/* Search Bar */}
+      <View className="py-4">
+        <TextInput
+          className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
+          placeholder="Search users by email..."
+          value={searchQuery}
+          onChangeText={(text) => {
+            setSearchQuery(text);
+            if (text.trim()) {
+              searchUsers(text);
+            } else {
+              setSearchResults([]);
+            }
+          }}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
       </View>
-      <View className="flex-row justify-between items-start w-full">
-        <View className="flex-1 mr-2">
-          <Text className="text-xs font-medium" numberOfLines={1}>
-            {item.name}
-          </Text>
-          <Text className="text-xs text-gray-600" numberOfLines={1}>
-            {item.designer}
+
+      {/* Search Results */}
+      {searching ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" />
+          <Text className="mt-2 text-gray-600">Searching...</Text>
+        </View>
+      ) : searchQuery.trim() && searchResults.length === 0 ? (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-gray-600">No users found</Text>
+        </View>
+      ) : searchQuery.trim() ? (
+        <FlatList
+          data={searchResults}
+          keyExtractor={(item) => item.user.id}
+          renderItem={renderSearchResult}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-gray-600">
+            Search for users to add as friends
           </Text>
         </View>
-        <Text className="text-xs font-bold" numberOfLines={1}>
-          {item.price}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
-
-  return (
-    <ScrollView className="flex-1 px-4">
-      {/* Header */}
-      <View className="flex-row items-center gap-4 mb-4">
-        <TouchableOpacity onPress={hideAll}>
-          <Text className="text-sm font-bold">HIDE ALL</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={saveChanges}
-          disabled={!hasChanges || loading}
-        >
-          <Text
-            className={`text-sm font-bold ${!hasChanges || loading ? "opacity-50" : ""}`}
-          >
-            SAVE CHANGES
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Purchased Items Grid Section */}
-      <View className="flex-1">
-        {loading ? (
-          <Text className="text-center py-8">Loading purchased items...</Text>
-        ) : purchasedItems.length === 0 ? (
-          <Text className="text-center py-8">No purchased items found</Text>
-        ) : (
-          <FlatList
-            data={purchasedItems}
-            keyExtractor={(item) => item.id}
-            renderItem={renderGridItem}
-            numColumns={3}
-            columnWrapperStyle={{
-              gap: 16,
-              marginBottom: 16,
-            }}
-            scrollEnabled={false}
-            contentContainerStyle={{ paddingBottom: 20 }}
-          />
-        )}
-      </View>
-    </ScrollView>
+      )}
+    </View>
   );
 }

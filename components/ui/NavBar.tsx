@@ -93,28 +93,28 @@ export function NavBar({
           {
             label: "BRANDS",
             onPress: () => {
-              console.log("Add friends pressed");
+              console.log("Brands pressed");
               setMenuOpen(false);
             },
           },
           {
             label: "PIECES",
             onPress: () => {
-              console.log("Settings pressed");
+              console.log("Pieces pressed");
               setMenuOpen(false);
             },
           },
           {
             label: "FOLLOWING",
             onPress: () => {
-              console.log("Share app pressed");
+              console.log("Following pressed");
               setMenuOpen(false);
             },
           },
           {
             label: "FEATURED",
             onPress: () => {
-              console.log("Collections pressed");
+              console.log("Featured pressed");
               setMenuOpen(false);
             },
           },
@@ -179,14 +179,8 @@ export function NavBar({
           {
             label: "EDIT PROFILE",
             onPress: () => {
+              router.push("/(tabs)/(user)/edit-profile");
               console.log("Edit profile pressed");
-              setMenuOpen(false);
-            },
-          },
-          {
-            label: "SETTINGS",
-            onPress: () => {
-              console.log("Settings pressed");
               setMenuOpen(false);
             },
           },
