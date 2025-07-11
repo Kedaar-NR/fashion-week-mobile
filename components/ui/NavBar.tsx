@@ -42,6 +42,31 @@ export function NavBar({
   //   );
   // }, [pathname, segments]);
 
+  // Function to determine if current page should show back button
+  const shouldShowBackButton = (path: string, segments: string[]): boolean => {
+    // Pages that should show hamburger menu (all others show back button)
+    const hamburgerPages = [
+      "/",
+      "/collection",
+      "/style-quiz",
+      "/drops",
+      "/user",
+    ];
+
+    console.log("PATHHHHH", path);
+
+    // Check if the path starts with any of the hamburger pages
+    const shouldShowHamburger = hamburgerPages.some((page) => {
+      if (page === "/") {
+        return path === "/";
+      }
+      return path.startsWith(page);
+    });
+
+    // console.log("Should show hamburger:", shouldShowHamburger);
+    return !shouldShowHamburger;
+  };
+
   // Function to get page display name based on pathname
   const getPageDisplayName = (path: string, segments: string[]): string => {
     if (path === "/") {
@@ -63,6 +88,10 @@ export function NavBar({
   };
 
   const pageDisplayName = getPageDisplayName(pathname, segments);
+
+  // Determine if we should show back button based on current page
+  const shouldShowBack =
+    showBackButton || shouldShowBackButton(pathname, segments);
 
   // Set icon color based on current page
   const iconColor = pageDisplayName === "fashion:week" ? "#FFFFFF" : "#000000"; // White on homepage, black elsewhere
@@ -358,29 +387,39 @@ export function NavBar({
           </View>
         ) : (
           <>
-            <TouchableOpacity
-              className="w-11 h-11 justify-center items-center"
-              onPress={handleMenuPress}
-            >
-              {!menuOpen ? (
-                <View className="w-4 h-3 justify-between">
-                  <View
-                    className="h-0.5 w-full rounded-sm"
-                    style={{ backgroundColor: iconColor }}
-                  />
-                  <View
-                    className="h-0.5 w-full rounded-sm"
-                    style={{ backgroundColor: iconColor }}
-                  />
-                  <View
-                    className="h-0.5 w-full rounded-sm"
-                    style={{ backgroundColor: iconColor }}
-                  />
-                </View>
-              ) : (
-                <IconSymbol name="xmark" size={16} color={iconColor} />
-              )}
-            </TouchableOpacity>
+            {shouldShowBack && (
+              <TouchableOpacity
+                className="w-11 h-11 justify-center items-center"
+                onPress={onBack || (() => router.back())}
+              >
+                <IconSymbol name="chevron.left" size={20} color={iconColor} />
+              </TouchableOpacity>
+            )}
+            {!shouldShowBack && (
+              <TouchableOpacity
+                className="w-11 h-11 justify-center items-center"
+                onPress={handleMenuPress}
+              >
+                {!menuOpen ? (
+                  <View className="w-4 h-3 justify-between">
+                    <View
+                      className="h-0.5 w-full rounded-sm"
+                      style={{ backgroundColor: iconColor }}
+                    />
+                    <View
+                      className="h-0.5 w-full rounded-sm"
+                      style={{ backgroundColor: iconColor }}
+                    />
+                    <View
+                      className="h-0.5 w-full rounded-sm"
+                      style={{ backgroundColor: iconColor }}
+                    />
+                  </View>
+                ) : (
+                  <IconSymbol name="xmark" size={16} color={iconColor} />
+                )}
+              </TouchableOpacity>
+            )}
 
             <Text
               className={`text-lg font-semibold tracking-wider ${pageDisplayName === "fashion:week" ? "text-white" : "text-black"}`}
