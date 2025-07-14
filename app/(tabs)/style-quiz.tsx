@@ -92,9 +92,12 @@ export default function StyleQuizScreen() {
       setCurrent(0);
       setDone(false);
       setImageError(false);
-      pan.setValue({ x: 0, y: 0 });
-      fadeAnim.setValue(1);
-      scaleAnim.setValue(1);
+      // Defer animated value updates to avoid useInsertionEffect conflicts
+      requestAnimationFrame(() => {
+        pan.setValue({ x: 0, y: 0 });
+        fadeAnim.setValue(1);
+        scaleAnim.setValue(1);
+      });
     }, [])
   );
 
@@ -149,7 +152,10 @@ export default function StyleQuizScreen() {
       useNativeDriver: true,
     }).start(() => {
       // After animation, update index and reset card position
-      pan.setValue({ x: 0, y: 0 });
+      // Defer animated value update to avoid useInsertionEffect conflicts
+      requestAnimationFrame(() => {
+        pan.setValue({ x: 0, y: 0 });
+      });
       if (current < shuffledImages.length - 1) {
         setCurrent((prev) => prev + 1);
       } else {
@@ -200,21 +206,24 @@ export default function StyleQuizScreen() {
   const cardKey = `${current}-${isAnimatingOut ? "animating" : "static"}`;
 
   useEffect(() => {
-    appearAnim.setValue(0);
-    appearScale.setValue(0.95);
-    Animated.parallel([
-      Animated.timing(appearAnim, {
-        toValue: 1,
-        duration: 220,
-        useNativeDriver: true,
-      }),
-      Animated.spring(appearScale, {
-        toValue: 1,
-        useNativeDriver: true,
-        speed: 16,
-        bounciness: 8,
-      }),
-    ]).start();
+    // Defer animated value updates to avoid useInsertionEffect conflicts
+    requestAnimationFrame(() => {
+      appearAnim.setValue(0);
+      appearScale.setValue(0.95);
+      Animated.parallel([
+        Animated.timing(appearAnim, {
+          toValue: 1,
+          duration: 220,
+          useNativeDriver: true,
+        }),
+        Animated.spring(appearScale, {
+          toValue: 1,
+          useNativeDriver: true,
+          speed: 16,
+          bounciness: 8,
+        }),
+      ]).start();
+    });
   }, [cardKey]);
 
   if (done || current >= shuffledImages.length) {
