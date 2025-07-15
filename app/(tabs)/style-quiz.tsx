@@ -219,27 +219,64 @@ export default function StyleQuizScreen() {
 
   if (done || current >= shuffledImages.length) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-100 p-0">
-        <Text className="text-5xl font-bold text-gray-900">Done</Text>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#f3f4f6",
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 40,
+            fontWeight: "bold",
+            color: "#111827",
+            textAlign: "center",
+          }}
+        >
+          Done
+        </Text>
       </View>
     );
   }
 
   return (
-    <View className="flex-1 items-center justify-start bg-gray-100">
-      <View className="h-2" />
-      <Text className="text-3xl font-bold mb-0 mt-2 text-center">
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "flex-start",
+        backgroundColor: "#f3f4f6",
+      }}
+    >
+      <View style={{ height: 8 }} />
+      <Text
+        style={{
+          fontSize: 28,
+          fontWeight: "bold",
+          marginBottom: 0,
+          marginTop: 8,
+          textAlign: "center",
+        }}
+      >
         WHO ARE YOU?
       </Text>
-      <Text className="text-base mb-1 text-center">
+      <Text style={{ fontSize: 16, marginBottom: 4, textAlign: "center" }}>
         Swipe right for Yes, left for No
       </Text>
-      <View className="items-center w-full">
+      <View style={{ alignItems: "center", width: "100%" }}>
         <View
-          className="items-center justify-center mb-0 bg-transparent"
-          style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
+          style={{
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 0,
+            backgroundColor: "transparent",
+            width: CARD_WIDTH,
+            height: CARD_HEIGHT,
+          }}
         >
-          <View className="w-full h-full">
+          <View style={{ width: "100%", height: "100%" }}>
             <QuizCard
               key={cardKey}
               cardKey={cardKey}
@@ -255,7 +292,19 @@ export default function StyleQuizScreen() {
             />
             {/* Overlay spinner only for first image if not loaded */}
             {current === 0 && !firstImageLoaded && (
-              <View className="absolute inset-0 items-center justify-center bg-white/20 z-10">
+              <View
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "rgba(255,255,255,0.2)",
+                  zIndex: 10,
+                }}
+              >
                 <ActivityIndicator size="large" color="#111" />
               </View>
             )}
@@ -263,25 +312,58 @@ export default function StyleQuizScreen() {
         </View>
       </View>
       <View
-        className="flex-row justify-between mt-[18px] mb-0 items-center h-[70px]"
-        style={{ width: CARD_WIDTH }}
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          marginTop: 18,
+          marginBottom: 0,
+          alignItems: "center",
+          height: 70,
+          width: CARD_WIDTH,
+        }}
       >
         <TouchableOpacity
-          className="flex-1 mx-[18px] py-[18px] rounded-2xl items-center bg-gray-900"
-          style={{ elevation: 2 }}
+          style={{
+            flex: 1,
+            marginHorizontal: 18,
+            paddingVertical: 18,
+            borderRadius: 16,
+            alignItems: "center",
+            backgroundColor: "#111827",
+            elevation: 2,
+          }}
           onPress={() => handleAnswer("no")}
         >
-          <Text className="text-2xl font-bold text-white">No</Text>
+          <Text style={{ fontSize: 22, fontWeight: "bold", color: "#fff" }}>
+            No
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          className="flex-1 mx-[18px] py-[18px] rounded-2xl items-center bg-gray-900"
-          style={{ elevation: 2 }}
+          style={{
+            flex: 1,
+            marginHorizontal: 18,
+            paddingVertical: 18,
+            borderRadius: 16,
+            alignItems: "center",
+            backgroundColor: "#111827",
+            elevation: 2,
+          }}
           onPress={() => handleAnswer("yes")}
         >
-          <Text className="text-2xl font-bold text-white">Yes</Text>
+          <Text style={{ fontSize: 22, fontWeight: "bold", color: "#fff" }}>
+            Yes
+          </Text>
         </TouchableOpacity>
       </View>
-      <Text className="text-lg text-gray-600 mt-2 font-bold text-center">
+      <Text
+        style={{
+          fontSize: 18,
+          color: "#6b7280",
+          marginTop: 8,
+          fontWeight: "bold",
+          textAlign: "center",
+        }}
+      >
         {progressNum} / {shuffledImages.length}
       </Text>
     </View>

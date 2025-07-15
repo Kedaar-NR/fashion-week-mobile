@@ -8,9 +8,12 @@ import {
   View,
 } from "react-native";
 
+import EventEmitter from "eventemitter3";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { supabase } from "../../lib/supabase";
 import { IconSymbol } from "./IconSymbol";
+// @ts-ignore
+export const feedFilterEmitter = new EventEmitter();
 
 export function NavBar({
   customTitle,
@@ -122,7 +125,7 @@ export function NavBar({
           {
             label: "BRANDS",
             onPress: () => {
-              console.log("Brands pressed");
+              feedFilterEmitter.emit("filter", "all"); // Show all brands (default view)
               setMenuOpen(false);
             },
           },
@@ -136,7 +139,7 @@ export function NavBar({
           {
             label: "FOLLOWING",
             onPress: () => {
-              console.log("Following pressed");
+              feedFilterEmitter.emit("filter", "liked"); // Show only followed/liked brands
               setMenuOpen(false);
             },
           },
@@ -452,7 +455,9 @@ export function NavBar({
               onPress={option.onPress}
               className="py-2"
             >
-              <Text className="text-sm font-bold">{option.label}</Text>
+              <Text className="text-sm font-bold text-white">
+                {option.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>

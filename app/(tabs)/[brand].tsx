@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Video } from "expo-av";
 import * as Linking from "expo-linking";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -37,6 +37,8 @@ export default function BrandDetailScreen() {
   const flatListRef = React.useRef<FlatList<any>>(null);
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const router = require("expo-router").useRouter();
+  const [muted, setMuted] = useState(true); // default to muted
+  const videoRefs = useRef<{ [key: string]: any }>({});
 
   useFocusEffect(
     React.useCallback(() => {
@@ -92,7 +94,28 @@ export default function BrandDetailScreen() {
           url: string;
           name: string;
         }[];
-        setMedia(files);
+        // --- DEDUPLICATE: Only show video if both image and video exist for same base name ---
+        const baseMap = new Map<
+          string,
+          { type: "video" | "image"; url: string; name: string }
+        >();
+        files.forEach((file) => {
+          const base = file.name.replace(/\.[^/.]+$/, "");
+          if (!baseMap.has(base)) {
+            baseMap.set(base, file);
+          } else {
+            // Prefer video over image
+            const existing = baseMap.get(base);
+            if (
+              existing &&
+              existing.type === "image" &&
+              file.type === "video"
+            ) {
+              baseMap.set(base, file);
+            }
+          }
+        });
+        setMedia(Array.from(baseMap.values()));
       } catch {
         setMedia([]);
       }
@@ -112,6 +135,14 @@ export default function BrandDetailScreen() {
       } else {
         setFirstLoaded(true); // For video, assume ready
       }
+    }
+  }, [media]);
+
+  // Reset to first item whenever media changes, but only if media is not empty
+  React.useEffect(() => {
+    if (media.length > 0) {
+      setCurrentIndex(0);
+      flatListRef.current?.scrollToIndex({ index: 0, animated: false });
     }
   }, [media]);
 
@@ -135,14 +166,59 @@ export default function BrandDetailScreen() {
     });
   };
 
+  // Pause/mute all videos on navigation away
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        Object.values(videoRefs.current).forEach((ref) => {
+          if (ref && ref.pauseAsync) ref.pauseAsync().catch(() => {});
+          if (ref && ref.setStatusAsync)
+            ref.setStatusAsync({ isMuted: true }).catch(() => {});
+        });
+      };
+    }, [])
+  );
+
   // Keep currentIndex in sync with FlatList scroll
   const onViewableItemsChanged = React.useRef(
     ({ viewableItems }: { viewableItems: any[] }) => {
+      // Pause/mute all videos first
+      Object.values(videoRefs.current).forEach((ref) => {
+        if (ref && ref.pauseAsync) ref.pauseAsync().catch(() => {});
+        if (ref && ref.setStatusAsync)
+          ref.setStatusAsync({ isMuted: true }).catch(() => {});
+      });
       if (viewableItems && viewableItems.length > 0) {
         setCurrentIndex(viewableItems[0].index);
+        // Play/unmute only the visible video
+        const idx = viewableItems[0].index;
+        const ref = videoRefs.current[`video_${idx}`];
+        if (ref && ref.playAsync) ref.playAsync().catch(() => {});
+        if (ref && ref.setStatusAsync)
+          ref.setStatusAsync({ isMuted: muted ? true : false }).catch(() => {});
       }
     }
   );
+
+  // After media and firstLoaded are ready, trigger play/unmute for the first video
+  React.useEffect(() => {
+    if (media.length > 0 && firstLoaded) {
+      // Pause/mute all videos first
+      Object.values(videoRefs.current).forEach((ref) => {
+        if (ref && ref.pauseAsync) ref.pauseAsync().catch(() => {});
+        if (ref && ref.setStatusAsync)
+          ref.setStatusAsync({ isMuted: true }).catch(() => {});
+      });
+      // Play/unmute only the first video if it's a video
+      const first = media[0];
+      if (first && first.type === "video") {
+        const ref = videoRefs.current[`video_0`];
+        if (ref && ref.playAsync) ref.playAsync().catch(() => {});
+        if (ref && ref.setStatusAsync)
+          ref.setStatusAsync({ isMuted: muted ? true : false }).catch(() => {});
+      }
+    }
+  }, [media, firstLoaded, muted]);
 
   if (loading || (media.length > 0 && !firstLoaded)) {
     return (
@@ -158,6 +234,26 @@ export default function BrandDetailScreen() {
       style={{ flex: 1, backgroundColor: "transparent" }}
       {...panResponder.panHandlers}
     >
+      {/* Mute button */}
+      <View style={{ position: "absolute", top: 32, right: 24, zIndex: 10 }}>
+        <TouchableOpacity
+          onPress={() => {
+            setMuted((m) => {
+              const newMuted = !m;
+              // Ensure the current video keeps playing
+              const ref = videoRefs.current[`video_${currentIndex}`];
+              if (ref && ref.playAsync) ref.playAsync().catch(() => {});
+              return newMuted;
+            });
+          }}
+        >
+          <Ionicons
+            name={muted ? "volume-mute" : "volume-high"}
+            size={28}
+            color="#222"
+          />
+        </TouchableOpacity>
+      </View>
       {/* Profile Picture */}
       <View style={{ alignItems: "center", marginBottom: 8 }}>
         <Image
@@ -193,87 +289,124 @@ export default function BrandDetailScreen() {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
+          width: "100%",
+          marginTop: 24, // Move the gallery down a bit
         }}
       >
-        <TouchableOpacity
-          onPress={goLeft}
-          style={{ padding: 12, zIndex: 2 }}
-          accessibilityLabel="Previous"
-        >
-          <Ionicons name="chevron-back" size={32} color="#222" />
-        </TouchableOpacity>
-        <FlatList
-          ref={flatListRef}
-          data={media}
-          keyExtractor={(item) => item.url}
-          renderItem={({ item, index }) => (
-            <View
-              style={{
-                width: Dimensions.get("window").width * 0.9,
-                height: 440,
-                justifyContent: "center",
-                alignItems: "center",
-                alignSelf: "center",
-                marginHorizontal: "auto",
-              }}
-            >
-              {item.type === "image" ? (
-                <Image
-                  source={{ uri: item.url }}
-                  style={{
-                    width: "100%",
-                    height: 400,
-                    borderRadius: 32,
-                    backgroundColor: "#eee",
-                    alignSelf: "center",
-                  }}
-                  resizeMode="cover"
-                />
-              ) : (
-                <Video
-                  source={{ uri: item.url }}
-                  style={{
-                    width: "100%",
-                    height: 400,
-                    borderRadius: 32,
-                    backgroundColor: "#000",
-                    alignSelf: "center",
-                  }}
-                  resizeMode={"cover" as any}
-                  useNativeControls={true}
-                  shouldPlay={index === currentIndex}
-                  isMuted={true}
-                  isLooping={true}
-                />
-              )}
-            </View>
-          )}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          style={{ flexGrow: 0 }}
-          contentContainerStyle={{
-            justifyContent: "center",
+        {/* Left Arrow */}
+        <View
+          style={{
+            width: Dimensions.get("window").width * 0.15,
             alignItems: "center",
+            justifyContent: "center",
           }}
-          initialScrollIndex={currentIndex}
-          onViewableItemsChanged={onViewableItemsChanged.current}
-          snapToAlignment="center"
-          snapToInterval={Dimensions.get("window").width * 0.9}
-          decelerationRate="fast"
-          getItemLayout={(_, index) => ({
-            length: Dimensions.get("window").width * 0.9,
-            offset: Dimensions.get("window").width * 0.9 * index,
-            index,
-          })}
-        />
-        <TouchableOpacity
-          onPress={goRight}
-          style={{ padding: 12, zIndex: 2 }}
-          accessibilityLabel="Next"
         >
-          <Ionicons name="chevron-forward" size={32} color="#222" />
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={goLeft}
+            style={{ padding: 12, zIndex: 2 }}
+            accessibilityLabel="Previous"
+          >
+            <Ionicons name="chevron-back" size={32} color="#222" />
+          </TouchableOpacity>
+        </View>
+        {/* Media Carousel */}
+        <View
+          style={{
+            width: Dimensions.get("window").width * 0.7,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <FlatList
+            ref={flatListRef}
+            data={media}
+            keyExtractor={(item) => item.url}
+            renderItem={({ item, index }) => (
+              <View
+                style={{
+                  width: Dimensions.get("window").width * 0.7,
+                  aspectRatio: 4 / 5,
+                  borderRadius: 32,
+                  overflow: "hidden",
+                  backgroundColor: item.type === "image" ? "#eee" : "#000",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  position: "relative",
+                  alignSelf: "center",
+                }}
+              >
+                {item.type === "image" ? (
+                  <Image
+                    source={{ uri: item.url }}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 32,
+                    }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Video
+                    ref={(ref) => {
+                      videoRefs.current[`video_${index}`] = ref;
+                    }}
+                    source={{ uri: item.url }}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 32,
+                    }}
+                    resizeMode={"cover" as any}
+                    useNativeControls={true}
+                    shouldPlay={index === currentIndex}
+                    isMuted={index !== currentIndex || muted}
+                    isLooping={true}
+                  />
+                )}
+              </View>
+            )}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            style={{ flexGrow: 0 }}
+            contentContainerStyle={{
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            initialScrollIndex={currentIndex}
+            onViewableItemsChanged={onViewableItemsChanged.current}
+            snapToAlignment="center"
+            snapToInterval={Dimensions.get("window").width * 0.7}
+            decelerationRate="fast"
+            getItemLayout={(_, index) => ({
+              length: Dimensions.get("window").width * 0.7,
+              offset: Dimensions.get("window").width * 0.7 * index,
+              index,
+            })}
+          />
+        </View>
+        {/* Right Arrow */}
+        <View
+          style={{
+            width: Dimensions.get("window").width * 0.15,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <TouchableOpacity
+            onPress={goRight}
+            style={{ padding: 12, zIndex: 2 }}
+            accessibilityLabel="Next"
+          >
+            <Ionicons name="chevron-forward" size={32} color="#222" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

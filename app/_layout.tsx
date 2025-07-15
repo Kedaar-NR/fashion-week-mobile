@@ -1,4 +1,3 @@
-import { useColorScheme } from "@/hooks/useColorScheme";
 import {
   DarkTheme,
   DefaultTheme,
@@ -8,10 +7,11 @@ import { Session } from "@supabase/supabase-js";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "react-native-reanimated";
 import Auth from "../components/Auth";
 import "../global.css";
+import { useColorScheme } from "../hooks/useColorScheme";
 import { supabase } from "../lib/supabase";
 
 export default function RootLayout() {
@@ -19,30 +19,30 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  // --- RESTORE SESSION/AUTH LOGIC ---
   const [session, setSession] = useState<Session | null>(null);
+  const prevSessionString = useRef<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+      const sessionString = JSON.stringify(session);
+      if (prevSessionString.current !== sessionString) {
+        setSession(session);
+        prevSessionString.current = sessionString;
+      }
     });
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setSession(session);
+        const sessionString = JSON.stringify(session);
+        if (prevSessionString.current !== sessionString) {
+          setSession(session);
+          prevSessionString.current = sessionString;
+        }
       }
     );
     return () => {
       listener.subscription.unsubscribe();
     };
-  }, []);
-
-  // Auto sign-in for development
-  useEffect(() => {
-    if (__DEV__) {
-      supabase.auth.signInWithPassword({
-        email: "test@example.com",
-        password: "testpassword",
-      });
-    }
   }, []);
 
   if (!loaded) {
@@ -51,12 +51,7 @@ export default function RootLayout() {
   }
 
   if (!session) {
-    return (
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Auth />
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    );
+    return <Auth />;
   }
 
   return (

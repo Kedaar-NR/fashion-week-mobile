@@ -28,8 +28,15 @@ export default function QuizCard({
   return (
     <Animated.View
       {...panHandlers}
-      className="w-full h-full rounded-2xl overflow-hidden items-center justify-center"
       style={[
+        {
+          width: "100%",
+          height: "100%",
+          borderRadius: 16, // matches rounded-2xl
+          overflow: "hidden",
+          alignItems: "center",
+          justifyContent: "center",
+        },
         {
           transform: [
             { translateX: pan.x },
@@ -47,15 +54,21 @@ export default function QuizCard({
       ]}
     >
       {imageError ? (
-        <View className="flex-1 items-center justify-center">
-          <Text className="text-gray-500">Image not found</Text>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
+          <Text style={{ color: "#6b7280" }}>Image not found</Text>
         </View>
       ) : (
         <>
           <Image
             source={{ uri: imageUrl }}
-            className="w-full h-full rounded-2xl"
-            style={{ resizeMode: "contain" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: 16,
+              resizeMode: "contain",
+            }}
             onError={onImageError}
           />
         </>

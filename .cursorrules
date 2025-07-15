@@ -1,0 +1,123 @@
+# .cursorrules
+
+## Core Development Principles
+
+### App Structure Analysis Command
+- **What:** Always examine the app folder structure before making any changes.
+- **Why:** Ensures consistency and prevents breaking existing flows.
+- **How:**
+  - Study the `app/` folder and subfolders before editing.
+  - Analyze how each tab is organized and what each tab does.
+  - Read and understand the functionality of each section before implementing changes.
+  - Maintain consistency with existing patterns.
+- **Checklist:**
+  - [ ] Reviewed folder and file structure
+  - [ ] Understood each tab’s purpose
+  - [ ] Identified dependencies between sections
+
+### Careful Editing Protocol
+- **What:** Be extremely cautious when editing existing code.
+- **Why:** Prevents accidental bugs and regressions.
+- **How:**
+  - Understand the full context before making modifications.
+  - Test changes thoroughly to avoid breaking functionality.
+  - Always consider the impact on other parts of the app.
+- **Checklist:**
+  - [ ] Read surrounding code and comments
+  - [ ] Checked for related files/components
+  - [ ] Ran tests or manual checks after changes
+
+### Tabs Structure Understanding
+- **What:** Understand the Expo Router tabs structure in `app/(tabs)/`.
+- **Why:** Prevents breaking navigation and maintains consistent UX.
+- **Structure:**
+  - **Main tabs:** `index.tsx` (Home), `style-quiz.tsx` (Style Quiz)
+  - **Grouped tabs:** `(collections)/`, `(drops)/`, `(user)/` - each with their own `_layout.tsx`
+  - **Hidden tabs:** `search-results.tsx`, `[brand].tsx` (dynamic routes, `href: null`)
+- **Tab Addition Rules:**
+  - **ONLY add new tabs if absolutely necessary for core app functionality**
+  - **Existing tabs:** Home, Collections, Style Quiz, Drops, Account
+  - **Hidden tabs:** Search Results, Brand (dynamic routes)
+  - **Group structure:** Use parentheses `(groupname)/` for related screens
+  - **Dynamic routes:** Use brackets `[param].tsx` for dynamic content
+- **Navigation Patterns:**
+  - Each group has its own `_layout.tsx` for nested navigation
+  - Main tabs defined in `app/(tabs)/_layout.tsx`
+  - Hidden tabs use `href: null` to prevent tab bar display
+- **Checklist:**
+  - [ ] Understood current tab structure
+  - [ ] Verified if new tab is truly necessary
+  - [ ] Followed existing naming conventions
+  - [ ] Updated `_layout.tsx` if adding new tab
+  - [ ] Used proper group structure if needed
+
+## Page Creation Standards
+- **What:** Follow established structure when adding new pages.
+- **Why:** Maintains a consistent user experience and codebase.
+- **How:**
+  - Use the same layout and navigation patterns as existing pages.
+  - Implement proper navigation and routing.
+  - Ensure responsive design across all devices.
+- **Checklist:**
+  - [ ] Used existing page as a template
+  - [ ] Added navigation entry if needed
+  - [ ] Verified responsiveness
+
+## NativeWind Guidelines
+- **What:** Use NativeWind for all styling implementations.
+- **Why:** Ensures consistent, utility-first styling across the app.
+- **How:**
+  - Follow utility-first CSS principles.
+  - Maintain consistent spacing and typography.
+  - Use NativeWind breakpoints for responsive design.
+- **Examples:**
+  - `className="p-4 text-lg font-bold"`
+  - `className="md:flex-row flex-col"`
+- **Checklist:**
+  - [ ] Used only NativeWind classes for styling
+  - [ ] Checked for consistent spacing/typography
+  - [ ] Verified responsive behavior
+
+## Code Quality Standards
+- **What:** Write clean, maintainable, and well-documented code.
+- **Why:** Improves readability, maintainability, and reduces bugs.
+- **How:**
+  - Follow established coding conventions.
+  - Ensure all code is production-ready.
+  - Use TypeScript when applicable for type safety.
+  - Add comments and documentation where needed.
+- **Checklist:**
+  - [ ] Code is clean and readable
+  - [ ] Follows project conventions
+  - [ ] Uses TypeScript types/interfaces
+  - [ ] Well-documented where necessary
+
+## Development Workflow
+- **Step-by-Step:**
+  1. Analyze app structure and requirements.
+  2. Plan changes and review related code.
+  3. Implement changes following all rules above.
+  4. Test thoroughly (manual and/or automated).
+  5. Review and refactor for quality.
+  6. Commit only after all checks pass.
+
+## Quality Assurance
+- **Testing and Review Requirements:**
+  - Always test new and changed features on all target devices.
+  - Use manual and automated tests where possible.
+  - Peer review code before merging.
+
+## Emergency Protocols
+- **If you break something:**
+  - Revert to the last working commit immediately.
+  - Notify the team and document the issue.
+  - Investigate and fix before proceeding.
+
+---
+
+## Critical Reminders
+- Always be careful when editing existing code.
+- Always write high-quality, production-ready code.
+- Always use NativeWind for styling.
+- Always understand the app structure before making changes.
+- Always test thoroughly before committing changes. 
