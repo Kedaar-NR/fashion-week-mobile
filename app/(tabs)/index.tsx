@@ -444,6 +444,104 @@ function recommendBrands(
   return final.filter(Boolean).map((b) => b!.brand);
 }
 
+// --- Brand AI Summaries ---
+const BRAND_AI_SUMMARIES: { [brand: string]: string } = {
+  "2001odysey": "Futuristic fashion brand, see 2001odysey.org",
+  "22kilogram": "Streetwear label, official site 22kilogram.com",
+  "aliasonline.us": "Hype drops, often sell out, shop at aliasonline.us",
+  "allure.newyork": "New York-based, new collection, allurenewyork.com",
+  alreadywritten: "Contemporary label, already-written.com",
+  angel333online: "Mysterious/cryptic, shop at angel333.online",
+  ArtificialFever: "Minimalist, avant-garde, artificialfever.com",
+  astonecoldstudiosproduction:
+    "London-based, denim focus, stonecoldstudios.co.uk",
+  attachmentsonline: "Classic American merch, currently closed",
+  awaitedmilitia: "Streetwear, SMS/email signups, awaitedmilitia.com",
+  "badson.us": "Utah-based, light-themed, badson.us",
+  "berlinc.co": "California-based, quality essentials",
+  blanksbythirteen: "US-made basics, blanksbythirteen.com",
+  bomiworks: "Experimental, bomiworks.com",
+  brotherlylove: "Philly-based, capsule drops, brotherlylove.store",
+  byjeshal: "Purpose-driven, jeshal.net",
+  bykodyphillips: "Unique pants, press/stylist focus, kodyphillips.com",
+  "california.arts": "Minimalist California style, california-arts.com",
+  chinatowncountryclub:
+    "Retail/cafe, global shipping, chinatowncountryclub.com",
+  chxmicalover: "Edgy, www.chxmicalover.com",
+  concrete_orchids: "Urban-inspired, concreteorchids.com",
+  corporateworld: "Hopeful, music collabs, corporateworld.shop",
+  "cozy.worldwidee": "Global menswear, cozyworldwide.co",
+  cyvist: "Womenswear coming soon, cyvist.com",
+  deadatlantic: "Outdoor-inspired, deadatlantic.com",
+  demiknj: "Unique, fast shipping, demiknj.com",
+  derschutze_clo: "Wearable art, London/NYC, derschutze.com",
+  ditch: "Blank basics, Discord, ditch.la/store",
+  drolandmiller: "Collection live, drolandmiller.com",
+  emestudios_: "Grateful, global shipping, emestudios.com",
+  emptyspaces: "Current collection, empty-spaces.live",
+  eraworldwideclub: "Raw style, eraworldwide.club",
+  eternal_artwear: "Resurrection theme, responsive support",
+  eternalloveworld: "LA-based, new collection, eternallove.world",
+  "fine.culture": "Fast shipping, community, fineculturee.com",
+  fnkstudios: "Discord, PR/support focus, fnkstudios.com",
+  forcesunseen: "Conceptual, mysterious themes",
+  forevakaash: "Legacy brand, site closed, forevakaash.com",
+  fortytwoco: "Restocks, contact info, fortytwoco.net",
+  "fourfour.jpg": "Top tier, hand-waxed denim, fourfouronline.com",
+  friedrice_nyc: "NYC creative, friedrice-nyc.com",
+  haveyoudiedbefore: "LA-based, drop dates, haveyoudiedbefore.online",
+  __heavencanwait__: "Competitions, heaven can wait, heavencanwait.store",
+  heavenonearthstudios:
+    "Christian streetwear, all sales final, heavenonearth.shop",
+  "hidden.season": "Open site, by Jordan Killgore, hiddenseason.com",
+  "hypedept.co": "Customer support focus, hypedept.com",
+  iconaclub: "Mini capsule drops, iconaclub.com",
+  idle____time: "Orders in production, findingpure.com/store",
+  "ihp.ihp.ihp": "Positive vibes, imhappypromise.com",
+  "insain.worldwide": "Forged road theme, support info, insainworldwide.com",
+  kinejkt: "Art-focused, kinejkt.com",
+  kontend__: "Journey theme, no website",
+  kyonijr: "Kyoni online, kyoni.online",
+  lantiki_official: "Tokyo/Kobe, lantikimarket.com",
+  lildenimjean: "Faded clothes, passionate design, lildenimjean.com",
+  liquidlagoon: "New opening, liquidlagoon.com",
+  maharishi: "Pacifist military design, London, maharishi",
+  menacelosangeles: "LA-based, menacelosangeles.com",
+  misanthropestudios: "SMS updates, misanthropestudios.us",
+  "Mutimer.co": "Melbourne-based, free shipping, mutimer.co",
+  "nihil.ny": "Minimalist, nihilny.com",
+  nomaintenance: "Memory-themed, nomaintenance.us",
+  oedemaa: "Chernihiv-based, oedema.studio",
+  omneeworld: "4-year drop, omnee.world",
+  "outlw.usa": "Exclusive, outlw.xyz",
+  paradoxeparis: "Parisian artisanal, paradoxeparis.com",
+  "pdf.channel": "Project-based, pdfchannel.com",
+  peaceandwar89: "Contact info, peaceandwar.store",
+  personalfears: "NYC jewelry, personalfears.com",
+  poolhousenewyork: "Classic style, poolhousenewyork.com",
+  "profitminded.clo": "Free shipping, early access, profitmindedclothing.com",
+  qbsay: "Worldwide shipping, qbsay.com",
+  rangercartel: "Bridge theme, rangercartel.com",
+  rdvstudios: "Studio, rdvstudios.xyz",
+  roypubliclabel: "Private label, royprivatelabel.com",
+  saeminium: "Artist-driven, saeminiumgallery",
+  sensorydept: "Band/brand hybrid, sensorydept.com",
+  septemberseventhstudios: "Anniversary sale, septemberseventhh.com",
+  shineluxurystudios: "Luxury, shineluxury.com",
+  shmuie: "Pop-ups, seasonless, shmuie.com",
+  "sixshooter.us": "Denim/zip-ups, sixshooter.shop",
+  slovakiandreams: "Survivor theme, slovakian-dreams.com",
+  "somar.us": "Somar, somar.us",
+  srrysora: "Reset theme, new site coming",
+  "ssstufff.official": "Inspired by chaos, stores in Spain, ssstufff.com",
+  stolenarts_: "By Nolovescott, stolenarts.us",
+  "sundae.school": "Higher education theme, sundaeschool.com",
+  thegvgallery: "Imperfection theme, thegvgallery.com",
+  throneroomx: "Ambivalence archive, digital art",
+  vega9602k: "Activewear, vega.rip",
+  vengeance_studios: "Mystery theme, vengeancestudios.store ",
+};
+
 export default function HomeScreen() {
   // --- Adaptive Recommendation State ---
   const [brandScores, setBrandScores] = useState<{
@@ -924,7 +1022,9 @@ export default function HomeScreen() {
                 {brandsMedia[verticalIndex].brand}
               </Text>
               <Text className="text-white text-xs opacity-80 text-left mt-1">
-                {brandsMedia[verticalIndex].tagline || "No tagline available"}
+                {BRAND_AI_SUMMARIES[brandsMedia[verticalIndex].brand] ||
+                  brandsMedia[verticalIndex].tagline ||
+                  "No tagline available"}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
