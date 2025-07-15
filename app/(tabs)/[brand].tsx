@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Video } from "expo-av";
 import * as Linking from "expo-linking";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -37,6 +37,8 @@ export default function BrandDetailScreen() {
   const flatListRef = React.useRef<FlatList<any>>(null);
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const router = require("expo-router").useRouter();
+  const [muted, setMuted] = useState(true); // default to muted
+  const videoRefs = useRef<{ [key: string]: any }>({});
 
   useFocusEffect(
     React.useCallback(() => {
@@ -164,14 +166,59 @@ export default function BrandDetailScreen() {
     });
   };
 
+  // Pause/mute all videos on navigation away
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        Object.values(videoRefs.current).forEach((ref) => {
+          if (ref && ref.pauseAsync) ref.pauseAsync().catch(() => {});
+          if (ref && ref.setStatusAsync)
+            ref.setStatusAsync({ isMuted: true }).catch(() => {});
+        });
+      };
+    }, [])
+  );
+
   // Keep currentIndex in sync with FlatList scroll
   const onViewableItemsChanged = React.useRef(
     ({ viewableItems }: { viewableItems: any[] }) => {
+      // Pause/mute all videos first
+      Object.values(videoRefs.current).forEach((ref) => {
+        if (ref && ref.pauseAsync) ref.pauseAsync().catch(() => {});
+        if (ref && ref.setStatusAsync)
+          ref.setStatusAsync({ isMuted: true }).catch(() => {});
+      });
       if (viewableItems && viewableItems.length > 0) {
         setCurrentIndex(viewableItems[0].index);
+        // Play/unmute only the visible video
+        const idx = viewableItems[0].index;
+        const ref = videoRefs.current[`video_${idx}`];
+        if (ref && ref.playAsync) ref.playAsync().catch(() => {});
+        if (ref && ref.setStatusAsync)
+          ref.setStatusAsync({ isMuted: muted ? true : false }).catch(() => {});
       }
     }
   );
+
+  // After media and firstLoaded are ready, trigger play/unmute for the first video
+  React.useEffect(() => {
+    if (media.length > 0 && firstLoaded) {
+      // Pause/mute all videos first
+      Object.values(videoRefs.current).forEach((ref) => {
+        if (ref && ref.pauseAsync) ref.pauseAsync().catch(() => {});
+        if (ref && ref.setStatusAsync)
+          ref.setStatusAsync({ isMuted: true }).catch(() => {});
+      });
+      // Play/unmute only the first video if it's a video
+      const first = media[0];
+      if (first && first.type === "video") {
+        const ref = videoRefs.current[`video_0`];
+        if (ref && ref.playAsync) ref.playAsync().catch(() => {});
+        if (ref && ref.setStatusAsync)
+          ref.setStatusAsync({ isMuted: muted ? true : false }).catch(() => {});
+      }
+    }
+  }, [media, firstLoaded, muted]);
 
   if (loading || (media.length > 0 && !firstLoaded)) {
     return (
@@ -187,6 +234,16 @@ export default function BrandDetailScreen() {
       style={{ flex: 1, backgroundColor: "transparent" }}
       {...panResponder.panHandlers}
     >
+      {/* Mute button */}
+      <View style={{ position: "absolute", top: 32, right: 24, zIndex: 10 }}>
+        <TouchableOpacity onPress={() => setMuted((m) => !m)}>
+          <Ionicons
+            name={muted ? "volume-mute" : "volume-high"}
+            size={28}
+            color="#222"
+          />
+        </TouchableOpacity>
+      </View>
       {/* Profile Picture */}
       <View style={{ alignItems: "center", marginBottom: 8 }}>
         <Image
@@ -283,6 +340,9 @@ export default function BrandDetailScreen() {
                   />
                 ) : (
                   <Video
+                    ref={(ref) => {
+                      videoRefs.current[`video_${index}`] = ref;
+                    }}
                     source={{ uri: item.url }}
                     style={{
                       position: "absolute",
@@ -295,7 +355,7 @@ export default function BrandDetailScreen() {
                     resizeMode={"cover" as any}
                     useNativeControls={true}
                     shouldPlay={index === currentIndex}
-                    isMuted={true}
+                    isMuted={index !== currentIndex || muted}
                     isLooping={true}
                   />
                 )}
