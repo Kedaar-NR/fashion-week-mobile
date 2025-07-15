@@ -1,6 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
-import { Video } from "expo-av";
+import {
+  Audio,
+  InterruptionModeAndroid,
+  InterruptionModeIOS,
+  Video,
+} from "expo-av";
 import { Image as ExpoImage } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -501,14 +506,39 @@ export default function HomeScreen() {
     [brandsMedia.length]
   );
 
+  // Pause all videos on screen blur/unfocus
   useFocusEffect(
     React.useCallback(() => {
       setIsScreenFocused(true);
       return () => {
         setIsScreenFocused(false);
+        // Pause all videos when screen loses focus
+        Object.values(videoRefs.current).forEach((ref) => {
+          if (ref && ref.pauseAsync) {
+            ref.pauseAsync().catch(() => {});
+          }
+        });
       };
     }, [])
   );
+
+  useEffect(() => {
+    Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      staysActiveInBackground: false,
+      interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+      playsInSilentModeIOS: true,
+      shouldDuckAndroid: true,
+      interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+      playThroughEarpieceAndroid: false,
+    })
+      .then(() => {
+        console.log("[AUDIO] Audio mode set successfully");
+      })
+      .catch((e) => {
+        console.log("[AUDIO] Error setting audio mode:", e);
+      });
+  }, []);
 
   useEffect(() => {
     const loadBrands = async () => {
@@ -601,24 +631,21 @@ export default function HomeScreen() {
   const onHorizontalViewableItemsChanged = React.useRef(
     (brand: string) =>
       async ({ viewableItems }: { viewableItems: any[] }) => {
+        // Pause all videos first
+        Object.entries(videoRefs.current).forEach(([key, ref]) => {
+          if (ref && ref.pauseAsync) {
+            ref.pauseAsync().catch(() => {});
+          }
+        });
         if (viewableItems && viewableItems.length > 0) {
           const idx = viewableItems[0].index;
           horizontalViewable.current[brand] = idx;
           setHorizontalIndices((prev) => ({ ...prev, [brand]: idx }));
-          // Autoplay logic: play visible, pause others
-          for (let i = 0; i < viewableItems.length; i++) {
-            const item = viewableItems[i];
-            const key = `${brand}_${item.index}`;
-            const ref = videoRefs.current[key];
-            if (ref && item.isViewable) {
-              try {
-                (await ref.playAsync) && ref.playAsync();
-              } catch {}
-            } else if (ref) {
-              try {
-                (await ref.pauseAsync) && ref.pauseAsync();
-              } catch {}
-            }
+          // Play only the visible video
+          const key = `${brand}_${idx}`;
+          const ref = videoRefs.current[key];
+          if (ref && ref.playAsync) {
+            ref.playAsync().catch(() => {});
           }
         }
       }
@@ -628,8 +655,23 @@ export default function HomeScreen() {
   const [visibleVerticalIndex, setVisibleVerticalIndex] = useState(0);
   const onVerticalViewableItemsChanged = React.useRef(
     ({ viewableItems }: { viewableItems: any[] }) => {
+      // Pause all videos first
+      Object.entries(videoRefs.current).forEach(([key, ref]) => {
+        if (ref && ref.pauseAsync) {
+          ref.pauseAsync().catch(() => {});
+        }
+      });
       if (viewableItems && viewableItems.length > 0) {
         setVisibleVerticalIndex(viewableItems[0].index);
+        // Play only the visible video
+        const vIndex = viewableItems[0].index;
+        const brand = brandsMedia[vIndex]?.brand;
+        const hIndex = horizontalIndices[brand] || 0;
+        const key = `${brand}_${hIndex}`;
+        const ref = videoRefs.current[key];
+        if (ref && ref.playAsync) {
+          ref.playAsync().catch(() => {});
+        }
       }
     }
   );
@@ -723,7 +765,7 @@ export default function HomeScreen() {
                     shouldPlay={isVisible}
                     useNativeControls={false}
                     isLooping={true}
-                    isMuted={true}
+                    isMuted={!isVisible || muted}
                     volume={1.0}
                     {...(Platform.OS === "web"
                       ? { playsInline: true, autoPlay: true }
