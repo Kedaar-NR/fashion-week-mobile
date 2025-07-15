@@ -136,6 +136,14 @@ export default function BrandDetailScreen() {
     }
   }, [media]);
 
+  // Reset to first item whenever media changes, but only if media is not empty
+  React.useEffect(() => {
+    if (media.length > 0) {
+      setCurrentIndex(0);
+      flatListRef.current?.scrollToIndex({ index: 0, animated: false });
+    }
+  }, [media]);
+
   // Gallery navigation handlers
   const goLeft = () => {
     if (media.length === 0) return;
