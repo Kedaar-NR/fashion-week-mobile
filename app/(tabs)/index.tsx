@@ -653,7 +653,7 @@ export default function HomeScreen() {
           snapToAlignment="center"
           snapToInterval={Dimensions.get("window").width}
           decelerationRate="fast"
-          initialScrollIndex={horizontalIndex}
+          // Remove initialScrollIndex to always start at 0 and avoid duplicate media
           getItemLayout={(_, index) => ({
             length: Dimensions.get("window").width,
             offset: Dimensions.get("window").width * index,
