@@ -11,6 +11,7 @@ import {
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
+  Pressable,
   Text,
   TouchableOpacity,
   View,
@@ -412,6 +413,7 @@ export default function HomeScreen() {
   const [showSavedPopup, setShowSavedPopup] = useState(false);
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const lastTapRef = useRef<{ [key: string]: number }>({});
 
   useFocusEffect(
     React.useCallback(() => {
@@ -668,14 +670,27 @@ export default function HomeScreen() {
             brand
           )}
           renderItem={({ item, index }) => {
-            // Only play if this brand is the visible vertical brand and this is the visible horizontal media
             const isVisible =
               vIndex === visibleVerticalIndex &&
               (horizontalViewable.current[brand] ?? 0) === index &&
               isScreenFocused;
             const videoKey = `${brand}_${index}`;
+            const lastTapKey = `${brand}_${index}`;
+
+            const handleDoubleTap = () => {
+              const now = Date.now();
+              if (
+                lastTapRef.current[lastTapKey] &&
+                now - lastTapRef.current[lastTapKey] < 300
+              ) {
+                handleSaveBrand(brand);
+              }
+              lastTapRef.current[lastTapKey] = now;
+            };
+
             return (
-              <View
+              <Pressable
+                onPress={handleDoubleTap}
                 style={{
                   width: Dimensions.get("window").width,
                   height: screenHeight,
@@ -715,7 +730,7 @@ export default function HomeScreen() {
                       : {})}
                   />
                 )}
-              </View>
+              </Pressable>
             );
           }}
         />
