@@ -92,7 +92,28 @@ export default function BrandDetailScreen() {
           url: string;
           name: string;
         }[];
-        setMedia(files);
+        // --- DEDUPLICATE: Only show video if both image and video exist for same base name ---
+        const baseMap = new Map<
+          string,
+          { type: "video" | "image"; url: string; name: string }
+        >();
+        files.forEach((file) => {
+          const base = file.name.replace(/\.[^/.]+$/, "");
+          if (!baseMap.has(base)) {
+            baseMap.set(base, file);
+          } else {
+            // Prefer video over image
+            const existing = baseMap.get(base);
+            if (
+              existing &&
+              existing.type === "image" &&
+              file.type === "video"
+            ) {
+              baseMap.set(base, file);
+            }
+          }
+        });
+        setMedia(Array.from(baseMap.values()));
       } catch {
         setMedia([]);
       }
@@ -193,87 +214,121 @@ export default function BrandDetailScreen() {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
+          width: "100%",
+          marginTop: 24, // Move the gallery down a bit
         }}
       >
-        <TouchableOpacity
-          onPress={goLeft}
-          style={{ padding: 12, zIndex: 2 }}
-          accessibilityLabel="Previous"
-        >
-          <Ionicons name="chevron-back" size={32} color="#222" />
-        </TouchableOpacity>
-        <FlatList
-          ref={flatListRef}
-          data={media}
-          keyExtractor={(item) => item.url}
-          renderItem={({ item, index }) => (
-            <View
-              style={{
-                width: Dimensions.get("window").width * 0.9,
-                height: 440,
-                justifyContent: "center",
-                alignItems: "center",
-                alignSelf: "center",
-                marginHorizontal: "auto",
-              }}
-            >
-              {item.type === "image" ? (
-                <Image
-                  source={{ uri: item.url }}
-                  style={{
-                    width: "100%",
-                    height: 400,
-                    borderRadius: 32,
-                    backgroundColor: "#eee",
-                    alignSelf: "center",
-                  }}
-                  resizeMode="cover"
-                />
-              ) : (
-                <Video
-                  source={{ uri: item.url }}
-                  style={{
-                    width: "100%",
-                    height: 400,
-                    borderRadius: 32,
-                    backgroundColor: "#000",
-                    alignSelf: "center",
-                  }}
-                  resizeMode={"cover" as any}
-                  useNativeControls={true}
-                  shouldPlay={index === currentIndex}
-                  isMuted={true}
-                  isLooping={true}
-                />
-              )}
-            </View>
-          )}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          style={{ flexGrow: 0 }}
-          contentContainerStyle={{
-            justifyContent: "center",
+        {/* Left Arrow */}
+        <View
+          style={{
+            width: Dimensions.get("window").width * 0.15,
             alignItems: "center",
+            justifyContent: "center",
           }}
-          initialScrollIndex={currentIndex}
-          onViewableItemsChanged={onViewableItemsChanged.current}
-          snapToAlignment="center"
-          snapToInterval={Dimensions.get("window").width * 0.9}
-          decelerationRate="fast"
-          getItemLayout={(_, index) => ({
-            length: Dimensions.get("window").width * 0.9,
-            offset: Dimensions.get("window").width * 0.9 * index,
-            index,
-          })}
-        />
-        <TouchableOpacity
-          onPress={goRight}
-          style={{ padding: 12, zIndex: 2 }}
-          accessibilityLabel="Next"
         >
-          <Ionicons name="chevron-forward" size={32} color="#222" />
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={goLeft}
+            style={{ padding: 12, zIndex: 2 }}
+            accessibilityLabel="Previous"
+          >
+            <Ionicons name="chevron-back" size={32} color="#222" />
+          </TouchableOpacity>
+        </View>
+        {/* Media Carousel */}
+        <View
+          style={{
+            width: Dimensions.get("window").width * 0.7,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <FlatList
+            ref={flatListRef}
+            data={media}
+            keyExtractor={(item) => item.url}
+            renderItem={({ item, index }) => (
+              <View
+                style={{
+                  width: Dimensions.get("window").width * 0.7,
+                  aspectRatio: 4 / 5,
+                  borderRadius: 32,
+                  overflow: "hidden",
+                  backgroundColor: item.type === "image" ? "#eee" : "#000",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  position: "relative",
+                  alignSelf: "center",
+                }}
+              >
+                {item.type === "image" ? (
+                  <Image
+                    source={{ uri: item.url }}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 32,
+                    }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Video
+                    source={{ uri: item.url }}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      borderRadius: 32,
+                    }}
+                    resizeMode={"cover" as any}
+                    useNativeControls={true}
+                    shouldPlay={index === currentIndex}
+                    isMuted={true}
+                    isLooping={true}
+                  />
+                )}
+              </View>
+            )}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            style={{ flexGrow: 0 }}
+            contentContainerStyle={{
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+            initialScrollIndex={currentIndex}
+            onViewableItemsChanged={onViewableItemsChanged.current}
+            snapToAlignment="center"
+            snapToInterval={Dimensions.get("window").width * 0.7}
+            decelerationRate="fast"
+            getItemLayout={(_, index) => ({
+              length: Dimensions.get("window").width * 0.7,
+              offset: Dimensions.get("window").width * 0.7 * index,
+              index,
+            })}
+          />
+        </View>
+        {/* Right Arrow */}
+        <View
+          style={{
+            width: Dimensions.get("window").width * 0.15,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <TouchableOpacity
+            onPress={goRight}
+            style={{ padding: 12, zIndex: 2 }}
+            accessibilityLabel="Next"
+          >
+            <Ionicons name="chevron-forward" size={32} color="#222" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
