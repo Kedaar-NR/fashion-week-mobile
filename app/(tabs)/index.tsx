@@ -350,6 +350,13 @@ async function fetchAllBrandsMedia(brands: string[]) {
               : null;
           })
           .filter(Boolean);
+        // Move the first video (if any) to the front
+        let reorderedFiles = files;
+        const firstVideoIdx = files.findIndex((f: any) => f.type === "video");
+        if (firstVideoIdx > 0) {
+          const [video] = files.splice(firstVideoIdx, 1);
+          reorderedFiles = [video, ...files];
+        }
 
         // Fetch brand tagline from database
         let tagline = null;
@@ -367,7 +374,7 @@ async function fetchAllBrandsMedia(brands: string[]) {
           console.log(`Error fetching tagline for ${brand}:`, error);
         }
 
-        return { brand, media: files, tagline };
+        return { brand, media: reorderedFiles, tagline };
       } catch {
         return null;
       }
