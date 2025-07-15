@@ -1,25 +1,26 @@
-import { useColorScheme } from "@/hooks/useColorScheme";
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import type { Session } from "@supabase/supabase-js";
+import { useColorScheme } from "../hooks/useColorScheme";
 // import { Session } from "@supabase/supabase-js"; // commented out for dev
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "react-native-reanimated";
+import Auth from "../components/Auth";
 import "../global.css";
-// import { supabase } from "../lib/supabase"; // commented out for dev
+import { supabase } from "../lib/supabase";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
-  /*
-  // --- ORIGINAL SESSION/AUTH LOGIC (commented out for dev convenience) ---
+  // --- ORIGINAL SESSION/AUTH LOGIC (restored) ---
   const [session, setSession] = useState<Session | null>(null);
   const prevSessionString = useRef<string | null>(null);
 
@@ -68,9 +69,7 @@ export default function RootLayout() {
       </ThemeProvider>
     );
   }
-  */
 
-  // DEV ONLY: Always show main app, skip Auth and session logic
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
