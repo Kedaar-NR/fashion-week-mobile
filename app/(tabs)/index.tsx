@@ -398,7 +398,65 @@ async function fetchAllBrandsMedia(brands: string[]) {
   );
 }
 
+// --- Recommendation Algorithm ---
+function recommendBrands(
+  allBrands: string[],
+  scores: {
+    [brand: string]: {
+      saves: number;
+      doubleTaps: number;
+      linger: number;
+      lastSeen: number;
+    };
+  },
+  sessionSet: Set<string>
+) {
+  // 1. Score brands
+  const scored = allBrands.map((brand) => {
+    const s = scores[brand] || {
+      saves: 0,
+      doubleTaps: 0,
+      linger: 0,
+      lastSeen: 0,
+    };
+    return {
+      brand,
+      score: 10 * s.saves + 10 * s.doubleTaps + s.linger,
+      lastSeen: s.lastSeen,
+      isNew: !sessionSet.has(brand),
+    };
+  });
+  // 2. Sort by score desc, then lastSeen desc
+  scored.sort((a, b) => b.score - a.score || b.lastSeen - a.lastSeen);
+  // 3. Inject ~20% new brands
+  const newBrands = scored.filter((b) => b && b.isNew);
+  const seenBrands = scored.filter((b) => b && !b.isNew);
+  const injectCount = Math.ceil(0.2 * scored.length);
+  const injected = [];
+  for (let i = 0; i < injectCount && newBrands.length > 0; i++) {
+    const next = newBrands.shift();
+    if (next) injected.push(next);
+  }
+  // 4. Merge injected and seen brands, remove duplicates and undefined
+  const final = [...injected, ...seenBrands].filter(
+    (b, i, arr) => b && arr.findIndex((x) => x && x.brand === b.brand) === i
+  );
+  return final.filter(Boolean).map((b) => b!.brand);
+}
+
 export default function HomeScreen() {
+  // --- Adaptive Recommendation State ---
+  const [brandScores, setBrandScores] = useState<{
+    [brand: string]: {
+      saves: number;
+      doubleTaps: number;
+      linger: number;
+      lastSeen: number;
+    };
+  }>({});
+  const [sessionBrands, setSessionBrands] = useState<Set<string>>(new Set());
+  const lingerTimers = useRef<{ [brand: string]: number }>({});
+
   const [brandsMedia, setBrandsMedia] = useState<
     {
       brand: string;
@@ -420,157 +478,35 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const lastTapRef = useRef<{ [key: string]: number }>({});
 
-  useFocusEffect(
-    React.useCallback(() => {
-      console.log("📍 Current path: /(tabs)/index");
-    }, [])
-  );
-
-  // Get current session
+  // --- Track Linger Time ---
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-      }
-    );
+    if (brandsMedia.length === 0) return;
+    const brand = brandsMedia[verticalIndex]?.brand;
+    if (!brand) return;
+    const start = Date.now();
+    lingerTimers.current[brand] = start;
     return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
-  // Load saved brands for current user
-  useEffect(() => {
-    if (!session?.user) return;
-
-    const loadSavedBrands = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("saved_brands")
-          .select(
-            `
-            brand_id,
-            brand:brand_id (
-              brand_name
-            )
-          `
-          )
-          .eq("user_id", session.user.id);
-
-        if (error) {
-          console.log("Error loading saved brands:", error);
-          return;
-        }
-
-        const savedBrandNames = new Set(
-          data?.map((item: any) => item.brand?.brand_name).filter(Boolean) || []
-        );
-        setSavedBrands(savedBrandNames);
-      } catch (error) {
-        console.log("Error loading saved brands:", error);
-      }
-    };
-
-    loadSavedBrands();
-  }, [session]);
-
-  const handleVerticalScroll = React.useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const offsetY = e.nativeEvent.contentOffset.y;
-      const newIndex = Math.round(offsetY / screenHeight);
-      if (brandsMedia.length > 0 && newIndex >= brandsMedia.length - 1) {
-        // Reshuffle brands and reset to top
-        const seed = Date.now() % 1000000000;
-        const shuffledBrands = shuffleArraySeeded(sanitizedBrands, seed);
-        (async () => {
-          const all = await fetchAllBrandsMedia(shuffledBrands);
-          setBrandsMedia(
-            all.filter(
-              (
-                b
-              ): b is {
-                brand: string;
-                media: { type: "video" | "image"; url: string; name: string }[];
-                tagline: string | null;
-              } => !!b
-            )
-          );
-          setVerticalIndex(0);
-        })();
-      } else {
-        setVerticalIndex((prev) => (prev !== newIndex ? newIndex : prev));
-      }
-    },
-    [brandsMedia.length]
-  );
-
-  // Pause all videos on screen blur/unfocus
-  useFocusEffect(
-    React.useCallback(() => {
-      setIsScreenFocused(true);
-      return () => {
-        setIsScreenFocused(false);
-        // Pause all videos when screen loses focus
-        Object.values(videoRefs.current).forEach((ref) => {
-          if (ref && ref.pauseAsync) {
-            ref.pauseAsync().catch(() => {});
-          }
-        });
-      };
-    }, [])
-  );
-
-  useEffect(() => {
-    Audio.setAudioModeAsync({
-      allowsRecordingIOS: false,
-      staysActiveInBackground: false,
-      interruptionModeIOS: InterruptionModeIOS.DoNotMix,
-      playsInSilentModeIOS: true,
-      shouldDuckAndroid: true,
-      interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
-      playThroughEarpieceAndroid: false,
-    })
-      .then(() => {
-        console.log("[AUDIO] Audio mode set successfully");
-      })
-      .catch((e) => {
-        console.log("[AUDIO] Error setting audio mode:", e);
-      });
-  }, []);
-
-  useEffect(() => {
-    const loadBrands = async () => {
-      const seed = Date.now() % 1000000000;
-      const shuffledBrands = shuffleArraySeeded(sanitizedBrands, seed);
-      const all = await fetchAllBrandsMedia(shuffledBrands);
-      setBrandsMedia(
-        all.filter(
-          (
-            b
-          ): b is {
-            brand: string;
-            media: { type: "video" | "image"; url: string; name: string }[];
-            tagline: string | null;
-          } => !!b
-        )
+      const end = Date.now();
+      const linger = Math.floor(
+        (end - (lingerTimers.current[brand] || end)) / 1000
       );
-      setLoading(false);
+      setBrandScores((prev) => ({
+        ...prev,
+        [brand]: {
+          ...(prev[brand] || {
+            saves: 0,
+            doubleTaps: 0,
+            linger: 0,
+            lastSeen: 0,
+          }),
+          linger: (prev[brand]?.linger || 0) + linger,
+          lastSeen: end,
+        },
+      }));
     };
-    loadBrands();
-  }, []);
+  }, [verticalIndex, brandsMedia]);
 
-  useEffect(() => {
-    if (__DEV__) {
-      supabase.auth.signInWithPassword({
-        email: "test@example.com",
-        password: "testpassword",
-      });
-    }
-  }, []);
-
-  // Handle save/unsave brand
+  // --- Track Saves/Double-Taps ---
   const handleSaveBrand = async (brandName: string) => {
     if (!session?.user) {
       console.log("User not authenticated");
@@ -611,10 +547,120 @@ export default function HomeScreen() {
           }, 1000); // Hide after 2 seconds
         }
       }
+      setBrandScores((prev) => ({
+        ...prev,
+        [brandName]: {
+          ...(prev[brandName] || {
+            saves: 0,
+            doubleTaps: 0,
+            linger: 0,
+            lastSeen: 0,
+          }),
+          saves: isCurrentlySaved
+            ? (prev[brandName]?.saves || 1) - 1
+            : (prev[brandName]?.saves || 0) + 1,
+          lastSeen: Date.now(),
+        },
+      }));
     } catch (error) {
       console.log("Error handling save/unsave:", error);
     }
   };
+
+  // --- Replace shuffle logic in loadBrands and reshuffle ---
+  useEffect(() => {
+    const loadBrands = async () => {
+      const recommended = recommendBrands(
+        sanitizedBrands,
+        brandScores,
+        sessionBrands
+      );
+      const all = await fetchAllBrandsMedia(recommended);
+      setBrandsMedia(
+        all.filter(
+          (
+            b
+          ): b is {
+            brand: string;
+            media: { type: "video" | "image"; url: string; name: string }[];
+            tagline: string | null;
+          } => !!b
+        )
+      );
+      setSessionBrands(new Set(recommended));
+      setLoading(false);
+    };
+    loadBrands();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleVerticalScroll = React.useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const offsetY = e.nativeEvent.contentOffset.y;
+      const newIndex = Math.round(offsetY / screenHeight);
+      if (brandsMedia.length > 0 && newIndex >= brandsMedia.length - 1) {
+        // Reshuffle brands and reset to top
+        const recommended = recommendBrands(
+          sanitizedBrands,
+          brandScores,
+          sessionBrands
+        );
+        (async () => {
+          const all = await fetchAllBrandsMedia(recommended);
+          setBrandsMedia(
+            all.filter(
+              (
+                b
+              ): b is {
+                brand: string;
+                media: { type: "video" | "image"; url: string; name: string }[];
+                tagline: string | null;
+              } => !!b
+            )
+          );
+          setSessionBrands(new Set(recommended));
+          setVerticalIndex(0);
+        })();
+      } else {
+        setVerticalIndex((prev) => (prev !== newIndex ? newIndex : prev));
+      }
+    },
+    [brandsMedia.length, brandScores, sessionBrands]
+  );
+
+  // Pause all videos on screen blur/unfocus
+  useFocusEffect(
+    React.useCallback(() => {
+      setIsScreenFocused(true);
+      return () => {
+        setIsScreenFocused(false);
+        // Pause all videos when screen loses focus
+        Object.values(videoRefs.current).forEach((ref) => {
+          if (ref && ref.pauseAsync) {
+            ref.pauseAsync().catch(() => {});
+          }
+        });
+      };
+    }, [])
+  );
+
+  useEffect(() => {
+    Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      staysActiveInBackground: false,
+      interruptionModeIOS: InterruptionModeIOS.DoNotMix,
+      playsInSilentModeIOS: true,
+      shouldDuckAndroid: true,
+      interruptionModeAndroid: InterruptionModeAndroid.DoNotMix,
+      playThroughEarpieceAndroid: false,
+    })
+      .then(() => {
+        console.log("[AUDIO] Audio mode set successfully");
+      })
+      .catch((e) => {
+        console.log("[AUDIO] Error setting audio mode:", e);
+      });
+  }, []);
 
   // --- Add viewability configs and handlers for robust autoplay ---
   const viewabilityConfig = {
@@ -786,6 +832,22 @@ export default function HomeScreen() {
       visibleVerticalIndex,
     ]
   );
+
+  // --- Autoplay first video on load ---
+  useEffect(() => {
+    if (!isScreenFocused || brandsMedia.length === 0) return;
+    const firstBrand = brandsMedia[0]?.brand;
+    if (!firstBrand) return;
+    const hIndex = horizontalIndices[firstBrand] || 0;
+    const key = `${firstBrand}_${hIndex}`;
+    const ref = videoRefs.current[key];
+    if (ref && ref.playAsync) {
+      ref.playAsync().catch(() => {});
+    }
+    if (ref && ref.setStatusAsync) {
+      ref.setStatusAsync({ isMuted: muted ? true : false }).catch(() => {});
+    }
+  }, [brandsMedia, isScreenFocused, muted, horizontalIndices]);
 
   if (loading || brandsMedia.length === 0) {
     return <ActivityIndicator size="large" className="flex-1 self-center" />;
