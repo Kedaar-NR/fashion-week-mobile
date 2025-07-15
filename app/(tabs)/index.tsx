@@ -771,26 +771,49 @@ export default function HomeScreen() {
   // Track visible horizontal indices per brand
   const horizontalViewable = useRef<{ [brand: string]: number }>({});
 
+  // --- Helper: Pause and mute all videos except the visible one ---
+  function updateVideoPlayback({
+    brand,
+    hIndex,
+    muted,
+    play,
+  }: {
+    brand: string;
+    hIndex: number;
+    muted: boolean;
+    play: boolean;
+  }) {
+    Object.entries(videoRefs.current).forEach(([key, ref]) => {
+      if (ref && ref.pauseAsync) {
+        ref.pauseAsync().catch(() => {});
+      }
+      if (ref && ref.setStatusAsync) {
+        ref.setStatusAsync({ isMuted: true }).catch(() => {});
+      }
+    });
+    const visibleKey = `${brand}_${hIndex}`;
+    const visibleRef = videoRefs.current[visibleKey];
+    if (visibleRef) {
+      if (play && visibleRef.playAsync) {
+        visibleRef.playAsync().catch(() => {});
+      }
+      if (visibleRef.setStatusAsync) {
+        visibleRef.setStatusAsync({ isMuted: muted }).catch(() => {});
+      }
+    }
+  }
+
   // Handler for horizontal FlatList (media per brand)
   const onHorizontalViewableItemsChanged = React.useRef(
     (brand: string) =>
       async ({ viewableItems }: { viewableItems: any[] }) => {
-        // Pause all videos first
-        Object.entries(videoRefs.current).forEach(([key, ref]) => {
-          if (ref && ref.pauseAsync) {
-            ref.pauseAsync().catch(() => {});
-          }
-        });
         if (viewableItems && viewableItems.length > 0) {
           const idx = viewableItems[0].index;
           horizontalViewable.current[brand] = idx;
           setHorizontalIndices((prev) => ({ ...prev, [brand]: idx }));
-          // Play only the visible video
-          const key = `${brand}_${idx}`;
-          const ref = videoRefs.current[key];
-          if (ref && ref.playAsync) {
-            ref.playAsync().catch(() => {});
-          }
+          updateVideoPlayback({ brand, hIndex: idx, muted, play: true });
+        } else {
+          updateVideoPlayback({ brand, hIndex: 0, muted: true, play: false });
         }
       }
   );
@@ -799,23 +822,15 @@ export default function HomeScreen() {
   const [visibleVerticalIndex, setVisibleVerticalIndex] = useState(0);
   const onVerticalViewableItemsChanged = React.useRef(
     ({ viewableItems }: { viewableItems: any[] }) => {
-      // Pause all videos first
-      Object.entries(videoRefs.current).forEach(([key, ref]) => {
-        if (ref && ref.pauseAsync) {
-          ref.pauseAsync().catch(() => {});
-        }
-      });
       if (viewableItems && viewableItems.length > 0) {
         setVisibleVerticalIndex(viewableItems[0].index);
-        // Play only the visible video
         const vIndex = viewableItems[0].index;
         const brand = brandsMedia[vIndex]?.brand;
         const hIndex = horizontalIndices[brand] || 0;
-        const key = `${brand}_${hIndex}`;
-        const ref = videoRefs.current[key];
-        if (ref && ref.playAsync) {
-          ref.playAsync().catch(() => {});
-        }
+        updateVideoPlayback({ brand, hIndex, muted, play: true });
+      } else {
+        // Pause/mute all if nothing visible
+        updateVideoPlayback({ brand: "", hIndex: 0, muted: true, play: false });
       }
     }
   );
@@ -931,21 +946,23 @@ export default function HomeScreen() {
     ]
   );
 
-  // --- Autoplay first video on load ---
+  // On initial load, play/unmute only the first video
   useEffect(() => {
     if (!isScreenFocused || brandsMedia.length === 0) return;
     const firstBrand = brandsMedia[0]?.brand;
     if (!firstBrand) return;
     const hIndex = horizontalIndices[firstBrand] || 0;
-    const key = `${firstBrand}_${hIndex}`;
-    const ref = videoRefs.current[key];
-    if (ref && ref.playAsync) {
-      ref.playAsync().catch(() => {});
-    }
-    if (ref && ref.setStatusAsync) {
-      ref.setStatusAsync({ isMuted: muted ? true : false }).catch(() => {});
-    }
+    updateVideoPlayback({ brand: firstBrand, hIndex, muted, play: true });
   }, [brandsMedia, isScreenFocused, muted, horizontalIndices]);
+
+  // Ensure visible video always autoplays when visibleVerticalIndex or horizontalIndices change
+  useEffect(() => {
+    if (brandsMedia.length === 0) return;
+    const brand = brandsMedia[visibleVerticalIndex]?.brand;
+    if (!brand) return;
+    const hIndex = horizontalIndices[brand] || 0;
+    updateVideoPlayback({ brand, hIndex, muted, play: true });
+  }, [visibleVerticalIndex, horizontalIndices, brandsMedia, muted]);
 
   if (loading || brandsMedia.length === 0) {
     return <ActivityIndicator size="large" className="flex-1 self-center" />;
@@ -983,7 +1000,21 @@ export default function HomeScreen() {
             padding: 6,
             overflow: "hidden",
           }}
-          onPress={() => setMuted((m) => !m)}
+          onPress={() => {
+            setMuted((prevMuted) => {
+              const newMuted = !prevMuted;
+              // Only update the visible video
+              const brand = brandsMedia[verticalIndex]?.brand;
+              const hIndex = horizontalIndices[brand] || 0;
+              updateVideoPlayback({
+                brand,
+                hIndex,
+                muted: newMuted,
+                play: true,
+              });
+              return newMuted;
+            });
+          }}
         />
       </View>
 

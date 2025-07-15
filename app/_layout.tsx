@@ -3,17 +3,14 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import type { Session } from "@supabase/supabase-js";
 import { useColorScheme } from "../hooks/useColorScheme";
 // import { Session } from "@supabase/supabase-js"; // commented out for dev
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import "react-native-reanimated";
-import Auth from "../components/Auth";
 import "../global.css";
-import { supabase } from "../lib/supabase";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -21,6 +18,8 @@ export default function RootLayout() {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
   // --- ORIGINAL SESSION/AUTH LOGIC (restored) ---
+  // Comment out session/auth logic and always show the main app
+  /*
   const [session, setSession] = useState<Session | null>(null);
   const prevSessionString = useRef<string | null>(null);
 
@@ -55,21 +54,14 @@ export default function RootLayout() {
       listener.subscription.unsubscribe();
     };
   }, []);
+  */
 
   if (!loaded) {
     // Async font loading only occurs in development.
     return null;
   }
 
-  if (!session) {
-    return (
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Auth />
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    );
-  }
-
+  // Always show the main app (tabs) for development
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
