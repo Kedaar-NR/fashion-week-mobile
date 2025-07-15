@@ -219,8 +219,20 @@ export default function StyleQuizScreen() {
 
   if (done || current >= shuffledImages.length) {
     return (
-      <View className="flex-1 items-center justify-center bg-gray-100 p-0">
-        <Text className="text-5xl font-bold text-gray-900">Done</Text>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#f3f4f6",
+        }}
+      >
+        <Text
+          className="text-5xl font-bold text-gray-900"
+          style={{ textAlign: "center" }}
+        >
+          Done
+        </Text>
       </View>
     );
   }

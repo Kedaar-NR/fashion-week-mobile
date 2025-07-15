@@ -3,13 +3,14 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Video } from "expo-av";
 import { Image as ExpoImage } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
   FlatList,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   Text,
   TouchableOpacity,
   View,
@@ -576,6 +577,54 @@ export default function HomeScreen() {
     }
   };
 
+  // --- Add viewability configs and handlers for robust autoplay ---
+  const viewabilityConfig = {
+    itemVisiblePercentThreshold: 80,
+    minimumViewTime: 100,
+  };
+
+  // Track refs for visible videos per brand
+  const videoRefs = useRef<{ [key: string]: any }>({});
+  // Track visible horizontal indices per brand
+  const horizontalViewable = useRef<{ [brand: string]: number }>({});
+
+  // Handler for horizontal FlatList (media per brand)
+  const onHorizontalViewableItemsChanged = React.useRef(
+    (brand: string) =>
+      async ({ viewableItems }: { viewableItems: any[] }) => {
+        if (viewableItems && viewableItems.length > 0) {
+          const idx = viewableItems[0].index;
+          horizontalViewable.current[brand] = idx;
+          setHorizontalIndices((prev) => ({ ...prev, [brand]: idx }));
+          // Autoplay logic: play visible, pause others
+          for (let i = 0; i < viewableItems.length; i++) {
+            const item = viewableItems[i];
+            const key = `${brand}_${item.index}`;
+            const ref = videoRefs.current[key];
+            if (ref && item.isViewable) {
+              try {
+                (await ref.playAsync) && ref.playAsync();
+              } catch {}
+            } else if (ref) {
+              try {
+                (await ref.pauseAsync) && ref.pauseAsync();
+              } catch {}
+            }
+          }
+        }
+      }
+  );
+
+  // Handler for vertical FlatList (brands)
+  const [visibleVerticalIndex, setVisibleVerticalIndex] = useState(0);
+  const onVerticalViewableItemsChanged = React.useRef(
+    ({ viewableItems }: { viewableItems: any[] }) => {
+      if (viewableItems && viewableItems.length > 0) {
+        setVisibleVerticalIndex(viewableItems[0].index);
+      }
+    }
+  );
+
   const renderBrandMedia = React.useCallback(
     ({
       item: { brand, media },
@@ -607,47 +656,61 @@ export default function HomeScreen() {
             );
             setHorizontalIndices((prev) => ({ ...prev, [brand]: newIndex }));
           }}
-          renderItem={({ item, index }) => (
-            <View
-              style={{
-                width: Dimensions.get("window").width,
-                height: screenHeight,
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {item.type === "image" ? (
-                <ExpoImage
-                  source={{ uri: item.url }}
-                  style={{
-                    width: "100%",
-                    height: screenHeight,
-                    borderRadius: 0,
-                  }}
-                  contentFit="cover"
-                />
-              ) : (
-                <Video
-                  source={{ uri: item.url }}
-                  style={{
-                    width: "100%",
-                    height: screenHeight,
-                    borderRadius: 0,
-                  }}
-                  resizeMode={"cover" as any}
-                  shouldPlay={
-                    vIndex === verticalIndex &&
-                    index === horizontalIndex &&
-                    isScreenFocused
-                  }
-                  useNativeControls={false}
-                  isLooping={true}
-                  isMuted={muted}
-                  volume={1.0}
-                />
-              )}
-            </View>
+          viewabilityConfig={viewabilityConfig}
+          onViewableItemsChanged={onHorizontalViewableItemsChanged.current(
+            brand
           )}
+          renderItem={({ item, index }) => {
+            // Only play if this brand is the visible vertical brand and this is the visible horizontal media
+            const isVisible =
+              vIndex === visibleVerticalIndex &&
+              (horizontalViewable.current[brand] ?? 0) === index &&
+              isScreenFocused;
+            const videoKey = `${brand}_${index}`;
+            return (
+              <View
+                style={{
+                  width: Dimensions.get("window").width,
+                  height: screenHeight,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                {item.type === "image" ? (
+                  <ExpoImage
+                    source={{ uri: item.url }}
+                    style={{
+                      width: "100%",
+                      height: screenHeight,
+                      borderRadius: 0,
+                    }}
+                    contentFit="cover"
+                  />
+                ) : (
+                  <Video
+                    ref={(ref) => {
+                      videoRefs.current[videoKey] = ref;
+                    }}
+                    source={{ uri: item.url }}
+                    style={{
+                      width: "100%",
+                      height: screenHeight,
+                      borderRadius: 0,
+                    }}
+                    resizeMode={"cover" as any}
+                    shouldPlay={isVisible}
+                    useNativeControls={false}
+                    isLooping={true}
+                    isMuted={true}
+                    volume={1.0}
+                    {...(Platform.OS === "web"
+                      ? { playsInline: true, autoPlay: true }
+                      : {})}
+                  />
+                )}
+              </View>
+            );
+          }}
         />
       );
     },
@@ -655,10 +718,8 @@ export default function HomeScreen() {
       horizontalIndices,
       insets.bottom,
       isScreenFocused,
-      muted,
-      router,
       brandsMedia,
-      verticalIndex,
+      visibleVerticalIndex,
     ]
   );
 
@@ -787,6 +848,8 @@ export default function HomeScreen() {
         scrollEventThrottle={16}
         renderItem={renderBrandMedia}
         initialScrollIndex={verticalIndex}
+        viewabilityConfig={viewabilityConfig}
+        onViewableItemsChanged={onVerticalViewableItemsChanged.current}
       />
     </View>
   );
