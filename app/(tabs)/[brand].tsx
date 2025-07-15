@@ -236,7 +236,17 @@ export default function BrandDetailScreen() {
     >
       {/* Mute button */}
       <View style={{ position: "absolute", top: 32, right: 24, zIndex: 10 }}>
-        <TouchableOpacity onPress={() => setMuted((m) => !m)}>
+        <TouchableOpacity
+          onPress={() => {
+            setMuted((m) => {
+              const newMuted = !m;
+              // Ensure the current video keeps playing
+              const ref = videoRefs.current[`video_${currentIndex}`];
+              if (ref && ref.playAsync) ref.playAsync().catch(() => {});
+              return newMuted;
+            });
+          }}
+        >
           <Ionicons
             name={muted ? "volume-mute" : "volume-high"}
             size={28}
