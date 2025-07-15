@@ -62,16 +62,13 @@ export default function Auth() {
     variant?: "primary" | "secondary";
   }) => (
     <TouchableOpacity
-      style={{
-        paddingHorizontal: 24,
-        paddingVertical: 16,
-        borderRadius: 20,
-        marginBottom: 16,
-        width: "100%",
-        alignItems: "center",
-        opacity: disabled ? 0.5 : 1,
-        backgroundColor: variant === "primary" ? "#000" : "#E0E0E0",
-      }}
+      className={`px-6 py-4 rounded-xl mb-4 w-full items-center ${
+        disabled
+          ? "opacity-50"
+          : variant === "primary"
+            ? "bg-black"
+            : "bg-gray-100"
+      }`}
       onPress={onPress}
       disabled={disabled}
     >
@@ -82,11 +79,9 @@ export default function Auth() {
         />
       ) : (
         <Text
-          style={{
-            fontWeight: "bold",
-            fontSize: 18,
-            color: variant === "primary" ? "#FFFFFF" : "#000000",
-          }}
+          className={`font-bold text-base ${
+            variant === "primary" ? "text-white" : "text-black"
+          }`}
         >
           {title}
         </Text>
@@ -109,17 +104,9 @@ export default function Auth() {
     keyboardType?: "default" | "email-address";
     autoCapitalize?: "none" | "words";
   }) => (
-    <View style={{ width: "100%", marginBottom: 24 }}>
+    <View className="relative w-full mb-6">
       <TextInput
-        style={{
-          borderWidth: 1,
-          borderColor: "#D1D5DB",
-          borderRadius: 16,
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          fontSize: 16,
-          backgroundColor: "#FFFFFF",
-        }}
+        className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white"
         placeholder={placeholder}
         placeholderTextColor="#9CA3AF"
         secureTextEntry={secureTextEntry}
@@ -140,18 +127,9 @@ export default function Auth() {
     value: string;
     onChangeText: (text: string) => void;
   }) => (
-    <View style={{ width: "100%", marginBottom: 24 }}>
+    <View className="relative w-full mb-6">
       <TextInput
-        style={{
-          borderWidth: 1,
-          borderColor: "#D1D5DB",
-          borderRadius: 16,
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          fontSize: 16,
-          backgroundColor: "#FFFFFF",
-          paddingRight: 48, // Adjust padding for icon
-        }}
+        className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white pr-12"
         placeholder={placeholder}
         placeholderTextColor="#9CA3AF"
         secureTextEntry={!showPassword}
@@ -159,16 +137,10 @@ export default function Auth() {
         onChangeText={onChangeText}
       />
       <TouchableOpacity
-        style={{
-          position: "absolute",
-          right: 16,
-          top: 0,
-          bottom: 0,
-          justifyContent: "center",
-        }}
+        className="absolute right-4 top-0 bottom-0 justify-center"
         onPress={togglePasswordVisibility}
       >
-        <Text style={{ color: "#9CA3AF", fontSize: 24 }}>
+        <Text className="text-gray-400 text-lg">
           {showPassword ? "👁️" : "👁️‍🗨️"}
         </Text>
       </TouchableOpacity>
@@ -177,41 +149,18 @@ export default function Auth() {
 
   if (mode === "landing") {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          paddingHorizontal: 24,
-          backgroundColor: "#fff",
-        }}
-      >
-        <View style={{ width: "100%", maxWidth: 300 }}>
-          <Text
-            style={{
-              fontSize: 48,
-              fontWeight: "bold",
-              textAlign: "center",
-              marginBottom: 8,
-              color: "#000",
-            }}
-          >
+      <View className="flex-1 justify-center items-center px-6 bg-white">
+        <View className="w-full max-w-sm">
+          <Text className="text-4xl font-bold text-center mb-2 text-black">
             fashion:week
           </Text>
-          <Text
-            style={{
-              fontSize: 20,
-              textAlign: "center",
-              marginBottom: 36,
-              color: "#6B7280",
-            }}
-          >
+          <Text className="text-lg text-center mb-12 text-gray-600">
             Discover the latest in fashion
           </Text>
 
-          <CustomButton title="Sign In" onPress={() => setMode("signin")} />
+          <CustomButton title="SIGN IN" onPress={() => setMode("signin")} />
           <CustomButton
-            title="Create Account"
+            title="CREATE ACCOUNT"
             onPress={() => setMode("signup")}
             variant="secondary"
           />
@@ -222,35 +171,12 @@ export default function Auth() {
 
   if (mode === "signin") {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          paddingHorizontal: 24,
-          backgroundColor: "#fff",
-        }}
-      >
-        <View style={{ width: "100%", maxWidth: 300 }}>
-          <Text
-            style={{
-              fontSize: 36,
-              fontWeight: "bold",
-              textAlign: "center",
-              marginBottom: 8,
-              color: "#000",
-            }}
-          >
+      <View className="flex-1 justify-center items-center px-6 bg-white">
+        <View className="w-full max-w-sm">
+          <Text className="text-3xl font-bold text-center mb-2 text-black">
             Welcome Back
           </Text>
-          <Text
-            style={{
-              fontSize: 18,
-              textAlign: "center",
-              marginBottom: 24,
-              color: "#6B7280",
-            }}
-          >
+          <Text className="text-base text-center mb-8 text-gray-600">
             Sign in to your account
           </Text>
 
@@ -268,13 +194,13 @@ export default function Auth() {
           />
 
           <CustomButton
-            title="Sign In"
+            title="SIGN IN"
             onPress={signInWithEmail}
             disabled={loading}
           />
 
           <CustomButton
-            title="Back"
+            title="BACK"
             onPress={() => setMode("landing")}
             variant="secondary"
             disabled={loading}
@@ -286,35 +212,12 @@ export default function Auth() {
 
   // Sign Up
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        paddingHorizontal: 24,
-        backgroundColor: "#fff",
-      }}
-    >
-      <View style={{ width: "100%", maxWidth: 300 }}>
-        <Text
-          style={{
-            fontSize: 36,
-            fontWeight: "bold",
-            textAlign: "center",
-            marginBottom: 8,
-            color: "#000",
-          }}
-        >
+    <View className="flex-1 justify-center items-center px-6 bg-white">
+      <View className="w-full max-w-sm">
+        <Text className="text-3xl font-bold text-center mb-2 text-black">
           Create Account
         </Text>
-        <Text
-          style={{
-            fontSize: 18,
-            textAlign: "center",
-            marginBottom: 24,
-            color: "#6B7280",
-          }}
-        >
+        <Text className="text-base text-center mb-8 text-gray-600">
           Join the fashion community
         </Text>
 
@@ -339,13 +242,13 @@ export default function Auth() {
         />
 
         <CustomButton
-          title="Create Account"
+          title="CREATE ACCOUNT"
           onPress={signUpWithEmail}
           disabled={loading}
         />
 
         <CustomButton
-          title="Back"
+          title="BACK"
           onPress={() => setMode("landing")}
           variant="secondary"
           disabled={loading}
