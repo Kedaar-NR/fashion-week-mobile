@@ -209,9 +209,9 @@ export default function Auth() {
             Discover the latest in fashion
           </Text>
 
-          <CustomButton title="SIGN IN" onPress={() => setMode("signin")} />
+          <CustomButton title="Sign In" onPress={() => setMode("signin")} />
           <CustomButton
-            title="CREATE ACCOUNT"
+            title="Create Account"
             onPress={() => setMode("signup")}
             variant="secondary"
           />
@@ -268,13 +268,13 @@ export default function Auth() {
           />
 
           <CustomButton
-            title="SIGN IN"
+            title="Sign In"
             onPress={signInWithEmail}
             disabled={loading}
           />
 
           <CustomButton
-            title="BACK"
+            title="Back"
             onPress={() => setMode("landing")}
             variant="secondary"
             disabled={loading}
@@ -339,13 +339,13 @@ export default function Auth() {
         />
 
         <CustomButton
-          title="CREATE ACCOUNT"
+          title="Create Account"
           onPress={signUpWithEmail}
           disabled={loading}
         />
 
         <CustomButton
-          title="BACK"
+          title="Back"
           onPress={() => setMode("landing")}
           variant="secondary"
           disabled={loading}
