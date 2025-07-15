@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import {
   Audio,
   InterruptionModeAndroid,
@@ -23,6 +23,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PaginationDots from "../../components/PaginationDots";
+import { feedFilterEmitter } from "../../components/ui/NavBar";
 import { supabase } from "../../lib/supabase";
 
 const { height: screenHeight } = Dimensions.get("window");
@@ -409,9 +410,18 @@ function recommendBrands(
       lastSeen: number;
     };
   },
-  sessionSet: Set<string>
+  sessionSet: Set<string>,
+  userId?: string // Add userId for seeding
 ) {
-  // 1. Score brands
+  // If this is the first round (sessionSet is empty), randomize order for each user
+  if (!sessionSet || sessionSet.size === 0) {
+    // Use a seeded shuffle for per-user randomness
+    const seed = userId
+      ? Array.from(userId).reduce((acc, c) => acc + c.charCodeAt(0), 0)
+      : Date.now();
+    return shuffleArraySeeded(allBrands, seed);
+  }
+  // Otherwise, use adaptive scoring, but still show all brands (best matches first)
   const scored = allBrands.map((brand) => {
     const s = scores[brand] || {
       saves: 0,
@@ -426,22 +436,18 @@ function recommendBrands(
       isNew: !sessionSet.has(brand),
     };
   });
-  // 2. Sort by score desc, then lastSeen desc
+  // Sort by score desc, then lastSeen desc
   scored.sort((a, b) => b.score - a.score || b.lastSeen - a.lastSeen);
-  // 3. Inject ~20% new brands
-  const newBrands = scored.filter((b) => b && b.isNew);
-  const seenBrands = scored.filter((b) => b && !b.isNew);
-  const injectCount = Math.ceil(0.2 * scored.length);
-  const injected = [];
-  for (let i = 0; i < injectCount && newBrands.length > 0; i++) {
-    const next = newBrands.shift();
-    if (next) injected.push(next);
+  // Show all brands exactly once, best matches first
+  const usedBrands = new Set<string>();
+  const ordered = [];
+  for (const b of scored) {
+    if (!usedBrands.has(b.brand)) {
+      ordered.push(b);
+      usedBrands.add(b.brand);
+    }
   }
-  // 4. Merge injected and seen brands, remove duplicates and undefined
-  const final = [...injected, ...seenBrands].filter(
-    (b, i, arr) => b && arr.findIndex((x) => x && x.brand === b.brand) === i
-  );
-  return final.filter(Boolean).map((b) => b!.brand);
+  return ordered.filter(Boolean).map((b) => b!.brand);
 }
 
 // --- Brand AI Summaries ---
@@ -575,6 +581,28 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const lastTapRef = useRef<{ [key: string]: number }>({});
+  const [filter, setFilter] = useState<"all" | "liked">("all");
+  const isFocused = useIsFocused();
+  const [allPaused, setAllPaused] = useState(false);
+
+  // Mute all videos immediately when the home tab loses focus
+  useEffect(() => {
+    if (!isFocused) {
+      Object.values(videoRefs.current).forEach((ref) => {
+        if (ref && ref.setStatusAsync) {
+          ref.setStatusAsync({ isMuted: true }).catch(() => {});
+        }
+      });
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
+    const handler = (newFilter: "all" | "liked") => setFilter(newFilter);
+    feedFilterEmitter.on("filter", handler);
+    return () => {
+      feedFilterEmitter.off("filter", handler);
+    };
+  }, []);
 
   // --- Track Linger Time ---
   useEffect(() => {
@@ -671,7 +699,8 @@ export default function HomeScreen() {
       const recommended = recommendBrands(
         sanitizedBrands,
         brandScores,
-        sessionBrands
+        sessionBrands,
+        session?.user?.id // Pass userId for seeding
       );
       const all = await fetchAllBrandsMedia(recommended);
       setBrandsMedia(
@@ -726,21 +755,47 @@ export default function HomeScreen() {
     [brandsMedia.length, brandScores, sessionBrands]
   );
 
+  const [visibleVerticalIndex, setVisibleVerticalIndex] = useState(0);
   // Pause all videos on screen blur/unfocus
   useFocusEffect(
     React.useCallback(() => {
       setIsScreenFocused(true);
+      setAllPaused(false);
+      // Removed restore visibleVerticalIndex logic from here to prevent infinite loop
       return () => {
         setIsScreenFocused(false);
-        // Pause all videos when screen loses focus
+        setAllPaused(true);
+        setVisibleVerticalIndex(-1); // No video is visible
+        updateVideoPlayback({ brand: "", hIndex: 0, muted: true, play: false });
         Object.values(videoRefs.current).forEach((ref) => {
           if (ref && ref.pauseAsync) {
             ref.pauseAsync().catch(() => {});
+          }
+          if (ref && ref.setStatusAsync) {
+            ref.setStatusAsync({ isMuted: true }).catch(() => {});
           }
         });
       };
     }, [])
   );
+
+  // Restore visibleVerticalIndex and playback only when tab is focused and index is -1
+  useEffect(() => {
+    if (isScreenFocused && visibleVerticalIndex === -1) {
+      const restoreIndex = verticalIndex || 0;
+      setVisibleVerticalIndex(restoreIndex);
+      const brand = brandsMedia[restoreIndex]?.brand;
+      const hIndex = horizontalIndices[brand] || 0;
+      updateVideoPlayback({ brand, hIndex, muted, play: true });
+    }
+  }, [
+    isScreenFocused,
+    visibleVerticalIndex,
+    verticalIndex,
+    brandsMedia,
+    horizontalIndices,
+    muted,
+  ]);
 
   useEffect(() => {
     Audio.setAudioModeAsync({
@@ -819,7 +874,6 @@ export default function HomeScreen() {
   );
 
   // Handler for vertical FlatList (brands)
-  const [visibleVerticalIndex, setVisibleVerticalIndex] = useState(0);
   const onVerticalViewableItemsChanged = React.useRef(
     ({ viewableItems }: { viewableItems: any[] }) => {
       if (viewableItems && viewableItems.length > 0) {
@@ -874,7 +928,9 @@ export default function HomeScreen() {
             const isVisible =
               vIndex === visibleVerticalIndex &&
               (horizontalViewable.current[brand] ?? 0) === index &&
-              isScreenFocused;
+              isScreenFocused &&
+              !allPaused &&
+              visibleVerticalIndex !== -1;
             const videoKey = `${brand}_${index}`;
             const lastTapKey = `${brand}_${index}`;
 
@@ -924,7 +980,7 @@ export default function HomeScreen() {
                     shouldPlay={isVisible}
                     useNativeControls={false}
                     isLooping={true}
-                    isMuted={!isVisible || muted}
+                    isMuted={!isVisible || muted || allPaused}
                     volume={1.0}
                     {...(Platform.OS === "web"
                       ? { playsInline: true, autoPlay: true }
@@ -943,6 +999,8 @@ export default function HomeScreen() {
       isScreenFocused,
       brandsMedia,
       visibleVerticalIndex,
+      allPaused,
+      muted,
     ]
   );
 
@@ -964,11 +1022,25 @@ export default function HomeScreen() {
     updateVideoPlayback({ brand, hIndex, muted, play: true });
   }, [visibleVerticalIndex, horizontalIndices, brandsMedia, muted]);
 
-  if (loading || brandsMedia.length === 0) {
+  // In the brandsMedia state, filter by savedBrands if filter === 'liked'
+  const filteredBrandsMedia =
+    filter === "liked"
+      ? brandsMedia.filter((b) => savedBrands.has(b.brand))
+      : brandsMedia;
+
+  if (loading || filteredBrandsMedia.length === 0) {
     return <ActivityIndicator size="large" className="flex-1 self-center" />;
   }
 
-  const currentBrand = brandsMedia[verticalIndex]?.brand;
+  if (filter === "liked" && filteredBrandsMedia.length === 0) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text className="text-white text-lg">None here</Text>
+      </View>
+    );
+  }
+
+  const currentBrand = filteredBrandsMedia[verticalIndex]?.brand;
   const isCurrentBrandSaved = currentBrand
     ? savedBrands.has(currentBrand)
     : false;
@@ -1004,7 +1076,7 @@ export default function HomeScreen() {
             setMuted((prevMuted) => {
               const newMuted = !prevMuted;
               // Only update the visible video
-              const brand = brandsMedia[verticalIndex]?.brand;
+              const brand = filteredBrandsMedia[verticalIndex]?.brand;
               const hIndex = horizontalIndices[brand] || 0;
               updateVideoPlayback({
                 brand,
@@ -1032,7 +1104,7 @@ export default function HomeScreen() {
         )}
 
         {/* Brand name overlay */}
-        {brandsMedia[verticalIndex] && (
+        {filteredBrandsMedia[verticalIndex] && (
           <View className="bg-black/30 px-4 py-3 rounded-full flex-row items-center justify-between">
             <TouchableOpacity
               activeOpacity={0.7}
@@ -1040,27 +1112,29 @@ export default function HomeScreen() {
                 // Navigate to brand detail component
                 console.log(
                   "Navigating to brand:",
-                  brandsMedia[verticalIndex].brand
+                  filteredBrandsMedia[verticalIndex].brand
                 );
                 router.push({
                   pathname: "/(tabs)/[brand]",
-                  params: { brand: brandsMedia[verticalIndex].brand },
+                  params: { brand: filteredBrandsMedia[verticalIndex].brand },
                 });
               }}
               className="flex-1 items-start justify-center pl-2"
             >
               <Text className="text-white text-sm font-semibold text-left">
-                {brandsMedia[verticalIndex].brand}
+                {filteredBrandsMedia[verticalIndex].brand}
               </Text>
               <Text className="text-white text-xs opacity-80 text-left mt-1">
-                {BRAND_AI_SUMMARIES[brandsMedia[verticalIndex].brand] ||
-                  brandsMedia[verticalIndex].tagline ||
+                {BRAND_AI_SUMMARIES[filteredBrandsMedia[verticalIndex].brand] ||
+                  filteredBrandsMedia[verticalIndex].tagline ||
                   "No tagline available"}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => handleSaveBrand(brandsMedia[verticalIndex].brand)}
+              onPress={() =>
+                handleSaveBrand(filteredBrandsMedia[verticalIndex].brand)
+              }
               className="ml-3 items-center justify-center"
             >
               <Ionicons
@@ -1073,12 +1147,12 @@ export default function HomeScreen() {
         )}
 
         {/* Pagination Dots */}
-        {brandsMedia[verticalIndex] && (
+        {filteredBrandsMedia[verticalIndex] && (
           <View className="mt-3">
             <PaginationDots
-              totalItems={brandsMedia[verticalIndex].media.length}
+              totalItems={filteredBrandsMedia[verticalIndex].media.length}
               currentIndex={
-                horizontalIndices[brandsMedia[verticalIndex].brand] || 0
+                horizontalIndices[filteredBrandsMedia[verticalIndex].brand] || 0
               }
               dotSize={6}
               dotSpacing={4}
@@ -1089,7 +1163,7 @@ export default function HomeScreen() {
         )}
       </View>
       <FlatList
-        data={brandsMedia}
+        data={filteredBrandsMedia}
         keyExtractor={(item) => item.brand}
         pagingEnabled
         showsVerticalScrollIndicator={false}
