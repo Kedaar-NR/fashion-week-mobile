@@ -1,6 +1,7 @@
 import { router, useFocusEffect, usePathname, useSegments } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Dimensions,
   Keyboard,
   Text,
   TextInput,
@@ -10,10 +11,11 @@ import {
 
 import EventEmitter from "eventemitter3";
 import { useColorScheme } from "../../hooks/useColorScheme";
-import { supabase } from "../../lib/supabase";
 import { IconSymbol } from "./IconSymbol";
 // @ts-ignore
 export const feedFilterEmitter = new EventEmitter();
+
+const { width, height } = Dimensions.get("window");
 
 export function NavBar({
   customTitle,
@@ -102,6 +104,7 @@ export function NavBar({
   const [searchActive, setSearchActive] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchMenuOpen, setSearchMenuOpen] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   // Close dropdown when page changes
@@ -110,6 +113,12 @@ export function NavBar({
       if (menuOpen) {
         setMenuOpen(false);
       }
+      if (searchMenuOpen) {
+        setSearchMenuOpen(false);
+      }
+      if (searchActive) {
+        setSearchActive(false);
+      }
     }, [pathname])
   );
 
@@ -117,41 +126,88 @@ export function NavBar({
     setMenuOpen(!menuOpen);
   };
 
-  // Page-specific menu options
+  // Dummy data for recent product pages
+  const recentProductPages = [
+    {
+      id: 1,
+      name: "Nike Air Max 270",
+      brand: "Nike",
+      price: "$150",
+      image: "https://via.placeholder.com/80x80",
+    },
+    {
+      id: 2,
+      name: "Adidas Ultraboost 22",
+      brand: "Adidas",
+      price: "$180",
+      image: "https://via.placeholder.com/80x80",
+    },
+    {
+      id: 3,
+      name: "Puma RS-X 3D",
+      brand: "Puma",
+      price: "$110",
+      image: "https://via.placeholder.com/80x80",
+    },
+  ];
+
+  // Dummy data for recent searches
+  const recentSearches = [
+    "sneakers",
+    "running shoes",
+    "casual wear",
+    "winter jackets",
+    "accessories",
+  ];
+
+  // Dummy data for recent brands
+  const recentBrands = [
+    {
+      id: 1,
+      name: "Nike",
+      tagline: "Just Do It",
+    },
+    {
+      id: 2,
+      name: "Adidas",
+      tagline: "Impossible Is Nothing",
+    },
+  ];
+
   const getMenuOptions = (pageName: string) => {
     switch (pageName) {
       case "fashion:week":
         return [
           {
-            label: "BRANDS",
+            label: "LIBRARY",
             onPress: () => {
-              feedFilterEmitter.emit("filter", "all"); // Show all brands (default view)
+              router.push("/(tabs)/(collections)");
               setMenuOpen(false);
             },
           },
           {
-            label: "PIECES",
+            label: "DROP TRACKER",
             onPress: () => {
-              console.log("Pieces pressed");
+              router.push("/(tabs)/(drops)");
               setMenuOpen(false);
             },
           },
           {
-            label: "FOLLOWING",
+            label: "ACCOUNT",
             onPress: () => {
-              feedFilterEmitter.emit("filter", "liked"); // Show only followed/liked brands
+              router.push("/(tabs)/(user)");
               setMenuOpen(false);
             },
           },
           {
-            label: "FEATURED",
+            label: "STYLE QUIZ",
             onPress: () => {
-              console.log("Featured pressed");
+              router.push("/(tabs)/style-quiz");
               setMenuOpen(false);
             },
           },
         ];
-      case "COLLECTIONS":
+      case "LIBRARY":
         return [
           {
             label: "CREATE COLLECTION",
@@ -161,23 +217,16 @@ export function NavBar({
             },
           },
           {
-            label: "SORT BY",
+            label: "IMPORT ITEMS",
             onPress: () => {
-              console.log("Sort by pressed");
+              console.log("Import items pressed");
               setMenuOpen(false);
             },
           },
           {
-            label: "FILTER",
+            label: "EXPORT DATA",
             onPress: () => {
-              console.log("Filter pressed");
-              setMenuOpen(false);
-            },
-          },
-          {
-            label: "EXPORT",
-            onPress: () => {
-              console.log("Export pressed");
+              console.log("Export data pressed");
               setMenuOpen(false);
             },
           },
@@ -192,16 +241,16 @@ export function NavBar({
             },
           },
           {
-            label: "SETTINGS",
+            label: "SET REMINDERS",
             onPress: () => {
-              console.log("Settings pressed");
+              console.log("Set reminders pressed");
               setMenuOpen(false);
             },
           },
           {
-            label: "NOTIFICATIONS",
+            label: "VIEW CALENDAR",
             onPress: () => {
-              console.log("Notifications pressed");
+              console.log("View calendar pressed");
               setMenuOpen(false);
             },
           },
@@ -212,7 +261,13 @@ export function NavBar({
             label: "EDIT PROFILE",
             onPress: () => {
               router.push("/(tabs)/(user)/edit-profile");
-              console.log("Edit profile pressed");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "FRIENDS",
+            onPress: () => {
+              router.push("/(tabs)/(user)/friends");
               setMenuOpen(false);
             },
           },
@@ -220,26 +275,27 @@ export function NavBar({
             label: "ADD FRIENDS",
             onPress: () => {
               router.push("/(tabs)/(user)/add-friends");
-              console.log("Add friends pressed");
               setMenuOpen(false);
             },
           },
           {
-            label: "LOGOUT",
-            onPress: async () => {
-              console.log("Logout pressed");
-              try {
-                const { error } = await supabase.auth.signOut();
-                if (error) {
-                  console.error("Error signing out:", error.message);
-                } else {
-                  console.log("Successfully signed out");
-                  // Navigate to login or home page after logout
-                  router.replace("/");
-                }
-              } catch (error) {
-                console.error("Unexpected error during logout:", error);
-              }
+            label: "ARCHIVE",
+            onPress: () => {
+              router.push("/(tabs)/(user)/archive");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "PINNED COLLECTIONS",
+            onPress: () => {
+              router.push("/(tabs)/(user)/pinnedCollections");
+              setMenuOpen(false);
+            },
+          },
+          {
+            label: "RECENTLY PURCHASED",
+            onPress: () => {
+              router.push("/(tabs)/(user)/recently-purchased");
               setMenuOpen(false);
             },
           },
@@ -339,13 +395,22 @@ export function NavBar({
   const menuOptions = getMenuOptions(pageDisplayName);
 
   const handleSearchPress = () => {
+    setSearchMenuOpen(true);
     setSearchActive(true);
     setTimeout(() => {
       inputRef.current?.focus();
     }, 100);
   };
 
+  const handleSearchMenuClose = () => {
+    setSearchMenuOpen(false);
+    setSearchActive(false);
+    setSearchText("");
+    Keyboard.dismiss();
+  };
+
   const handleCancelSearch = () => {
+    setSearchMenuOpen(false);
     setSearchActive(false);
     setSearchText("");
     Keyboard.dismiss();
@@ -357,10 +422,33 @@ export function NavBar({
         pathname: "/(tabs)/search-results",
         params: { query: searchText.trim() },
       });
-      setSearchActive(false);
+      setSearchMenuOpen(false);
       setSearchText("");
       Keyboard.dismiss();
     }
+  };
+
+  const handleRecentSearchPress = (searchTerm: string) => {
+    router.push({
+      pathname: "/(tabs)/search-results",
+      params: { query: searchTerm },
+    });
+    setSearchMenuOpen(false);
+  };
+
+  const handleRecentProductPress = (product: any) => {
+    // Navigate to product page (placeholder for now)
+    console.log("Navigate to product:", product.name);
+    setSearchMenuOpen(false);
+  };
+
+  const handleRecentBrandPress = (brand: any) => {
+    // Navigate to brand page
+    router.push({
+      pathname: "/(tabs)/[brand]",
+      params: { brand: brand.name.toLowerCase() },
+    });
+    setSearchMenuOpen(false);
   };
 
   return (
@@ -368,76 +456,52 @@ export function NavBar({
       <View
         className={`flex-row items-center justify-between px-4 py-3 pt-16 ${pageDisplayName === "fashion:week" ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "bg-transparent"}`}
       >
-        {searchActive ? (
-          <View className="flex-1 flex-row items-center gap-2 h-11">
-            <TextInput
-              ref={inputRef}
-              className="flex-1 h-9 rounded-lg px-3 text-base text-gray-900 bg-gray-100"
-              value={searchText}
-              onChangeText={setSearchText}
-              placeholder="Search..."
-              placeholderTextColor={colorScheme === "light" ? "#999" : "#aaa"}
-              autoFocus={true}
-              returnKeyType="search"
-              onSubmitEditing={handleSearchSubmit}
-            />
-            <TouchableOpacity
-              className="ml-2 px-2 py-1"
-              onPress={handleCancelSearch}
-            >
-              <IconSymbol name="chevron.left" size={20} color={iconColor} />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <>
-            {shouldShowBack && (
-              <TouchableOpacity
-                className="w-11 h-11 justify-center items-center"
-                onPress={onBack || (() => router.back())}
-              >
-                <IconSymbol name="chevron.left" size={20} color={iconColor} />
-              </TouchableOpacity>
-            )}
-            {!shouldShowBack && (
-              <TouchableOpacity
-                className="w-11 h-11 justify-center items-center"
-                onPress={handleMenuPress}
-              >
-                {!menuOpen ? (
-                  <View className="w-4 h-3 justify-between">
-                    <View
-                      className="h-0.5 w-full rounded-sm"
-                      style={{ backgroundColor: iconColor }}
-                    />
-                    <View
-                      className="h-0.5 w-full rounded-sm"
-                      style={{ backgroundColor: iconColor }}
-                    />
-                    <View
-                      className="h-0.5 w-full rounded-sm"
-                      style={{ backgroundColor: iconColor }}
-                    />
-                  </View>
-                ) : (
-                  <IconSymbol name="xmark" size={16} color={iconColor} />
-                )}
-              </TouchableOpacity>
-            )}
-
-            <Text
-              className={`text-lg font-semibold tracking-wider ${pageDisplayName === "fashion:week" ? "text-white" : "text-black"}`}
-            >
-              {pageDisplayName}
-            </Text>
-
-            <TouchableOpacity
-              className="w-11 h-11 justify-center items-center"
-              onPress={handleSearchPress}
-            >
-              <IconSymbol name="magnifyingglass" size={20} color={iconColor} />
-            </TouchableOpacity>
-          </>
+        {shouldShowBack && (
+          <TouchableOpacity
+            className="w-11 h-11 justify-center items-center"
+            onPress={onBack || (() => router.back())}
+          >
+            <IconSymbol name="chevron.left" size={20} color={iconColor} />
+          </TouchableOpacity>
         )}
+        {!shouldShowBack && (
+          <TouchableOpacity
+            className="w-11 h-11 justify-center items-center"
+            onPress={handleMenuPress}
+          >
+            {!menuOpen ? (
+              <View className="w-4 h-3 justify-between">
+                <View
+                  className="h-0.5 w-full rounded-sm"
+                  style={{ backgroundColor: iconColor }}
+                />
+                <View
+                  className="h-0.5 w-full rounded-sm"
+                  style={{ backgroundColor: iconColor }}
+                />
+                <View
+                  className="h-0.5 w-full rounded-sm"
+                  style={{ backgroundColor: iconColor }}
+                />
+              </View>
+            ) : (
+              <IconSymbol name="xmark" size={16} color={iconColor} />
+            )}
+          </TouchableOpacity>
+        )}
+
+        <Text
+          className={`text-lg font-semibold tracking-wider ${pageDisplayName === "fashion:week" ? "text-white" : "text-black"}`}
+        >
+          {pageDisplayName}
+        </Text>
+
+        <TouchableOpacity
+          className="w-11 h-11 justify-center items-center"
+          onPress={handleSearchPress}
+        >
+          <IconSymbol name="magnifyingglass" size={20} color={iconColor} />
+        </TouchableOpacity>
       </View>
 
       {/* Dropdown Menu */}
@@ -466,6 +530,132 @@ export function NavBar({
               </Text>
             </TouchableOpacity>
           ))}
+        </View>
+      )}
+
+      {/* Full Screen Search Menu */}
+      {searchMenuOpen && (
+        <View
+          className="absolute inset-0 bg-white z-50"
+          style={{ width, height }}
+        >
+          {/* Header with Search Bar */}
+          <View className="flex-row items-center justify-between px-4 py-3 pt-16">
+            {searchActive ? (
+              <View className="flex-1 flex-row items-center gap-2 h-11">
+                <TextInput
+                  ref={inputRef}
+                  className="flex-1 h-9 rounded-lg px-3 text-base text-gray-900 bg-gray-100"
+                  value={searchText}
+                  onChangeText={setSearchText}
+                  placeholder="Search..."
+                  placeholderTextColor="#999"
+                  autoFocus={true}
+                  returnKeyType="search"
+                  onSubmitEditing={handleSearchSubmit}
+                />
+                <TouchableOpacity
+                  className="ml-2 px-2 py-1"
+                  onPress={handleCancelSearch}
+                >
+                  <IconSymbol name="chevron.left" size={20} color="#000000" />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <TouchableOpacity
+                  className="w-11 h-11 justify-center items-center"
+                  onPress={handleSearchMenuClose}
+                >
+                  <IconSymbol name="xmark" size={20} color="#000000" />
+                </TouchableOpacity>
+                <Text className="text-lg font-semibold tracking-wider text-black">
+                  SEARCH
+                </Text>
+                <View className="w-11" />
+              </>
+            )}
+          </View>
+
+          {/* Continue Shopping Section */}
+          <View className="px-4 mb-8">
+            <Text className="text-lg font-bold text-black mb-4">
+              Continue Shopping
+            </Text>
+            <View className="flex-row gap-4">
+              {recentProductPages.map((product) => (
+                <TouchableOpacity
+                  key={product.id}
+                  className="flex-1"
+                  onPress={() => handleRecentProductPress(product)}
+                >
+                  <View className="w-full h-32 bg-gray-200 rounded-lg mb-2 overflow-hidden">
+                    <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg" />
+                  </View>
+                  <Text
+                    className="text-sm font-semibold text-black mb-1"
+                    numberOfLines={1}
+                  >
+                    {product.name}
+                  </Text>
+                  <Text className="text-xs text-gray-600 mb-1">
+                    {product.brand}
+                  </Text>
+                  <Text className="text-sm font-bold text-black">
+                    {product.price}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Recent Searches Section */}
+          <View className="px-4 mb-8">
+            <Text className="text-lg font-bold text-black mb-4">
+              Recently Searched
+            </Text>
+            <View className="space-y-3">
+              {recentSearches.map((searchTerm, index) => (
+                <TouchableOpacity
+                  key={index}
+                  className="py-3 border-b border-gray-200"
+                  onPress={() => handleRecentSearchPress(searchTerm)}
+                >
+                  <Text className="text-base text-gray-800">{searchTerm}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+
+          {/* Recent Brands Section */}
+          <View className="px-4">
+            <Text className="text-lg font-bold text-black mb-4">
+              Recent Brands
+            </Text>
+            <View className="space-y-3">
+              {recentBrands.map((brand) => (
+                <TouchableOpacity
+                  key={brand.id}
+                  className="py-3 border-b border-gray-200"
+                  onPress={() => handleRecentBrandPress(brand)}
+                >
+                  <View className="flex-row items-center">
+                    <View className="w-12 h-12 bg-gray-200 rounded-full mr-4 overflow-hidden">
+                      <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-full" />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-base font-semibold text-gray-800 mb-1">
+                        {brand.name}
+                      </Text>
+                      <Text className="text-sm text-gray-600">
+                        {brand.tagline}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
         </View>
       )}
     </View>
