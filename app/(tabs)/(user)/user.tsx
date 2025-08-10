@@ -69,10 +69,13 @@ export default function UserScreen() {
       });
   };
 
-  const fetchSavedBrandsCount = async () => {
+  const fetchSavedBrandsCount = async (showLoading = false) => {
     if (!session) return;
 
-    setLoadingSavedBrands(true);
+    if (showLoading) {
+      setLoadingSavedBrands(true);
+    }
+
     try {
       const { count, error } = await supabase
         .from("saved_brands")
@@ -89,7 +92,9 @@ export default function UserScreen() {
       console.log("Unexpected error fetching saved brands count:", error);
       setSavedBrandsCount(0);
     } finally {
-      setLoadingSavedBrands(false);
+      if (showLoading) {
+        setLoadingSavedBrands(false);
+      }
     }
   };
 
@@ -181,8 +186,41 @@ export default function UserScreen() {
       if (session) {
         fetchPinnedCollections();
         fetchRecentlyPurchased();
-        fetchSavedBrandsCount();
+        fetchSavedBrandsCount(true); // Show loading only on initial load
         fetchFriendsCount();
+      }
+    }, [session])
+  );
+
+  // Additional focus effect specifically for refreshing saved brands count
+  // This ensures the count is always up-to-date when returning from archive page
+  useFocusEffect(
+    React.useCallback(() => {
+      if (session) {
+        // Small delay to ensure any background unarchive operations have completed
+        const timer = setTimeout(() => {
+          fetchSavedBrandsCount(false); // No loading state on refresh
+        }, 300); // Increased delay to ensure Supabase operations complete
+
+        return () => clearTimeout(timer);
+      }
+    }, [session])
+  );
+
+  // Enhanced focus effect that refreshes count immediately when coming back into focus
+  // This handles the case where user returns from archive page after unbookmarking
+  useFocusEffect(
+    React.useCallback(() => {
+      if (session) {
+        // Refresh count immediately when page comes into focus
+        fetchSavedBrandsCount(false); // No loading state on refresh
+
+        // Also refresh after a delay to catch any late updates
+        const timer = setTimeout(() => {
+          fetchSavedBrandsCount(false); // No loading state on refresh
+        }, 500);
+
+        return () => clearTimeout(timer);
       }
     }, [session])
   );
