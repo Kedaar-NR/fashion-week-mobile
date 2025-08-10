@@ -89,64 +89,6 @@ export default function Auth() {
     </TouchableOpacity>
   );
 
-  const CustomInput = ({
-    placeholder,
-    value,
-    onChangeText,
-    secureTextEntry = false,
-    keyboardType = "default",
-    autoCapitalize = "none",
-  }: {
-    placeholder: string;
-    value: string;
-    onChangeText: (text: string) => void;
-    secureTextEntry?: boolean;
-    keyboardType?: "default" | "email-address";
-    autoCapitalize?: "none" | "words";
-  }) => (
-    <View className="relative w-full mb-6">
-      <TextInput
-        className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white"
-        placeholder={placeholder}
-        placeholderTextColor="#9CA3AF"
-        secureTextEntry={secureTextEntry}
-        keyboardType={keyboardType}
-        autoCapitalize={autoCapitalize}
-        value={value}
-        onChangeText={onChangeText}
-      />
-    </View>
-  );
-
-  const PasswordInput = ({
-    placeholder,
-    value,
-    onChangeText,
-  }: {
-    placeholder: string;
-    value: string;
-    onChangeText: (text: string) => void;
-  }) => (
-    <View className="relative w-full mb-6">
-      <TextInput
-        className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white pr-12"
-        placeholder={placeholder}
-        placeholderTextColor="#9CA3AF"
-        secureTextEntry={!showPassword}
-        value={value}
-        onChangeText={onChangeText}
-      />
-      <TouchableOpacity
-        className="absolute right-4 top-0 bottom-0 justify-center"
-        onPress={togglePasswordVisibility}
-      >
-        <Text className="text-gray-400 text-lg">
-          {showPassword ? "👁️" : "👁️‍🗨️"}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-
   if (mode === "landing") {
     return (
       <View className="flex-1 justify-center items-center px-6 bg-white">
@@ -180,18 +122,42 @@ export default function Auth() {
             Sign in to your account
           </Text>
 
-          <CustomInput
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
+          <View className="relative w-full mb-6">
+            <TextInput
+              className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white"
+              placeholder="Email"
+              placeholderTextColor="#9CA3AF"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              blurOnSubmit={false}
+              returnKeyType="next"
+              enablesReturnKeyAutomatically={true}
+            />
+          </View>
 
-          <PasswordInput
-            placeholder="Password"
-            value={password}
-            onChangeText={setPassword}
-          />
+          <View className="relative w-full mb-6">
+            <TextInput
+              className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white pr-12"
+              placeholder="Password"
+              placeholderTextColor="#9CA3AF"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              blurOnSubmit={false}
+              returnKeyType="done"
+              enablesReturnKeyAutomatically={true}
+            />
+            <TouchableOpacity
+              className="absolute right-4 top-0 bottom-0 justify-center"
+              onPress={togglePasswordVisibility}
+            >
+              <Text className="text-gray-400 text-lg">
+                {showPassword ? "●" : "⊘"}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           <CustomButton
             title="SIGN IN"
@@ -221,25 +187,60 @@ export default function Auth() {
           Join the fashion community
         </Text>
 
-        <CustomInput
-          placeholder="Username"
-          value={username}
-          onChangeText={setUsername}
-          autoCapitalize="words"
-        />
+        <View className="relative w-full mb-6">
+          <TextInput
+            className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white"
+            placeholder="Username"
+            placeholderTextColor="#9CA3AF"
+            value={username}
+            onChangeText={setUsername}
+            autoCapitalize="words"
+            blurOnSubmit={false}
+            returnKeyType="next"
+            enablesReturnKeyAutomatically={true}
+          />
+        </View>
 
-        <CustomInput
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-        />
+        <View className="relative w-full mb-6">
+          <TextInput
+            className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white"
+            placeholder="Email"
+            placeholderTextColor="#9CA3AF"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            blurOnSubmit={false}
+            returnKeyType="next"
+            enablesReturnKeyAutomatically={true}
+          />
+        </View>
 
-        <PasswordInput
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-        />
+        <View className="relative w-full mb-6">
+          <TextInput
+            className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white pr-12"
+            placeholder="Password"
+            placeholderTextColor="#9CA3AF"
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+            blurOnSubmit={false}
+            returnKeyType="done"
+            enablesReturnKeyAutomatically={true}
+          />
+          <TouchableOpacity
+            className="absolute right-4 top-0 bottom-0 justify-center"
+            onPress={togglePasswordVisibility}
+          >
+            <Text className="text-gray-400 text-lg">
+              {showPassword ? (
+                "●"
+              ) : (
+                <Text className="text-gray-400 text-xl">⊘</Text>
+              )}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <CustomButton
           title="CREATE ACCOUNT"
