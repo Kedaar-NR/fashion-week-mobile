@@ -180,28 +180,28 @@ export function NavBar({
       case "fashion:week":
         return [
           {
-            label: "LIBRARY",
+            label: "BRANDS",
             onPress: () => {
               router.push("/(tabs)/(collections)");
               setMenuOpen(false);
             },
           },
           {
-            label: "DROP TRACKER",
+            label: "PRODUCTS", 
             onPress: () => {
               router.push("/(tabs)/(drops)");
               setMenuOpen(false);
             },
           },
           {
-            label: "ACCOUNT",
+            label: "FOLLOWING",
             onPress: () => {
               router.push("/(tabs)/(user)");
               setMenuOpen(false);
             },
           },
           {
-            label: "STYLE QUIZ",
+            label: "FEATURED",
             onPress: () => {
               router.push("/(tabs)/style-quiz");
               setMenuOpen(false);
