@@ -12,6 +12,7 @@ import {
 import EventEmitter from "eventemitter3";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { IconSymbol } from "./IconSymbol";
+import { supabase } from "@/lib/supabase";
 // @ts-ignore
 export const feedFilterEmitter = new EventEmitter();
 
@@ -265,37 +266,16 @@ export function NavBar({
             },
           },
           {
-            label: "FRIENDS",
-            onPress: () => {
-              router.push("/(tabs)/(user)/friends");
-              setMenuOpen(false);
-            },
-          },
-          {
-            label: "ADD FRIENDS",
+            label: "ADD FRIENDS", 
             onPress: () => {
               router.push("/(tabs)/(user)/add-friends");
               setMenuOpen(false);
             },
           },
           {
-            label: "ARCHIVE",
+            label: "LOG OUT",
             onPress: () => {
-              router.push("/(tabs)/(user)/archive");
-              setMenuOpen(false);
-            },
-          },
-          {
-            label: "PINNED COLLECTIONS",
-            onPress: () => {
-              router.push("/(tabs)/(user)/pinnedCollections");
-              setMenuOpen(false);
-            },
-          },
-          {
-            label: "RECENTLY PURCHASED",
-            onPress: () => {
-              router.push("/(tabs)/(user)/recently-purchased");
+              supabase.auth.signOut();
               setMenuOpen(false);
             },
           },
