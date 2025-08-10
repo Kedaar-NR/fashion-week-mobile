@@ -29,15 +29,24 @@ export default function SearchResultsScreen() {
   const [originalResults, setOriginalResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [resultCount, setResultCount] = useState(0);
+  const [searchType, setSearchType] = useState<"products" | "brands">(
+    "products"
+  );
+
+  // UI State - Instant changes
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [productTypeSubDropdownOpen, setProductTypeSubDropdownOpen] =
     useState(false);
   const [priceRangeSubDropdownOpen, setPriceRangeSubDropdownOpen] =
     useState(false);
-  const [searchType, setSearchType] = useState<"products" | "brands">(
-    "products"
-  );
+
+  // Data State - For actual filtering/sorting
+  const [activeFilters, setActiveFilters] = useState({
+    productType: null as string | null,
+    priceRange: null as string | null,
+    sortBy: null as string | null,
+  });
 
   useFocusEffect(
     React.useCallback(() => {
@@ -51,7 +60,7 @@ export default function SearchResultsScreen() {
       if (query) {
         performSearch(query);
       }
-    }, [query])
+    }, [query, searchType])
   );
 
   const performSearch = async (searchQuery: string) => {
@@ -122,8 +131,7 @@ export default function SearchResultsScreen() {
             id,
             brand_name,
             brand_tagline,
-            brand_description,
-            logo_filepath
+            brand_logo
           `
           )
           .ilike("brand_name", `%${searchQuery}%`)
@@ -137,13 +145,13 @@ export default function SearchResultsScreen() {
           return;
         }
 
-        // Transform brand data to match our interface (using product fields for compatibility)
+        // Transform brand data to match our interface
         const transformedResults: SearchResult[] = (data || []).map(
           (brand: any) => ({
             id: brand.id,
             product_name: brand.brand_name || "",
-            product_desc: brand.brand_description || "",
-            media_filepath: brand.logo_filepath || "",
+            product_desc: brand.brand_tagline || "",
+            media_filepath: brand.brand_logo || "",
             price: 0, // Brands don't have prices
             type: "BRAND",
             color: "",
@@ -156,6 +164,13 @@ export default function SearchResultsScreen() {
         setOriginalResults(transformedResults);
         setResultCount(transformedResults.length);
       }
+
+      // Reset filters when new search is performed
+      setActiveFilters({
+        productType: null,
+        priceRange: null,
+        sortBy: null,
+      });
     } catch (error) {
       console.error("Error during search:", error);
       setSearchResults([]);
@@ -166,21 +181,43 @@ export default function SearchResultsScreen() {
     }
   };
 
+  // Handle search type toggle
+  const handleSearchTypeToggle = () => {
+    setSearchType((prev) => (prev === "products" ? "brands" : "products"));
+    // Clear current results when switching types
+    setSearchResults([]);
+    setOriginalResults([]);
+    setResultCount(0);
+    // Re-perform search with new type if there's a query
+    if (query) {
+      performSearch(query);
+    }
+  };
+
   const productTypeOptions = [
     {
-      label: "SHOES",
+      label: "SHIRT",
       onPress: () => {
         setSearchResults(
-          originalResults.filter((piece) => piece.type === "SHOES")
+          originalResults.filter((piece) => piece.type === "Shirt")
         );
         setProductTypeSubDropdownOpen(false);
       },
     },
     {
-      label: "CLOTHING",
+      label: "PANTS",
       onPress: () => {
         setSearchResults(
-          originalResults.filter((piece) => piece.type === "CLOTHING")
+          originalResults.filter((piece) => piece.type === "Pants")
+        );
+        setProductTypeSubDropdownOpen(false);
+      },
+    },
+    {
+      label: "OUTERWEAR",
+      onPress: () => {
+        setSearchResults(
+          originalResults.filter((piece) => piece.type === "Outerwear")
         );
         setProductTypeSubDropdownOpen(false);
       },
@@ -189,16 +226,16 @@ export default function SearchResultsScreen() {
       label: "ACCESSORIES",
       onPress: () => {
         setSearchResults(
-          originalResults.filter((piece) => piece.type === "ACCESSORIES")
+          originalResults.filter((piece) => piece.type === "Accessory")
         );
         setProductTypeSubDropdownOpen(false);
       },
     },
     {
-      label: "BAGS",
+      label: "SHOES",
       onPress: () => {
         setSearchResults(
-          originalResults.filter((piece) => piece.type === "BAGS")
+          originalResults.filter((piece) => piece.type === "Shoes")
         );
         setProductTypeSubDropdownOpen(false);
       },
@@ -285,39 +322,6 @@ export default function SearchResultsScreen() {
     },
   ];
 
-  const renderSearchResult = ({ item }: { item: SearchResult }) => (
-    <View className="w-[48%] mb-4">
-      {/* Product Image Placeholder */}
-      <View className="w-full h-64 bg-gray-200 rounded-2xl mb-3 overflow-hidden">
-        <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl justify-center items-center">
-          <Text className="text-gray-500 text-xs text-center px-2">
-            {item.media_filepath ? "Image" : "No Image"}
-          </Text>
-        </View>
-      </View>
-
-      {/* Product Info */}
-      <View className="px-1 flex-row justify-between items-start">
-        {/* Product Name and Brand in VStack */}
-        <View className="flex-1">
-          <Text
-            className="text-sm font-semibold text-gray-800 mb-1"
-            numberOfLines={2}
-          >
-            {item.product_name}
-          </Text>
-          <Text className="text-xs text-gray-600">{item.brand_name}</Text>
-          {item.type && (
-            <Text className="text-xs text-gray-500 mt-1">{item.type}</Text>
-          )}
-        </View>
-
-        {/* Price on the right */}
-        <Text className="text-sm font-bold text-black">${item.price}</Text>
-      </View>
-    </View>
-  );
-
   return (
     <ScrollView ref={scrollViewRef} className="flex-1 bg-transparent">
       <View className="px-4 py-0 mb-16">
@@ -325,71 +329,89 @@ export default function SearchResultsScreen() {
         <View className="mb-2">
           <Text className="text-gray-600">
             {query && !loading
-              ? `${resultCount} Results for "${query}"`
+              ? `${resultCount} ${searchType === "products" ? "Products" : "Brands"} for "${query}"`
               : query && loading
-                ? "Searching..."
+                ? `Searching ${searchType === "products" ? "products" : "brands"}...`
                 : "No search query"}
           </Text>
         </View>
 
         {/* Search Type Toggle */}
-        <View className="flex-row bg-gray-100 rounded-lg p-1 mb-4">
-          <TouchableOpacity
-            className={`flex-1 py-2 px-4 rounded-md ${
-              searchType === "products" ? "bg-white shadow-sm" : ""
-            }`}
-            onPress={() => {
-              setSearchType("products");
-              if (query) performSearch(query);
-            }}
-          >
-            <Text
-              className={`text-sm font-bold text-center ${
-                searchType === "products" ? "text-black" : "text-gray-500"
+        <View className="flex-row items-center justify-center mb-4">
+          <View className="flex-row bg-gray-100 rounded-lg p-1">
+            <TouchableOpacity
+              className={`flex-1 py-2 px-4 rounded-md ${
+                searchType === "products" ? "bg-white shadow-sm" : ""
               }`}
+              onPress={() => {
+                if (searchType !== "products") {
+                  setSearchType("products");
+                  setSearchResults([]);
+                  setOriginalResults([]);
+                  setResultCount(0);
+                  if (query) {
+                    performSearch(query);
+                  }
+                }
+              }}
             >
-              PRODUCTS
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className={`flex-1 py-2 px-4 rounded-md ${
-              searchType === "brands" ? "bg-white shadow-sm" : ""
-            }`}
-            onPress={() => {
-              setSearchType("brands");
-              if (query) performSearch(query);
-            }}
-          >
-            <Text
-              className={`text-sm font-bold text-center ${
-                searchType === "brands" ? "text-black" : "text-gray-500"
+              <Text
+                className={`text-sm font-bold text-center ${
+                  searchType === "products" ? "text-black" : "text-gray-500"
+                }`}
+              >
+                PRODUCTS
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className={`flex-1 py-2 px-4 rounded-md ${
+                searchType === "brands" ? "bg-white shadow-sm" : ""
               }`}
+              onPress={() => {
+                if (searchType !== "brands") {
+                  setSearchType("brands");
+                  setSearchResults([]);
+                  setOriginalResults([]);
+                  setResultCount(0);
+                  if (query) {
+                    performSearch(query);
+                  }
+                }
+              }}
             >
-              BRANDS
-            </Text>
-          </TouchableOpacity>
+              <Text
+                className={`text-sm font-bold text-center ${
+                  searchType === "brands" ? "text-black" : "text-gray-500"
+                }`}
+              >
+                BRANDS
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Filter and Sort Buttons */}
-        <View
-          className={`flex-row items-center gap-4 mb-4 ${
-            filterDropdownOpen || sortDropdownOpen ? "mb-2" : "mb-4"
-          }`}
-        >
-          <TouchableOpacity
-            onPress={() => setFilterDropdownOpen(!filterDropdownOpen)}
+        {/* Filter and Sort Buttons - Only show for products */}
+        {searchType === "products" && (
+          <View
+            className={`flex-row items-center gap-4 mb-4 ${
+              filterDropdownOpen || sortDropdownOpen ? "mb-2" : "mb-4"
+            }`}
           >
-            <Text className="text-sm font-bold">FILTER+</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setSortDropdownOpen(!sortDropdownOpen)}
-          >
-            <Text className="text-sm font-bold">SORT BY+</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity
+              onPress={() => setFilterDropdownOpen(!filterDropdownOpen)}
+            >
+              <Text className="text-sm font-bold">FILTER+</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setSortDropdownOpen(!sortDropdownOpen)}
+            >
+              <Text className="text-sm font-bold">SORT BY+</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-        {/* Filter Dropdown */}
-        {filterDropdownOpen && (
+        {/* Filter Dropdown - Only show for products */}
+        {searchType === "products" && filterDropdownOpen && (
           <View className="mb-4">
             {filterOptions.map((option, index) => (
               <View key={index}>
@@ -452,16 +474,16 @@ export default function SearchResultsScreen() {
           </View>
         )}
 
-        {/* Sort Dropdown */}
-        {sortDropdownOpen && (
+        {/* Sort Dropdown - Only show for products */}
+        {searchType === "products" && sortDropdownOpen && (
           <View className="mb-4">
             {sortOptions.map((option, index) => (
               <TouchableOpacity
                 key={index}
                 onPress={option.onPress}
-                className="py-2"
+                className="py-2 border-b border-gray-200"
               >
-                <Text className="text-sm font-bold">{option.label}</Text>
+                <Text className="text-sm">{option.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -471,69 +493,84 @@ export default function SearchResultsScreen() {
         {loading ? (
           <View className="flex-1 justify-center items-center py-20">
             <ActivityIndicator size="large" />
-            <Text className="mt-2 text-gray-600">Searching products...</Text>
-          </View>
-        ) : query && searchResults.length === 0 ? (
-          <View className="flex-1 justify-center items-center py-20">
-            <Text className="text-lg font-semibold text-gray-800 mb-2">
-              No Products Found
+            <Text className="mt-2 text-gray-600">
+              Searching {searchType === "products" ? "products" : "brands"}...
             </Text>
-            <Text className="text-gray-600 text-center px-8">
-              Try adjusting your search terms or browse our catalog
-            </Text>
-          </View>
-        ) : query && searchResults.length > 0 ? (
-          <View className="flex-row flex-wrap justify-between">
-            {searchResults.map((item) => (
-              <View key={item.id} className="w-[48%] mb-4">
-                {/* Product Image Placeholder */}
-                <View className="w-full h-64 bg-gray-200 rounded-2xl mb-3 overflow-hidden">
-                  <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl justify-center items-center">
-                    <Text className="text-gray-500 text-xs text-center px-2">
-                      {item.media_filepath ? "Image" : "No Image"}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Product Info */}
-                <View className="px-1 flex-row justify-between items-start">
-                  {/* Product Name and Brand in VStack */}
-                  <View className="flex-1">
-                    <Text
-                      className="text-sm font-semibold text-gray-800 mb-1"
-                      numberOfLines={2}
-                    >
-                      {item.product_name}
-                    </Text>
-                    <Text className="text-xs text-gray-600">
-                      {item.brand_name}
-                    </Text>
-                    {item.type && (
-                      <Text className="text-xs text-gray-500 mt-1">
-                        {item.type}
-                      </Text>
-                    )}
-                  </View>
-
-                  {/* Price on the right */}
-                  <Text className="text-sm font-bold text-black">
-                    ${item.price}
-                  </Text>
-                </View>
-              </View>
-            ))}
           </View>
         ) : (
-          // Content for when there's no search query
-          <View className="bg-gray-100 rounded-lg p-8 items-center">
-            <Text className="text-lg font-semibold mb-2 text-center">
-              No Search Query
-            </Text>
-            <Text className="text-gray-600 text-center">
-              Use the search bar in the navigation to find what you're looking
-              for.
-            </Text>
-          </View>
+          <>
+            {/* No Results Message */}
+            {!loading && searchResults.length === 0 && resultCount > 0 && (
+              <View className="flex-1 justify-center items-center py-16">
+                <Text className="text-lg font-semibold text-gray-600 mb-2">
+                  No {searchType === "products" ? "products" : "brands"} found
+                </Text>
+                <Text className="text-sm text-gray-500 text-center">
+                  Try adjusting your{" "}
+                  {searchType === "products" ? "filters" : "search terms"} or
+                  search terms
+                </Text>
+              </View>
+            )}
+
+            {/* No Search Query Message */}
+            {!query && !loading && (
+              <View className="flex-1 justify-center items-center py-16">
+                <Text className="text-lg font-semibold text-gray-600 mb-2">
+                  Start searching
+                </Text>
+                <Text className="text-sm text-gray-500 text-center">
+                  Enter a search term to find{" "}
+                  {searchType === "products" ? "products" : "brands"}
+                </Text>
+              </View>
+            )}
+
+            {/* Search Results */}
+            {searchResults.length > 0 && (
+              <View className="flex-row flex-wrap justify-between">
+                {searchResults.map((item) => (
+                  <View key={item.id} className="w-[48%] mb-4">
+                    {/* Image Placeholder */}
+                    <View className="w-full h-64 bg-gray-200 rounded-2xl mb-3 overflow-hidden">
+                      <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl justify-center items-center">
+                        <Text className="text-gray-500 text-xs text-center px-2">
+                          {item.media_filepath ? "Image" : "No Image"}
+                        </Text>
+                      </View>
+                    </View>
+
+                    {/* Info */}
+                    <View className="px-1 flex-row justify-between items-start">
+                      {/* Name and Details in VStack */}
+                      <View className="flex-1">
+                        <Text
+                          className="text-sm font-semibold text-gray-800 mb-1"
+                          numberOfLines={2}
+                        >
+                          {searchType === "products"
+                            ? item.product_name
+                            : item.brand_name}
+                        </Text>
+                        <Text className="text-xs text-gray-600">
+                          {searchType === "products"
+                            ? item.brand_name
+                            : item.brand_tagline}
+                        </Text>
+                      </View>
+
+                      {/* Price on the right - Only show for products */}
+                      {searchType === "products" && (
+                        <Text className="text-sm font-bold text-black">
+                          ${item.price}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+          </>
         )}
       </View>
     </ScrollView>
