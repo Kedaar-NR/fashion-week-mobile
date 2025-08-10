@@ -73,12 +73,12 @@ export function NavBar({
   // Function to get page display name based on pathname
   const getPageDisplayName = (path: string, segments: string[]): string => {
     if (path === "/") {
-      if (segments && segments.includes("(collections)")) return "COLLECTIONS";
+      if (segments && segments.includes("(collections)")) return "LIBRARY";
       if (segments && segments.includes("(drops)")) return "DROP TRACKER";
       if (segments && segments.includes("(user)")) return "ACCOUNT";
       return "fashion:week";
     }
-    if (path.includes("/collection")) return "COLLECTIONS";
+    if (path.includes("/collection")) return "LIBRARY";
     if (path.includes("/drops")) return "DROP TRACKER";
     if (path.includes("/user")) return "ACCOUNT";
     if (path.includes("/archive")) return "ARCHIVE";
@@ -455,7 +455,13 @@ export function NavBar({
               onPress={option.onPress}
               className="py-2"
             >
-              <Text className="text-sm font-bold text-white">
+              <Text
+                className={`text-sm font-bold ${
+                  pageDisplayName === "fashion:week"
+                    ? "text-white"
+                    : "text-black"
+                }`}
+              >
                 {option.label}
               </Text>
             </TouchableOpacity>

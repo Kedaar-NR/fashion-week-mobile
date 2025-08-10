@@ -313,10 +313,18 @@ class ProductScraper:
         return product if product.get('name') else None
     
     def save_to_excel(self, products: List[Dict], website_url: str, filename: str = None) -> str:
+        # Create brand_data/xlsx directory if it doesn't exist
+        xlsx_dir = "brand_data/xlsx"
+        os.makedirs(xlsx_dir, exist_ok=True)
+        
         if not filename:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             domain = urlparse(website_url).netloc.replace('www.', '').replace('.', '_')
             filename = f"{domain}_products_{timestamp}.xlsx"
+        
+        # Ensure filename is in the xlsx directory
+        if not filename.startswith(xlsx_dir):
+            filename = os.path.join(xlsx_dir, filename)
         
         df = pd.DataFrame(products)
         
@@ -347,10 +355,18 @@ class ProductScraper:
         return filename
     
     def save_to_csv(self, products: List[Dict], website_url: str, filename: str = None) -> str:
+        # Create brand_data/csv directory if it doesn't exist
+        csv_dir = "brand_data/csv"
+        os.makedirs(csv_dir, exist_ok=True)
+        
         if not filename:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             domain = urlparse(website_url).netloc.replace('www.', '').replace('.', '_')
             filename = f"{domain}_products_{timestamp}.csv"
+        
+        # Ensure filename is in the csv directory
+        if not filename.startswith(csv_dir):
+            filename = os.path.join(csv_dir, filename)
         
         df = pd.DataFrame(products)
         df.to_csv(filename, index=False)
@@ -387,6 +403,14 @@ def main():
         if len(products) > 5:
             print(f"\n... and {len(products) - 5} more products")
         
+        # Filter out products with empty names and keep only unique product URLs
+        seen_urls = set()
+        filtered_products = []
+        for product in products:
+            if product.get('name') not in ['', None] and product.get('product_url') not in seen_urls:
+                seen_urls.add(product.get('product_url'))
+                filtered_products.append(product)
+        products = filtered_products
         excel_file = scraper.save_to_excel(products, website)
         csv_file = scraper.save_to_csv(products, website)
         

@@ -585,6 +585,83 @@ export default function HomeScreen() {
   const isFocused = useIsFocused();
   const [allPaused, setAllPaused] = useState(false);
 
+  // --- Authentication Setup ---
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Refresh session when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session);
+      });
+    }, [])
+  );
+
+  // Function to fetch user's saved brands from database
+  const fetchSavedBrands = async () => {
+    if (!session?.user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("saved_brands")
+        .select(
+          `
+          id,
+          brand_id,
+          brand:brand_id (
+            id,
+            brand_name
+          )
+        `
+        )
+        .eq("user_id", session.user.id);
+
+      if (error) {
+        console.log("Error fetching saved brands:", error);
+        return;
+      }
+
+      // Transform the data to get brand names
+      const brandNames = (data || [])
+        .map((item: any) => item.brand?.brand_name)
+        .filter(Boolean);
+
+      setSavedBrands(new Set(brandNames));
+    } catch (error) {
+      console.log("Error fetching saved brands:", error);
+    }
+  };
+
+  // Fetch saved brands when session changes
+  useEffect(() => {
+    if (session?.user) {
+      fetchSavedBrands();
+    }
+  }, [session]);
+
+  // Refresh saved brands when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      if (session?.user) {
+        fetchSavedBrands();
+      }
+    }, [session])
+  );
+
   // Mute all videos immediately when the home tab loses focus
   useEffect(() => {
     if (!isFocused) {
