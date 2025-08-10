@@ -553,7 +553,7 @@ export default function CollectionScreen() {
         {/* Collections Grid Section */}
         <View className="flex-1">
           <View className="flex-row items-center gap-4 mb-2">
-            <Text className="text-xl font-bold">COLLECTIONS</Text>
+            <Text className="text-xl font-bold">LIBRARY</Text>
             <TouchableOpacity onPress={() => setShowCreateModal(true)}>
               <Text className="text-sm font-bold">CREATE+</Text>
             </TouchableOpacity>
