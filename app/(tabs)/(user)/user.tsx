@@ -344,7 +344,7 @@ export default function UserScreen() {
   };
 
   return (
-    <View className="flex-1 justify-center items-center">
+    <View className="flex-1">
       <ScrollView className="flex-1 bg-transparent">
         {/* Profile Section */}
         <View className="items-center pt-6 pb-0">
@@ -402,10 +402,10 @@ export default function UserScreen() {
         </View> */}
 
         {/* Content Section */}
-        <View className="pb-8 px-4">
+        <View className="pb-8 px-4 w-full">
           {/* My Style Section */}
           <View className="mb-0">
-            <View className="flex-row items-center gap-4 mb-4">
+            <View className="flex-row items-center gap-4 mb-4 w-full">
               <Text className="text-xl font-bold">MY STYLE</Text>
               <TouchableOpacity
                 onPress={() => {
@@ -451,7 +451,7 @@ export default function UserScreen() {
 
           {/* Recently Purchased Section */}
           <View className="pb-16">
-            <View className="flex-row items-center gap-4 mb-4">
+            <View className="flex-row items-center gap-4 mb-4 w-full">
               <Text className="text-xl font-bold">RECENTLY PURCHASED</Text>
               <TouchableOpacity
                 onPress={() => router.push("/(tabs)/(user)/recently-purchased")}
