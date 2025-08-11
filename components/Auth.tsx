@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -25,13 +26,16 @@ export default function Auth() {
       email,
       password,
     });
-    if (error) Alert.alert(error.message);
+    if (error) {
+      Alert.alert(error.message);
+      setLoading(false);
+      return;
+    }
     setLoading(false);
   }
 
   async function signUpWithEmail() {
     setLoading(true);
-    // Optionally, you can store the username in a user profile table after sign up
     const {
       data: { session },
       error,
@@ -40,10 +44,18 @@ export default function Auth() {
       password,
       options: { data: { display_name: username } },
     });
-    if (error) Alert.alert(error.message);
-    if (!session)
+    if (error) {
+      Alert.alert(error.message);
+      setLoading(false);
+      return;
+    }
+    if (!session) {
       Alert.alert("Please check your inbox for email verification!");
+      setLoading(false);
+      return;
+    }
     setLoading(false);
+    router.replace("/onboarding");
   }
 
   const togglePasswordVisibility = () => {
