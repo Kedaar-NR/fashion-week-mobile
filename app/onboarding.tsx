@@ -213,17 +213,16 @@ export default function OnboardingScreen() {
       style={{
         flex: 1,
         alignItems: "center",
-        justifyContent: "flex-start",
+        justifyContent: "center",
         backgroundColor: "#f3f4f6",
       }}
     >
-      <View style={{ height: 8 }} />
       <Text
         style={{
           fontSize: 28,
           fontWeight: "bold",
           marginBottom: 0,
-          marginTop: 8,
+          marginTop: 0,
           textAlign: "center",
         }}
       >

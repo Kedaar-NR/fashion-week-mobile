@@ -7,6 +7,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Modal, // ADDED
 } from "react-native";
 import { useColorScheme } from "../hooks/useColorScheme";
 import { supabase } from "../lib/supabase";
@@ -19,6 +20,11 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const colorScheme = useColorScheme();
+
+  // ADDED (OTP state)
+  const [otpVisible, setOtpVisible] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
 
   async function signInWithEmail() {
     setLoading(true);
@@ -34,27 +40,40 @@ export default function Auth() {
     setLoading(false);
   }
 
+  // CHANGED: use OTP flow instead of email confirmation
   async function signUpWithEmail() {
     setLoading(true);
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signInWithOtp({
       email,
-      password,
-      options: { data: { display_name: username } },
+      options: { shouldCreateUser: true, data: { display_name: username } },
     });
+    setLoading(false);
     if (error) {
       Alert.alert(error.message);
-      setLoading(false);
       return;
     }
-    if (!session) {
-      Alert.alert("Please check your inbox for email verification!");
-      setLoading(false);
+    setOtp("");
+    setOtpVisible(true);
+  }
+
+  // ADDED: verify OTP
+  async function verifyOtp() {
+    if (otp.length !== 6) {
+      Alert.alert("Enter the 6-digit code sent to your email.");
       return;
     }
-    setLoading(false);
+    setOtpLoading(true);
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token: otp,
+      type: "email",
+    });
+    setOtpLoading(false);
+    if (error) {
+      Alert.alert(error.message);
+      return;
+    }
+    setOtpVisible(false);
     router.replace("/onboarding");
   }
 
@@ -130,7 +149,7 @@ export default function Auth() {
           <Text className="text-3xl font-bold text-center mb-2 text-black">
             Welcome Back
           </Text>
-          <Text className="text-base text-center mb-8 text-gray-600">
+        <Text className="text-base text-center mb-8 text-gray-600">
             Sign in to your account
           </Text>
 
@@ -267,6 +286,35 @@ export default function Auth() {
           disabled={loading}
         />
       </View>
+
+      {/* ADDED: OTP Modal */}
+      <Modal transparent visible={otpVisible} animationType="fade">
+        <View className="flex-1 bg-black/40 justify-center items-center px-6">
+          <View className="w-full max-w-sm bg-white rounded-2xl p-6">
+            <Text className="text-2xl font-bold text-center mb-4 text-black">
+              Verify your email
+            </Text>
+            <TextInput
+              className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white text-center tracking-widest mb-6"
+              placeholder="Enter 6-digit code"
+              keyboardType="number-pad"
+              maxLength={6}
+              value={otp}
+              onChangeText={setOtp}
+            />
+            <CustomButton
+              title="VERIFY"
+              onPress={verifyOtp}
+              disabled={otpLoading || otp.length !== 6}
+            />
+            <CustomButton
+              title="CANCEL"
+              variant="secondary"
+              onPress={() => setOtpVisible(false)}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

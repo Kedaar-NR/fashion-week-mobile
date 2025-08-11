@@ -32,10 +32,11 @@ export default function QuizCard({
         {
           width: "100%",
           height: "100%",
-          borderRadius: 16, // matches rounded-2xl
+          borderRadius: 16,
           overflow: "hidden",
           alignItems: "center",
           justifyContent: "center",
+          backgroundColor: "#ffffff",
         },
         {
           transform: [
@@ -67,7 +68,7 @@ export default function QuizCard({
               width: "100%",
               height: "100%",
               borderRadius: 16,
-              resizeMode: "contain",
+              resizeMode: "cover",
             }}
             onError={onImageError}
           />
