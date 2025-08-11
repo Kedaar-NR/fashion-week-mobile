@@ -76,6 +76,10 @@ export default function OnboardingScreen() {
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
   const [firstImageLoaded, setFirstImageLoaded] = useState(false);
 
+  // Intro flow
+  const [phase, setPhase] = useState<"intro1" | "intro2" | "quiz">("intro1");
+  const introOpacity = useRef(new Animated.Value(1)).current;
+
   const pan = useRef(new Animated.ValueXY()).current;
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -91,6 +95,37 @@ export default function OnboardingScreen() {
     fadeAnim.setValue(1);
     scaleAnim.setValue(1);
   }, []);
+
+  // Run intro sequence: intro1 fade out 2s -> intro2 fade in -> hold 2s -> fade out -> quiz
+  useEffect(() => {
+    if (phase !== "intro1") return;
+    introOpacity.setValue(1);
+    Animated.timing(introOpacity, {
+      toValue: 0,
+      duration: 2000,
+      useNativeDriver: true,
+    }).start(() => {
+      setPhase("intro2");
+      introOpacity.setValue(0);
+      Animated.timing(introOpacity, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start(() => {
+        // Hold visible for 2s, then fade out and enter quiz
+        setTimeout(() => {
+          Animated.timing(introOpacity, {
+            toValue: 0,
+            duration: 2000,
+            useNativeDriver: true,
+          }).start(() => {
+            setPhase("quiz");
+          });
+        }, 2000);
+      });
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   useEffect(() => {
     setImageError(false);
@@ -204,6 +239,46 @@ export default function OnboardingScreen() {
     ]).start();
   }, [cardKey]);
 
+  if (phase !== "quiz") {
+    return (
+      <Animated.View
+        style={{
+          flex: 1,
+          backgroundColor: "#f3f4f6",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: introOpacity,
+          paddingHorizontal: 24,
+        }}
+      >
+        {phase === "intro1" ? (
+          <Text
+            style={{
+              fontSize: 40,
+              fontWeight: "bold",
+              color: "#111827",
+              textAlign: "center",
+            }}
+          >
+            FIRST LET'S LEARN YOUR STYLE
+          </Text>
+        ) : (
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: "bold",
+              color: "#111827",
+              textAlign: "center",
+              lineHeight: 32,
+            }}
+          >
+            SWIPE RIGHT IF YOU LIKE IT{"\n"}SWIPE LEFT IF YOU DON'T
+          </Text>
+        )}
+      </Animated.View>
+    );
+  }
+
   if (done || current >= shuffledImages.length) {
     return null; // No end screen; immediately navigated away
   }
@@ -219,17 +294,13 @@ export default function OnboardingScreen() {
     >
       <Text
         style={{
-          fontSize: 28,
+          fontSize: 40,
           fontWeight: "bold",
-          marginBottom: 0,
-          marginTop: 0,
           textAlign: "center",
+          marginBottom: 10,
         }}
       >
         WHO ARE YOU?
-      </Text>
-      <Text style={{ fontSize: 16, marginBottom: 4, textAlign: "center" }}>
-        Swipe right for Yes, left for No
       </Text>
       <View style={{ alignItems: "center", width: "100%" }}>
         <View
