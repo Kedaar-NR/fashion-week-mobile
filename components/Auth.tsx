@@ -1,13 +1,13 @@
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Modal, // ADDED
 } from "react-native";
 import { useColorScheme } from "../hooks/useColorScheme";
 import { supabase } from "../lib/supabase";
@@ -26,6 +26,41 @@ export default function Auth() {
   const [otp, setOtp] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
 
+  // ADDED: username availability state
+  const [checkingUsername, setCheckingUsername] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<null | boolean>(
+    null
+  );
+
+  useEffect(() => {
+    if (mode !== "signup") return;
+    const name = username.trim();
+    if (name.length < 3) {
+      setUsernameAvailable(null);
+      setCheckingUsername(false);
+      return;
+    }
+    setCheckingUsername(true);
+    const t = setTimeout(async () => {
+      try {
+        const { count, error } = await supabase
+          .from("user_profiles")
+          .select("id", { head: true, count: "exact" })
+          .ilike("display_name", name);
+        if (error) {
+          setUsernameAvailable(null);
+        } else {
+          setUsernameAvailable((count ?? 0) === 0);
+        }
+      } catch (_e) {
+        setUsernameAvailable(null);
+      } finally {
+        setCheckingUsername(false);
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [username, mode]);
+
   async function signInWithEmail() {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
@@ -42,10 +77,18 @@ export default function Auth() {
 
   // CHANGED: use OTP flow instead of email confirmation
   async function signUpWithEmail() {
+    const name = username.trim();
+    if (name.length < 3 || !usernameAvailable) {
+      Alert.alert(
+        "Username not available",
+        "Please choose a different username."
+      );
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { shouldCreateUser: true, data: { display_name: username } },
+      options: { shouldCreateUser: true, data: { display_name: name } },
     });
     setLoading(false);
     if (error) {
@@ -149,7 +192,7 @@ export default function Auth() {
           <Text className="text-3xl font-bold text-center mb-2 text-black">
             Welcome Back
           </Text>
-        <Text className="text-base text-center mb-8 text-gray-600">
+          <Text className="text-base text-center mb-8 text-gray-600">
             Sign in to your account
           </Text>
 
@@ -220,16 +263,28 @@ export default function Auth() {
 
         <View className="relative w-full mb-6">
           <TextInput
-            className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white"
+            className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white pr-12"
             placeholder="Username"
             placeholderTextColor="#9CA3AF"
             value={username}
             onChangeText={setUsername}
-            autoCapitalize="words"
+            autoCapitalize="none"
             blurOnSubmit={false}
             returnKeyType="next"
             enablesReturnKeyAutomatically={true}
           />
+          {/* Availability indicator */}
+          {username.trim().length >= 3 && (
+            <View className="absolute right-4 top-0 bottom-0 justify-center">
+              {checkingUsername ? (
+                <ActivityIndicator size="small" color="#9CA3AF" />
+              ) : usernameAvailable ? (
+                <Text className="text-green-600 text-xl">✓</Text>
+              ) : usernameAvailable === false ? (
+                <Text className="text-red-500 text-xl">✕</Text>
+              ) : null}
+            </View>
+          )}
         </View>
 
         <View className="relative w-full mb-6">
@@ -276,7 +331,9 @@ export default function Auth() {
         <CustomButton
           title="CREATE ACCOUNT"
           onPress={signUpWithEmail}
-          disabled={loading}
+          disabled={
+            loading || checkingUsername || !(usernameAvailable === true)
+          }
         />
 
         <CustomButton
