@@ -1,0 +1,7 @@
+2025-08-14 17:51:19,507 - INFO - Session initialized successfully
+2025-08-14 17:51:19,508 - INFO - Scraping Instagram for brand: 5moredays
+2025-08-14 17:51:22,623 - ERROR - Failed to get posts for user 3258711955: 404 Client Error: Not Found for url: https://www.instagram.com/api/v1/feed/user/3258711955/username/3258711955/?count=50&max_id=&min_timestamp=&rank_token=&ranked_content=true
+2025-08-14 17:51:22,624 - INFO - Scraping Instagram for brand: 629
+2025-08-14 17:51:28,624 - ERROR - Failed to get posts for user 1700703: 404 Client Error: Not Found for url: https://www.instagram.com/api/v1/feed/user/1700703/username/1700703/?count=50&max_id=&min_timestamp=&rank_token=&ranked_content=true
+2025-08-14 17:51:28,624 - INFO - Scraping Instagram for brand: astonecoldstudiosproduction
+2025-08-14 17:51:34,669 - ERROR - Failed to get posts for user 1556608656: 404 Client Error: Not Found for url: https://www.instagram.com/api/v1/feed/user/1556608656/username/1556608656/?count=50&max_id=&min_timestamp=&rank_token=&ranked_content=true

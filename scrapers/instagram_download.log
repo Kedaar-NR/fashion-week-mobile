@@ -1,0 +1,99 @@
+2025-08-14 18:21:15,774 - INFO - Processing brand: DEMIKNJ -> @demiknj
+2025-08-14 18:21:15,774 - INFO - Running command: instaloader --stories --highlights --comments --geotags --tagged --reels --igtv --fast-update --dirname-pattern downloads/DEMIKNJ/IG --filename-pattern {date_utc:%Y%m%d}_{shortcode} demiknj
+2025-08-14 18:21:31,905 - WARNING - Failed to download content for @demiknj: Command failed with return code 1
+2025-08-14 18:21:31,905 - WARNING - Output: Stored ID 42504601075 for profile demiknj.
+Hint: Login to download higher-quality versions of pictures.
+[1/1] Downloading profile demiknj
+downloads/DEMIKNJ/IG/demiknj_2023-06-26_23-47-42_UTC_profile_pic.jpg 
+Retrieving tagged posts for profile demiknj.
+Retrieving reels videos for profile demiknj.
+Retrieving IGTV videos for profile demiknj.
+Retrieving posts from profile demiknj.
+Login is required to download stories.
+Warning: Login is required to download geotags of posts.
+JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?query_hash=e31a871f7301132ceaab56507a66bbb7&variables=%7B%22id%22%3A42504601075%2C%22first%22%3A12%7D [retrying; skip with ^C]
+JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?query_hash=e31a871f7301132ceaab56507a66bbb7&variables=%7B%22id%22%3A42504601075%2C%22first%22%3A12%7D [retrying; skip with ^C]
+Download tagged of demiknj: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?query_hash=e31a871f7301132ceaab56507a66bbb7&variables=%7B%22id%22%3A42504601075%2C%22first%22%3A12%7D
+JSON Query to graphql/query: 403 Forbidden when accessing https://www.instagram.com/graphql/query [retrying; skip with ^C]
+JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22page_size%22%3A12%2C%22include_feed_video%22%3Atrue%2C%22target_user_id%22%3A%2242504601075%22%7D%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7845543455542541&server_timestamps=true [retrying; skip with ^C]
+Download reels of demiknj: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22page_size%22%3A12%2C%22include_feed_video%22%3Atrue%2C%22target_user_id%22%3A%2242504601075%22%7D%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7845543455542541&server_timestamps=true
+Download highlights of demiknj: Login required.
+JSON Query to graphql/query: 403 Forbidden when accessing https://www.instagram.com/graphql/query [retrying; skip with ^C]
+JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22count%22%3A12%2C%22include_relationship_info%22%3Atrue%2C%22latest_besties_reel_media%22%3Atrue%2C%22latest_reel_media%22%3Atrue%7D%2C%22username%22%3A%22demiknj%22%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7898261790222653&server_timestamps=true [retrying; skip with ^C]
+demiknj: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22count%22%3A12%2C%22include_relationship_info%22%3Atrue%2C%22latest_besties_reel_media%22%3Atrue%2C%22latest_reel_media%22%3Atrue%7D%2C%22username%22%3A%22demiknj%22%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7898261790222653&server_timestamps=true
+
+Errors or warnings occurred:
+Warning: Login is required to download geotags of posts.
+Download tagged of demiknj: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?query_hash=e31a871f7301132ceaab56507a66bbb7&variables=%7B%22id%22%3A42504601075%2C%22first%22%3A12%7D
+Download reels of demiknj: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22page_size%22%3A12%2C%22include_feed_video%22%3Atrue%2C%22target_user_id%22%3A%2242504601075%22%7D%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7845543455542541&server_timestamps=true
+Download highlights of demiknj: Login required.
+demiknj: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22count%22%3A12%2C%22include_relationship_info%22%3Atrue%2C%22latest_besties_reel_media%22%3Atrue%2C%22latest_reel_media%22%3Atrue%7D%2C%22username%22%3A%22demiknj%22%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7898261790222653&server_timestamps=true
+
+2025-08-14 18:21:31,906 - INFO - Processing brand: A STONECOLD STUDIOS PRODUCTION -> @astonecoldstudiosproduction
+2025-08-14 18:21:31,906 - INFO - Running command: instaloader --stories --highlights --comments --geotags --tagged --reels --igtv --fast-update --dirname-pattern downloads/A STONECOLD STUDIOS PRODUCTION/IG --filename-pattern {date_utc:%Y%m%d}_{shortcode} astonecoldstudiosproduction
+2025-08-14 18:21:58,304 - WARNING - Failed to download content for @astonecoldstudiosproduction: Command failed with return code 1
+2025-08-14 18:21:58,305 - WARNING - Output: Stored ID 1556608656 for profile astonecoldstudiosproduction.
+Hint: Login to download higher-quality versions of pictures.
+[1/1] Downloading profile astonecoldstudiosproduction
+downloads/A STONECOLD STUDIOS PRODUCTION/IG/astonecoldstudiosproduction_2025-05-14_19-14-49_UTC_profile_pic.jpg 
+Retrieving tagged posts for profile astonecoldstudiosproduction.
+Retrieving reels videos for profile astonecoldstudiosproduction.
+Retrieving IGTV videos for profile astonecoldstudiosproduction.
+Retrieving posts from profile astonecoldstudiosproduction.
+Login is required to download stories.
+Warning: Login is required to download geotags of posts.
+JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?query_hash=e31a871f7301132ceaab56507a66bbb7&variables=%7B%22id%22%3A1556608656%2C%22first%22%3A12%7D [retrying; skip with ^C]
+JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?query_hash=e31a871f7301132ceaab56507a66bbb7&variables=%7B%22id%22%3A1556608656%2C%22first%22%3A12%7D [retrying; skip with ^C]
+Download tagged of astonecoldstudiosproduction: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?query_hash=e31a871f7301132ceaab56507a66bbb7&variables=%7B%22id%22%3A1556608656%2C%22first%22%3A12%7D
+JSON Query to graphql/query: 403 Forbidden when accessing https://www.instagram.com/graphql/query [retrying; skip with ^C]
+JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22page_size%22%3A12%2C%22include_feed_video%22%3Atrue%2C%22target_user_id%22%3A%221556608656%22%7D%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7845543455542541&server_timestamps=true [retrying; skip with ^C]
+Download reels of astonecoldstudiosproduction: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22page_size%22%3A12%2C%22include_feed_video%22%3Atrue%2C%22target_user_id%22%3A%221556608656%22%7D%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7845543455542541&server_timestamps=true
+Download highlights of astonecoldstudiosproduction: Login required.
+JSON Query to graphql/query: 403 Forbidden when accessing https://www.instagram.com/graphql/query [retrying; skip with ^C]
+JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22count%22%3A12%2C%22include_relationship_info%22%3Atrue%2C%22latest_besties_reel_media%22%3Atrue%2C%22latest_reel_media%22%3Atrue%7D%2C%22username%22%3A%22astonecoldstudiosproduction%22%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7898261790222653&server_timestamps=true [retrying; skip with ^C]
+astonecoldstudiosproduction: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22count%22%3A12%2C%22include_relationship_info%22%3Atrue%2C%22latest_besties_reel_media%22%3Atrue%2C%22latest_reel_media%22%3Atrue%7D%2C%22username%22%3A%22astonecoldstudiosproduction%22%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7898261790222653&server_timestamps=true
+
+Errors or warnings occurred:
+Warning: Login is required to download geotags of posts.
+Download tagged of astonecoldstudiosproduction: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?query_hash=e31a871f7301132ceaab56507a66bbb7&variables=%7B%22id%22%3A1556608656%2C%22first%22%3A12%7D
+Download reels of astonecoldstudiosproduction: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22page_size%22%3A12%2C%22include_feed_video%22%3Atrue%2C%22target_user_id%22%3A%221556608656%22%7D%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7845543455542541&server_timestamps=true
+Download highlights of astonecoldstudiosproduction: Login required.
+astonecoldstudiosproduction: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22count%22%3A12%2C%22include_relationship_info%22%3Atrue%2C%22latest_besties_reel_media%22%3Atrue%2C%22latest_reel_media%22%3Atrue%7D%2C%22username%22%3A%22astonecoldstudiosproduction%22%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7898261790222653&server_timestamps=true
+
+2025-08-14 18:21:58,305 - INFO - Processing brand: DESCENDANT -> @descendant
+2025-08-14 18:21:58,305 - INFO - Running command: instaloader --stories --highlights --comments --geotags --tagged --reels --igtv --fast-update --dirname-pattern downloads/DESCENDANT/IG --filename-pattern {date_utc:%Y%m%d}_{shortcode} descendant
+2025-08-14 18:22:00,475 - WARNING - Failed to download content for @descendant: Command failed with return code 1
+2025-08-14 18:22:00,475 - WARNING - Output: Stored ID 26703631 for profile descendant.
+Hint: Login to download higher-quality versions of pictures.
+[1/1] Downloading profile descendant
+downloads/DESCENDANT/IG/descendant_2025-05-03_12-17-32_UTC_profile_pic.jpg 
+Login is required to download stories.
+Warning: Login is required to download geotags of posts.
+descendant: Login required.
+
+Errors or warnings occurred:
+Warning: Login is required to download geotags of posts.
+descendant: Login required.
+
+2025-08-14 18:24:55,403 - INFO - Processing brand: DEMIKNJ -> @demiknj
+2025-08-14 18:24:55,404 - WARNING - No login provided - may get limited/cached content
+2025-08-14 18:24:55,404 - INFO - Running command: instaloader --no-captions --no-metadata-json --no-compress-json --no-profile-pic --fast-update --dirname-pattern downloads/DEMIKNJ/IG --filename-pattern {date_utc:%Y%m%d}_{shortcode} demiknj
+2025-08-14 18:25:00,625 - WARNING - Failed to download content for @demiknj: Command failed with return code 1
+2025-08-14 18:25:00,625 - WARNING - Output: Hint: Login to download higher-quality versions of pictures.
+[1/1] Downloading profile demiknj
+Retrieving posts from profile demiknj.
+JSON Query to graphql/query: 403 Forbidden when accessing https://www.instagram.com/graphql/query [retrying; skip with ^C]
+JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22count%22%3A12%2C%22include_relationship_info%22%3Atrue%2C%22latest_besties_reel_media%22%3Atrue%2C%22latest_reel_media%22%3Atrue%7D%2C%22username%22%3A%22demiknj%22%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7898261790222653&server_timestamps=true [retrying; skip with ^C]
+demiknj: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22count%22%3A12%2C%22include_relationship_info%22%3Atrue%2C%22latest_besties_reel_media%22%3Atrue%2C%22latest_reel_media%22%3Atrue%7D%2C%22username%22%3A%22demiknj%22%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7898261790222653&server_timestamps=true
+
+Errors or warnings occurred:
+demiknj: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22count%22%3A12%2C%22include_relationship_info%22%3Atrue%2C%22latest_besties_reel_media%22%3Atrue%2C%22latest_reel_media%22%3Atrue%7D%2C%22username%22%3A%22demiknj%22%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7898261790222653&server_timestamps=true
+
+2025-08-14 18:34:09,042 - INFO - Processing brand: DEMIKNJ -> @demiknj
+2025-08-14 18:34:09,042 - WARNING - No login provided - may get limited/cached content
+2025-08-14 18:34:09,042 - INFO - Running command: instaloader --stories --highlights --tagged --reels --fast-update --dirname-pattern downloads/DEMIKNJ/IG --filename-pattern {date_utc:%Y%m%d}_{shortcode} demiknj
+2025-08-14 18:34:24,423 - WARNING - Login required for @demiknj - limited content available
+2025-08-14 18:34:42,712 - INFO - Processing brand: DEMIKNJ -> @demiknj
+2025-08-14 18:34:42,712 - INFO - Using login: Kedaar-NR
+2025-08-14 18:34:42,712 - INFO - Running command: instaloader --login Kedaar-NR --stories --highlights --tagged --reels --fast-update --dirname-pattern downloads/DEMIKNJ/IG --filename-pattern {date_utc:%Y%m%d}_{shortcode} demiknj
+2025-08-14 18:44:43,145 - ERROR - Timeout downloading content for @demiknj
