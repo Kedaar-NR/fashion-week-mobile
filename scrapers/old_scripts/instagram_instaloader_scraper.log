@@ -1,0 +1,18 @@
+2025-08-14 18:15:00,216 - INFO - Processing brand: DEMIKNJ -> @demiknj
+2025-08-14 18:15:09,144 - INFO - Downloaded profile picture for @demiknj
+2025-08-14 18:15:17,043 - ERROR - Failed to download posts for @demiknj: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22count%22%3A12%2C%22include_relationship_info%22%3Atrue%2C%22latest_besties_reel_media%22%3Atrue%2C%22latest_reel_media%22%3Atrue%7D%2C%22username%22%3A%22demiknj%22%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7898261790222653&server_timestamps=true
+2025-08-14 18:15:17,043 - WARNING - Failed to download stories for @demiknj: 'Profile' object has no attribute 'get_stories'
+2025-08-14 18:15:17,043 - WARNING - Failed to download highlights for @demiknj: 'Profile' object has no attribute 'get_highlights'
+2025-08-14 18:15:17,043 - INFO - Successfully processed @demiknj
+2025-08-14 18:15:17,043 - INFO - Processing brand: A STONECOLD STUDIOS PRODUCTION -> @astonecoldstudiosproduction
+2025-08-14 18:15:24,857 - INFO - Downloaded profile picture for @astonecoldstudiosproduction
+2025-08-14 18:15:27,406 - ERROR - Failed to download posts for @astonecoldstudiosproduction: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22count%22%3A12%2C%22include_relationship_info%22%3Atrue%2C%22latest_besties_reel_media%22%3Atrue%2C%22latest_reel_media%22%3Atrue%7D%2C%22username%22%3A%22astonecoldstudiosproduction%22%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7898261790222653&server_timestamps=true
+2025-08-14 18:15:27,406 - WARNING - Failed to download stories for @astonecoldstudiosproduction: 'Profile' object has no attribute 'get_stories'
+2025-08-14 18:15:27,406 - WARNING - Failed to download highlights for @astonecoldstudiosproduction: 'Profile' object has no attribute 'get_highlights'
+2025-08-14 18:15:27,406 - INFO - Successfully processed @astonecoldstudiosproduction
+2025-08-14 18:15:27,406 - INFO - Processing brand: DESCENDANT -> @descendant
+2025-08-14 18:15:31,139 - INFO - Downloaded profile picture for @descendant
+2025-08-14 18:15:34,490 - ERROR - Failed to download posts for @descendant: JSON Query to graphql/query: 401 Unauthorized - "fail" status, message "Please wait a few minutes before you try again." when accessing https://www.instagram.com/graphql/query?variables=%7B%22data%22%3A%7B%22count%22%3A12%2C%22include_relationship_info%22%3Atrue%2C%22latest_besties_reel_media%22%3Atrue%2C%22latest_reel_media%22%3Atrue%7D%2C%22username%22%3A%22descendant%22%2C%22__relay_internal__pv__PolarisFeedShareMenurelayprovider%22%3Afalse%7D&doc_id=7898261790222653&server_timestamps=true
+2025-08-14 18:15:34,491 - WARNING - Failed to download stories for @descendant: 'Profile' object has no attribute 'get_stories'
+2025-08-14 18:15:34,491 - WARNING - Failed to download highlights for @descendant: 'Profile' object has no attribute 'get_highlights'
+2025-08-14 18:15:34,491 - INFO - Successfully processed @descendant
