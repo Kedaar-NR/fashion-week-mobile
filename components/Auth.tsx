@@ -32,10 +32,17 @@ export default function Auth() {
     null
   );
 
+  const isValidUsername = (name: string) => /^[A-Za-z0-9._]+$/.test(name);
+
   useEffect(() => {
     if (mode !== "signup") return;
     const name = username.trim();
     if (name.length < 3) {
+      setUsernameAvailable(null);
+      setCheckingUsername(false);
+      return;
+    }
+    if (!isValidUsername(name)) {
       setUsernameAvailable(null);
       setCheckingUsername(false);
       return;
@@ -269,6 +276,7 @@ export default function Auth() {
             value={username}
             onChangeText={setUsername}
             autoCapitalize="none"
+            autoCorrect={false}
             blurOnSubmit={false}
             returnKeyType="next"
             enablesReturnKeyAutomatically={true}
@@ -285,6 +293,19 @@ export default function Auth() {
               ) : null}
             </View>
           )}
+          {username.length > 0 && !isValidUsername(username) && (
+            <Text className="text-red-500 text-xs mt-2">
+              Only letters, numbers, periods (.), and underscores (_) are
+              allowed. No spaces or special characters.
+            </Text>
+          )}
+          {username.length > 0 &&
+            isValidUsername(username) &&
+            username.trim().length < 3 && (
+              <Text className="text-red-500 text-xs mt-1">
+                Username must be at least 3 characters.
+              </Text>
+            )}
         </View>
 
         <View className="relative w-full mb-6">
