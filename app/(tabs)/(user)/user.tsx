@@ -104,9 +104,12 @@ export default function UserScreen() {
     setLoadingFriendsCount(true);
     try {
       const { count, error } = await supabase
-        .from("user_friends")
+        .from("friendships")
         .select("*", { count: "exact", head: true })
-        .eq("user_id", session.user.id);
+        .eq("status", "accepted")
+        .or(
+          `requester_id.eq.${session.user.id},addressee_id.eq.${session.user.id}`
+        );
 
       if (error) {
         console.log("Error fetching friends count:", error);

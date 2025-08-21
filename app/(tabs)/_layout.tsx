@@ -57,7 +57,7 @@ export default function TabLayout() {
               ),
             }}
           />
-          <Tabs.Screen
+          {/* <Tabs.Screen
             name="style-quiz"
             options={{
               title: "Style Quiz",
@@ -69,7 +69,7 @@ export default function TabLayout() {
                 />
               ),
             }}
-          />
+          /> */}
           <Tabs.Screen
             name="(drops)"
             options={{

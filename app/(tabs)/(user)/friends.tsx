@@ -5,281 +5,281 @@ import {
   ActivityIndicator,
   FlatList,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { supabase } from "../../../lib/supabase";
 
-interface User {
+interface Friend {
   id: string;
-  email: string;
-  created_at: string;
+  friend_id: string;
+  friend: {
+    display_name: string;
+    created_at: string;
+  };
+  friendship_created_at: string;
 }
 
-interface SearchResult {
-  user: User;
-  isFriend: boolean;
-  requestSent: boolean;
-  requestReceived: boolean;
-}
-
-export default function AddFriendsScreen() {
+export default function FriendsScreen() {
   const [session, setSession] = useState<Session | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
+    console.log("🚀 Setting up auth listeners...");
+
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("📱 Initial session loaded:", {
+        hasSession: !!session,
+        hasUser: !!session?.user,
+        userId: session?.user?.id,
+      });
       setSession(session);
     });
+
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        console.log("🔄 Auth state changed:", {
+          event: _event,
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          userId: session?.user?.id,
+        });
         setSession(session);
       }
     );
+
     return () => {
+      console.log("🧹 Cleaning up auth listeners");
       listener.subscription.unsubscribe();
     };
   }, []);
 
-  const searchUsers = async (query: string) => {
-    if (!session?.user || !query.trim()) {
-      setSearchResults([]);
+  const fetchFriends = async () => {
+    console.log("🔍 fetchFriends called with session:", {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      userId: session?.user?.id,
+    });
+
+    if (!session?.user) {
+      console.log("❌ No session or user found");
       return;
     }
 
-    setSearching(true);
+    console.log("🔍 Fetching friends for user:", session.user.id);
+    setLoading(true);
+
     try {
-      // Search for users by email (excluding current user)
-      const { data: users, error } = await supabase
-        .from("auth.users")
-        .select("id, email, created_at")
-        .ilike("email", `%${query}%`)
-        .neq("id", session.user.id)
-        .limit(20);
+      // Get all accepted friendships where current user is either requester or addressee
+      console.log("📡 Querying friendships table...");
+      console.log(
+        "📍 Query filters: status='accepted', user_id in [requester_id, addressee_id]"
+      );
+
+      // First, get the friendships without the join
+      const { data: friendships, error } = await supabase
+        .from("friendships")
+        .select("id, requester_id, addressee_id, created_at")
+        .eq("status", "accepted")
+        .or(
+          `requester_id.eq.${session.user.id},addressee_id.eq.${session.user.id}`
+        )
+        .order("created_at", { ascending: false });
+
+      console.log("📊 Raw query result:", { friendships, error });
 
       if (error) {
-        console.log("Error searching users:", error);
-        setSearchResults([]);
+        console.log("❌ Error fetching friends:", error);
+        console.log("🔍 Error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        });
+        setFriends([]);
         return;
       }
 
-      // For each user, check friendship status
-      const resultsWithStatus = await Promise.all(
-        (users || []).map(async (user) => {
-          // Check if already friends
-          const { data: friendship } = await supabase
-            .from("friendships")
-            .select("*")
-            .or(`user1_id.eq.${session.user.id},user2_id.eq.${session.user.id}`)
-            .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`)
-            .eq("status", "accepted")
+      console.log(
+        "✅ Query successful, found",
+        friendships?.length || 0,
+        "friendships"
+      );
+
+      if (friendships && friendships.length > 0) {
+        console.log("📋 First friendship sample:", friendships[0]);
+      }
+
+      // Transform the data to show friend information
+      const transformedFriends = await Promise.all(
+        (friendships || []).map(async (friendship: any) => {
+          const isRequester = friendship.requester_id === session.user.id;
+          const friendUserId = isRequester
+            ? friendship.addressee_id
+            : friendship.requester_id;
+
+          console.log("🔄 Processing friendship:", {
+            friendship_id: friendship.id,
+            requester_id: friendship.requester_id,
+            addressee_id: friendship.addressee_id,
+            current_user_id: session.user.id,
+            isRequester,
+            friendUserId,
+          });
+
+          // Fetch the friend's profile separately
+          const { data: friendProfile, error: profileError } = await supabase
+            .from("user_profiles")
+            .select("display_name, created_at")
+            .eq("user_id", friendUserId)
             .single();
 
-          // Check if friend request sent
-          const { data: sentRequest } = await supabase
-            .from("friend_requests")
-            .select("*")
-            .eq("sender_id", session.user.id)
-            .eq("receiver_id", user.id)
-            .eq("status", "pending")
-            .single();
-
-          // Check if friend request received
-          const { data: receivedRequest } = await supabase
-            .from("friend_requests")
-            .select("*")
-            .eq("sender_id", user.id)
-            .eq("receiver_id", session.user.id)
-            .eq("status", "pending")
-            .single();
+          if (profileError) {
+            console.log("⚠️ Error fetching friend profile:", profileError);
+          }
 
           return {
-            user,
-            isFriend: !!friendship,
-            requestSent: !!sentRequest,
-            requestReceived: !!receivedRequest,
+            id: friendship.id,
+            friend_id: friendUserId,
+            friend: {
+              display_name: friendProfile?.display_name || "Unknown User",
+              created_at: friendProfile?.created_at || friendship.created_at,
+            },
+            friendship_created_at: friendship.created_at,
           };
         })
       );
 
-      setSearchResults(resultsWithStatus);
+      console.log("🎯 Transformed friends:", transformedFriends);
+      setFriends(transformedFriends);
     } catch (error) {
-      console.log("Error in searchUsers:", error);
-      setSearchResults([]);
+      console.log("💥 Unexpected error in fetchFriends:", error);
+      console.log(
+        "🔍 Error stack:",
+        error instanceof Error ? error.stack : "No stack trace"
+      );
+      setFriends([]);
     } finally {
-      setSearching(false);
+      setLoading(false);
+      console.log("🏁 fetchFriends completed");
     }
   };
 
-  const sendFriendRequest = async (userId: string) => {
-    if (!session?.user) return;
+  const removeFriend = async (friendshipId: string) => {
+    if (!session?.user) {
+      console.log("❌ No session or user found for removeFriend");
+      return;
+    }
 
+    console.log("🗑️ Removing friendship:", friendshipId);
     setLoading(true);
+
     try {
-      const { error } = await supabase.from("friend_requests").insert({
-        sender_id: session.user.id,
-        receiver_id: userId,
-        status: "pending",
-      });
+      const { error } = await supabase
+        .from("friendships")
+        .delete()
+        .eq("id", friendshipId);
 
       if (error) {
-        console.log("Error sending friend request:", error);
-        return;
-      }
-
-      // Update local state to show request sent
-      setSearchResults((prev) =>
-        prev.map((result) =>
-          result.user.id === userId ? { ...result, requestSent: true } : result
-        )
-      );
-
-      console.log("Friend request sent successfully");
-    } catch (error) {
-      console.log("Error sending friend request:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const acceptFriendRequest = async (userId: string) => {
-    if (!session?.user) return;
-
-    setLoading(true);
-    try {
-      // Update friend request status to accepted
-      const { error: updateError } = await supabase
-        .from("friend_requests")
-        .update({ status: "accepted" })
-        .eq("sender_id", userId)
-        .eq("receiver_id", session.user.id)
-        .eq("status", "pending");
-
-      if (updateError) {
-        console.log("Error accepting friend request:", updateError);
-        return;
-      }
-
-      // Create friendship record
-      const { error: friendshipError } = await supabase
-        .from("friendships")
-        .insert({
-          user1_id: session.user.id,
-          user2_id: userId,
-          status: "accepted",
+        console.log("❌ Error removing friend:", error);
+        console.log("🔍 Error details:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
         });
-
-      if (friendshipError) {
-        console.log("Error creating friendship:", friendshipError);
         return;
       }
 
-      // Update local state
-      setSearchResults((prev) =>
-        prev.map((result) =>
-          result.user.id === userId
-            ? { ...result, isFriend: true, requestReceived: false }
-            : result
-        )
-      );
+      console.log("✅ Friend removed successfully from database");
 
-      console.log("Friend request accepted successfully");
+      // Remove from local state
+      setFriends((prev) => prev.filter((friend) => friend.id !== friendshipId));
+      console.log("🔄 Updated local state, removed friendship:", friendshipId);
     } catch (error) {
-      console.log("Error accepting friend request:", error);
+      console.log("💥 Unexpected error removing friend:", error);
+      console.log(
+        "🔍 Error stack:",
+        error instanceof Error ? error.stack : "No stack trace"
+      );
     } finally {
       setLoading(false);
+      console.log("🏁 removeFriend completed");
     }
   };
 
-  const renderSearchResult = ({ item }: { item: SearchResult }) => (
+  const renderFriend = ({ item }: { item: Friend }) => (
     <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
       <View className="flex-1">
-        <Text className="text-base font-medium">{item.user.email}</Text>
+        <Text className="text-base font-medium">
+          {item.friend.display_name}
+        </Text>
         <Text className="text-sm text-gray-500">
-          Joined {new Date(item.user.created_at).toLocaleDateString()}
+          Friends since{" "}
+          {new Date(item.friendship_created_at).toLocaleDateString()}
         </Text>
       </View>
 
-      <View className="flex-row items-center gap-2">
-        {item.isFriend ? (
-          <Text className="text-sm text-green-600 font-medium">Friends</Text>
-        ) : item.requestSent ? (
-          <Text className="text-sm text-gray-500">Request Sent</Text>
-        ) : item.requestReceived ? (
-          <TouchableOpacity
-            onPress={() => acceptFriendRequest(item.user.id)}
-            disabled={loading}
-            className="bg-blue-500 px-3 py-1 rounded-full"
-          >
-            <Text className="text-white text-sm font-medium">Accept</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            onPress={() => sendFriendRequest(item.user.id)}
-            disabled={loading}
-            className="bg-blue-500 px-3 py-1 rounded-full"
-          >
-            <Text className="text-white text-sm font-medium">Add Friend</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      <TouchableOpacity
+        onPress={() => removeFriend(item.id)}
+        disabled={loading}
+        className="bg-red-500 px-3 py-1 rounded-full"
+      >
+        <Text className="text-white text-sm font-medium">Remove</Text>
+      </TouchableOpacity>
     </View>
   );
 
   useFocusEffect(
     React.useCallback(() => {
-      console.log("📍 Current path: /(tabs)/(user)/add-friends");
-    }, [])
+      console.log("📍 Current path: /(tabs)/(user)/friends");
+      console.log("🔑 Session state:", {
+        hasSession: !!session,
+        hasUser: !!session?.user,
+        userId: session?.user?.id,
+      });
+
+      if (session?.user) {
+        fetchFriends();
+      } else {
+        console.log("⏳ Waiting for session to load...");
+      }
+    }, [session])
   );
 
   return (
     <View className="flex-1 px-4">
-      {/* Search Bar */}
+      {/* Header */}
       <View className="py-4">
-        <TextInput
-          className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
-          placeholder="Search users..."
-          value={searchQuery}
-          onChangeText={(text) => {
-            setSearchQuery(text);
-            if (text.trim()) {
-              searchUsers(text);
-            } else {
-              setSearchResults([]);
-            }
-          }}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
+        <Text className="text-2xl font-bold text-gray-800">My Friends</Text>
+        <Text className="text-gray-600 mt-1">
+          {friends.length} {friends.length === 1 ? "friend" : "friends"}
+        </Text>
       </View>
 
-      {/* Search Results */}
-      {searching ? (
+      {/* Friends List */}
+      {loading ? (
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" />
-          <Text className="mt-2 text-gray-600">Searching...</Text>
+          <Text className="mt-2 text-gray-600">Loading friends...</Text>
         </View>
-      ) : searchQuery.trim() && searchResults.length === 0 ? (
+      ) : friends.length === 0 ? (
         <View className="flex-1 justify-center items-center">
-          <Text className="text-gray-600">No users found</Text>
+          <Text className="text-gray-600 text-center">
+            You don't have any friends yet
+          </Text>
+          <Text className="text-gray-500 text-center mt-2">
+            Add friends from the Add Friends page
+          </Text>
         </View>
-      ) : searchQuery.trim() ? (
+      ) : (
         <FlatList
-          data={searchResults}
-          keyExtractor={(item) => item.user.id}
-          renderItem={renderSearchResult}
+          data={friends}
+          keyExtractor={(item) => item.id}
+          renderItem={renderFriend}
           showsVerticalScrollIndicator={false}
         />
-      ) : (
-        <View className="flex-1 justify-center items-center">
-          {/* <Text className="text-gray-600">
-            Search for users to add as friends
-          </Text> */}
-        </View>
       )}
     </View>
   );
