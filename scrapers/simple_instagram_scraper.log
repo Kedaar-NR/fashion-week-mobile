@@ -1,0 +1,674 @@
+2025-08-20 15:19:23,615 - INFO - Starting Simple Instagram Content Scraper...
+2025-08-20 15:19:23,616 - INFO - Found 174 brands with Instagram links
+2025-08-20 15:19:23,616 - INFO - 
+[1/174] Processing: 5MOREDAYS
+2025-08-20 15:19:23,616 - INFO - Processing 5MOREDAYS (@5more.days)
+2025-08-20 15:19:23,616 - INFO - Created brand info file for 5MOREDAYS
+2025-08-20 15:19:27,406 - INFO - 
+[2/174] Processing: 629
+2025-08-20 15:19:27,406 - INFO - Processing 629 (@629la)
+2025-08-20 15:19:27,407 - INFO - Created brand info file for 629
+2025-08-20 15:19:30,815 - INFO - 
+[3/174] Processing: A STONECOLD STUDIOS PRODUCTION
+2025-08-20 15:19:30,816 - INFO - Processing A STONECOLD STUDIOS PRODUCTION (@astonecoldstudiosproduction)
+2025-08-20 15:19:30,816 - INFO - Created brand info file for A STONECOLD STUDIOS PRODUCTION
+2025-08-20 15:19:34,386 - INFO - 
+[4/174] Processing: ABSTRAITE DESIGN
+2025-08-20 15:19:34,387 - INFO - Processing ABSTRAITE DESIGN (@abstraite.design)
+2025-08-20 15:19:34,388 - INFO - Created brand info file for ABSTRAITE DESIGN
+2025-08-20 15:19:37,884 - INFO - 
+[5/174] Processing: ACD™
+2025-08-20 15:19:37,884 - INFO - Processing ACD™ (@a.cignature.design)
+2025-08-20 15:19:37,885 - INFO - Created brand info file for ACD™
+2025-08-20 15:19:41,409 - INFO - 
+[6/174] Processing: ACTIVIST PARIS
+2025-08-20 15:19:41,411 - INFO - Processing ACTIVIST PARIS (@activistparis)
+2025-08-20 15:19:41,412 - INFO - Created brand info file for ACTIVIST PARIS
+2025-08-20 15:19:44,895 - INFO - 
+[7/174] Processing: AKHIELO
+2025-08-20 15:19:44,895 - INFO - Processing AKHIELO (@akhielo)
+2025-08-20 15:19:44,895 - INFO - Created brand info file for AKHIELO
+2025-08-20 15:19:48,315 - INFO - 
+[8/174] Processing: ALREADY WRITTEN
+2025-08-20 15:19:48,315 - INFO - Processing ALREADY WRITTEN (@alreadywritten)
+2025-08-20 15:19:48,316 - INFO - Created brand info file for ALREADY WRITTEN
+2025-08-20 15:19:51,690 - INFO - 
+[9/174] Processing: AMBERBYSOUL
+2025-08-20 15:19:51,690 - INFO - Processing AMBERBYSOUL (@amberbysoul)
+2025-08-20 15:19:51,691 - INFO - Created brand info file for AMBERBYSOUL
+2025-08-20 15:19:55,085 - INFO - 
+[10/174] Processing: AMESCENSE
+2025-08-20 15:19:55,086 - INFO - Processing AMESCENSE (@amescense)
+2025-08-20 15:19:55,086 - INFO - Created brand info file for AMESCENSE
+2025-08-20 15:19:58,462 - INFO - 
+[11/174] Processing: ANGEL ARCADE
+2025-08-20 15:19:58,463 - INFO - Processing ANGEL ARCADE (@angel.arcade)
+2025-08-20 15:19:58,464 - INFO - Created brand info file for ANGEL ARCADE
+2025-08-20 15:20:01,968 - INFO - 
+[12/174] Processing: ANTHONY JAMES
+2025-08-20 15:20:01,968 - INFO - Processing ANTHONY JAMES (@anthonyjamesstudio)
+2025-08-20 15:20:01,969 - INFO - Created brand info file for ANTHONY JAMES
+2025-08-20 15:20:05,385 - INFO - 
+[13/174] Processing: APRILLAND
+2025-08-20 15:20:05,385 - INFO - Processing APRILLAND (@aprilland_)
+2025-08-20 15:20:05,385 - INFO - Created brand info file for APRILLAND
+2025-08-20 15:20:09,020 - INFO - 
+[14/174] Processing: ARRIVAL WORLDWIDE
+2025-08-20 15:20:09,020 - INFO - Processing ARRIVAL WORLDWIDE (@arrivalworldwide)
+2025-08-20 15:20:09,020 - INFO - Created brand info file for ARRIVAL WORLDWIDE
+2025-08-20 15:20:12,441 - INFO - 
+[15/174] Processing: BAD HABITS LA
+2025-08-20 15:20:12,442 - INFO - Processing BAD HABITS LA (@badhabits.la)
+2025-08-20 15:20:12,442 - INFO - Created brand info file for BAD HABITS LA
+2025-08-20 15:20:15,846 - INFO - 
+[16/174] Processing: BAGJIO
+2025-08-20 15:20:15,846 - INFO - Processing BAGJIO (@bagjio_)
+2025-08-20 15:20:15,846 - INFO - Created brand info file for BAGJIO
+2025-08-20 15:20:19,263 - INFO - 
+[17/174] Processing: BANISHDIARIES
+2025-08-20 15:20:19,264 - INFO - Processing BANISHDIARIES (@banishdiaries)
+2025-08-20 15:20:19,264 - INFO - Created brand info file for BANISHDIARIES
+2025-08-20 15:20:22,650 - INFO - 
+[18/174] Processing: BANISHEDUSA
+2025-08-20 15:20:22,651 - INFO - Processing BANISHEDUSA (@banishedusa)
+2025-08-20 15:20:22,651 - INFO - Created brand info file for BANISHEDUSA
+2025-08-20 15:20:26,061 - INFO - 
+[19/174] Processing: BEANIES
+2025-08-20 15:20:26,062 - INFO - Processing BEANIES (@bestbeanies)
+2025-08-20 15:20:26,064 - INFO - Created brand info file for BEANIES
+2025-08-20 15:20:29,503 - INFO - 
+[20/174] Processing: BEANS
+2025-08-20 15:20:29,504 - INFO - Processing BEANS (@beans.mag)
+2025-08-20 15:20:29,504 - INFO - Created brand info file for BEANS
+2025-08-20 15:20:32,941 - INFO - 
+[21/174] Processing: BELACARTES
+2025-08-20 15:20:32,942 - INFO - Processing BELACARTES (@belacartess)
+2025-08-20 15:20:32,943 - INFO - Created brand info file for BELACARTES
+2025-08-20 15:20:36,361 - INFO - 
+[22/174] Processing: BIRTH OF ROYAL CHILD
+2025-08-20 15:20:36,362 - INFO - Processing BIRTH OF ROYAL CHILD (@birthofroyalchild)
+2025-08-20 15:20:36,362 - INFO - Created brand info file for BIRTH OF ROYAL CHILD
+2025-08-20 15:20:39,776 - INFO - 
+[23/174] Processing: BIZZRAD
+2025-08-20 15:20:39,777 - INFO - Processing BIZZRAD (@bizzrad)
+2025-08-20 15:20:39,777 - INFO - Created brand info file for BIZZRAD
+2025-08-20 15:20:43,175 - INFO - 
+[24/174] Processing: BORIS KRUEGER
+2025-08-20 15:20:43,176 - INFO - Processing BORIS KRUEGER (@boris.krueger_)
+2025-08-20 15:20:43,176 - INFO - Created brand info file for BORIS KRUEGER
+2025-08-20 15:20:46,585 - INFO - 
+[25/174] Processing: BORNTODIE™
+2025-08-20 15:20:46,586 - INFO - Processing BORNTODIE™ (@borntodie.tm)
+2025-08-20 15:20:46,586 - INFO - Created brand info file for BORNTODIE™
+2025-08-20 15:20:49,967 - INFO - 
+[26/174] Processing: BRAKKA GARMENTS
+2025-08-20 15:20:49,968 - INFO - Processing BRAKKA GARMENTS (@brakkaonline)
+2025-08-20 15:20:49,968 - INFO - Created brand info file for BRAKKA GARMENTS
+2025-08-20 15:20:53,332 - INFO - 
+[27/174] Processing: BRANDONWVARGAS
+2025-08-20 15:20:53,333 - INFO - Processing BRANDONWVARGAS (@brandonwvargas)
+2025-08-20 15:20:53,334 - INFO - Created brand info file for BRANDONWVARGAS
+2025-08-20 15:20:57,033 - INFO - 
+[28/174] Processing: CAMP XTRA
+2025-08-20 15:20:57,033 - INFO - Processing CAMP XTRA (@campxtra)
+2025-08-20 15:20:57,033 - INFO - Created brand info file for CAMP XTRA
+2025-08-20 15:21:00,363 - INFO - 
+[29/174] Processing: CASPER
+2025-08-20 15:21:00,363 - INFO - Processing CASPER (@casper)
+2025-08-20 15:21:00,364 - INFO - Created brand info file for CASPER
+2025-08-20 15:21:03,722 - INFO - 
+[30/174] Processing: CBAKAPS
+2025-08-20 15:21:03,726 - INFO - Processing CBAKAPS (@cbakaps_)
+2025-08-20 15:21:03,727 - INFO - Created brand info file for CBAKAPS
+2025-08-20 15:21:07,101 - INFO - 
+[31/174] Processing: CHALK.PRESS
+2025-08-20 15:21:07,102 - INFO - Processing CHALK.PRESS (@chalk.press)
+2025-08-20 15:21:07,102 - INFO - Created brand info file for CHALK.PRESS
+2025-08-20 15:21:10,489 - INFO - 
+[32/174] Processing: CHEATIN SNAKES WORLDWIDE
+2025-08-20 15:21:10,489 - INFO - Processing CHEATIN SNAKES WORLDWIDE (@cheatinsnakes)
+2025-08-20 15:21:10,490 - INFO - Created brand info file for CHEATIN SNAKES WORLDWIDE
+2025-08-20 15:21:13,904 - INFO - Skipping CHILLDREN - no Instagram link
+2025-08-20 15:21:13,904 - INFO - 
+[34/174] Processing: CIELOS LOS ANGELES
+2025-08-20 15:21:13,905 - INFO - Processing CIELOS LOS ANGELES (@cielos.la)
+2025-08-20 15:21:13,905 - INFO - Created brand info file for CIELOS LOS ANGELES
+2025-08-20 15:21:17,284 - INFO - 
+[35/174] Processing: CORRUPTKID
+2025-08-20 15:21:17,285 - INFO - Processing CORRUPTKID (@corruptkid)
+2025-08-20 15:21:17,285 - INFO - Created brand info file for CORRUPTKID
+2025-08-20 15:21:20,728 - INFO - 
+[36/174] Processing: COUCOU BEBE
+2025-08-20 15:21:20,728 - INFO - Processing COUCOU BEBE (@coucou_bebe75018)
+2025-08-20 15:21:20,728 - INFO - Created brand info file for COUCOU BEBE
+2025-08-20 15:21:24,297 - INFO - 
+[37/174] Processing: COWBOY HEARTS
+2025-08-20 15:21:24,297 - INFO - Processing COWBOY HEARTS (@cowboy.hearts)
+2025-08-20 15:21:24,297 - INFO - Created brand info file for COWBOY HEARTS
+2025-08-20 15:21:27,655 - INFO - 
+[38/174] Processing: CRYSTAL RIVER
+2025-08-20 15:21:27,655 - INFO - Processing CRYSTAL RIVER (@crystal_____river)
+2025-08-20 15:21:27,655 - INFO - Created brand info file for CRYSTAL RIVER
+2025-08-20 15:21:31,051 - INFO - 
+[39/174] Processing: CUTS BY LOWHEADS
+2025-08-20 15:21:31,052 - INFO - Processing CUTS BY LOWHEADS (@cutsbylowheads)
+2025-08-20 15:21:31,052 - INFO - Created brand info file for CUTS BY LOWHEADS
+2025-08-20 15:21:34,418 - INFO - 
+[40/174] Processing: DAEKER
+2025-08-20 15:21:34,418 - INFO - Processing DAEKER (@daekerconley)
+2025-08-20 15:21:34,419 - INFO - Created brand info file for DAEKER
+2025-08-20 15:21:37,887 - INFO - 
+[41/174] Processing: DEATH 56 SENTENCE
+2025-08-20 15:21:37,887 - INFO - Processing DEATH 56 SENTENCE (@death56sentence)
+2025-08-20 15:21:37,887 - INFO - Created brand info file for DEATH 56 SENTENCE
+2025-08-20 15:21:41,250 - INFO - 
+[42/174] Processing: DEMIKNJ
+2025-08-20 15:21:41,251 - INFO - Processing DEMIKNJ (@demiknj)
+2025-08-20 15:21:41,252 - INFO - Created brand info file for DEMIKNJ
+2025-08-20 15:21:44,633 - INFO - 
+[43/174] Processing: DENIM
+2025-08-20 15:21:44,634 - INFO - Processing DENIM (@denimtears)
+2025-08-20 15:21:44,634 - INFO - Created brand info file for DENIM
+2025-08-20 15:21:47,963 - INFO - 
+[44/174] Processing: DESCENDANT
+2025-08-20 15:21:47,964 - INFO - Processing DESCENDANT (@descendant.tbm)
+2025-08-20 15:21:47,964 - INFO - Created brand info file for DESCENDANT
+2025-08-20 15:21:51,372 - INFO - Skipping DINGBATS-FONT - no Instagram link
+2025-08-20 15:21:51,373 - INFO - 
+[46/174] Processing: DOCTORGARMENTZ
+2025-08-20 15:21:51,373 - INFO - Processing DOCTORGARMENTZ (@doctor.garmentz)
+2025-08-20 15:21:51,374 - INFO - Created brand info file for DOCTORGARMENTZ
+2025-08-20 15:21:54,766 - INFO - 
+[47/174] Processing: DOLOR
+2025-08-20 15:21:54,766 - INFO - Processing DOLOR (@dolor.online)
+2025-08-20 15:21:54,767 - INFO - Created brand info file for DOLOR
+2025-08-20 15:21:58,395 - INFO - 
+[48/174] Processing: E4ENYTHING
+2025-08-20 15:21:58,395 - INFO - Processing E4ENYTHING (@eforenything)
+2025-08-20 15:21:58,396 - INFO - Created brand info file for E4ENYTHING
+2025-08-20 15:22:01,821 - INFO - 
+[49/174] Processing: EMERSON STONE
+2025-08-20 15:22:01,823 - INFO - Processing EMERSON STONE (@emersonstone_official)
+2025-08-20 15:22:01,835 - INFO - Created brand info file for EMERSON STONE
+2025-08-20 15:22:05,243 - INFO - Skipping EMOTIONAL DISTRESS - no Instagram link
+2025-08-20 15:22:05,243 - INFO - 
+[51/174] Processing: EMPTY SPACE(S)
+2025-08-20 15:22:05,244 - INFO - Processing EMPTY SPACE(S) (@emptyspaces)
+2025-08-20 15:22:05,245 - INFO - Created brand info file for EMPTY SPACE(S)
+2025-08-20 15:22:08,614 - INFO - 
+[52/174] Processing: EMPTY SPACES
+2025-08-20 15:22:08,614 - INFO - Processing EMPTY SPACES (@emptyspaces)
+2025-08-20 15:22:08,615 - INFO - Created brand info file for EMPTY SPACES
+2025-08-20 15:22:11,955 - INFO - 
+[53/174] Processing: EREHWON
+2025-08-20 15:22:11,956 - INFO - Processing EREHWON (@erehwonstudio)
+2025-08-20 15:22:11,956 - INFO - Created brand info file for EREHWON
+2025-08-20 15:22:15,458 - INFO - 
+[54/174] Processing: EXCESS
+2025-08-20 15:22:15,459 - INFO - Processing EXCESS (@excess.us)
+2025-08-20 15:22:15,459 - INFO - Created brand info file for EXCESS
+2025-08-20 15:22:18,910 - INFO - 
+[55/174] Processing: EXISTS PURE
+2025-08-20 15:22:18,910 - INFO - Processing EXISTS PURE (@existspure)
+2025-08-20 15:22:18,910 - INFO - Created brand info file for EXISTS PURE
+2025-08-20 15:22:22,506 - INFO - 
+[56/174] Processing: EYECRAVE
+2025-08-20 15:22:22,507 - INFO - Processing EYECRAVE (@eyecrave.co)
+2025-08-20 15:22:22,507 - INFO - Created brand info file for EYECRAVE
+2025-08-20 15:22:25,933 - INFO - 
+[57/174] Processing: FACIANE [FÀSH•ON]
+2025-08-20 15:22:25,934 - INFO - Processing FACIANE [FÀSH•ON] (@faciane_mcmxcv)
+2025-08-20 15:22:25,934 - INFO - Created brand info file for FACIANE [FÀSH•ON]
+2025-08-20 15:22:29,328 - INFO - 
+[58/174] Processing: FAIT PAR LUI
+2025-08-20 15:22:29,328 - INFO - Processing FAIT PAR LUI (@faitparlui)
+2025-08-20 15:22:29,329 - INFO - Created brand info file for FAIT PAR LUI
+2025-08-20 15:22:32,871 - INFO - 
+[59/174] Processing: FALSEWORKCLUB
+2025-08-20 15:22:32,871 - INFO - Processing FALSEWORKCLUB (@falseworkclub)
+2025-08-20 15:22:32,872 - INFO - Created brand info file for FALSEWORKCLUB
+2025-08-20 15:22:36,207 - INFO - 
+[60/174] Processing: FISHFELON
+2025-08-20 15:22:36,207 - INFO - Processing FISHFELON (@fishfelon)
+2025-08-20 15:22:36,208 - INFO - Created brand info file for FISHFELON
+2025-08-20 15:22:39,619 - INFO - 
+[61/174] Processing: FNKSTUDIOS
+2025-08-20 15:22:39,619 - INFO - Processing FNKSTUDIOS (@fnkstudios)
+2025-08-20 15:22:39,620 - INFO - Created brand info file for FNKSTUDIOS
+2025-08-20 15:22:43,036 - INFO - 
+[62/174] Processing: FOUNTAIN OF SOUL
+2025-08-20 15:22:43,037 - INFO - Processing FOUNTAIN OF SOUL (@fountainofsoul)
+2025-08-20 15:22:43,037 - INFO - Created brand info file for FOUNTAIN OF SOUL
+2025-08-20 15:22:46,507 - INFO - Skipping FRAUDULENT - no Instagram link
+2025-08-20 15:22:46,507 - INFO - 
+[64/174] Processing: GBUCK
+2025-08-20 15:22:46,507 - INFO - Processing GBUCK (@gbuckp)
+2025-08-20 15:22:46,507 - INFO - Created brand info file for GBUCK
+2025-08-20 15:22:49,952 - INFO - 
+[65/174] Processing: GEMINI
+2025-08-20 15:22:49,953 - INFO - Processing GEMINI (@geminiccasa)
+2025-08-20 15:22:49,953 - INFO - Created brand info file for GEMINI
+2025-08-20 15:22:53,307 - INFO - 
+[66/174] Processing: GEN 2
+2025-08-20 15:22:53,308 - INFO - Processing GEN 2 (@gen___2)
+2025-08-20 15:22:53,308 - INFO - Created brand info file for GEN 2
+2025-08-20 15:22:56,680 - INFO - 
+[67/174] Processing: GINKO ULTRA
+2025-08-20 15:22:56,681 - INFO - Processing GINKO ULTRA (@ginko.ultra)
+2025-08-20 15:22:56,681 - INFO - Created brand info file for GINKO ULTRA
+2025-08-20 15:23:00,052 - INFO - 
+[68/174] Processing: GLVSSIC
+2025-08-20 15:23:00,053 - INFO - Processing GLVSSIC (@glvssic)
+2025-08-20 15:23:00,053 - INFO - Created brand info file for GLVSSIC
+2025-08-20 15:23:03,408 - INFO - 
+[69/174] Processing: GOKYO
+2025-08-20 15:23:03,408 - INFO - Processing GOKYO (@gokyo.in)
+2025-08-20 15:23:03,408 - INFO - Created brand info file for GOKYO
+2025-08-20 15:23:06,829 - INFO - 
+[70/174] Processing: HAVEYOUDIEDBEFORE
+2025-08-20 15:23:06,829 - INFO - Processing HAVEYOUDIEDBEFORE (@haveyoudiedbefore)
+2025-08-20 15:23:06,830 - INFO - Created brand info file for HAVEYOUDIEDBEFORE
+2025-08-20 15:23:10,132 - INFO - 
+[71/174] Processing: HEAVROLET
+2025-08-20 15:23:10,132 - INFO - Processing HEAVROLET (@heavrolet)
+2025-08-20 15:23:10,132 - INFO - Created brand info file for HEAVROLET
+2025-08-20 15:23:13,523 - INFO - 
+[72/174] Processing: HIS CARNAGE
+2025-08-20 15:23:13,524 - INFO - Processing HIS CARNAGE (@hiscarnage)
+2025-08-20 15:23:13,525 - INFO - Created brand info file for HIS CARNAGE
+2025-08-20 15:23:17,367 - INFO - 
+[73/174] Processing: HLYWRK
+2025-08-20 15:23:17,368 - INFO - Processing HLYWRK (@hlywrk)
+2025-08-20 15:23:17,368 - INFO - Created brand info file for HLYWRK
+2025-08-20 15:23:20,680 - INFO - 
+[74/174] Processing: HORN HEROES
+2025-08-20 15:23:20,681 - INFO - Processing HORN HEROES (@hornheroes)
+2025-08-20 15:23:20,681 - INFO - Created brand info file for HORN HEROES
+2025-08-20 15:23:24,406 - INFO - 
+[75/174] Processing: HUBANE
+2025-08-20 15:23:24,407 - INFO - Processing HUBANE (@hubane_)
+2025-08-20 15:23:24,407 - INFO - Created brand info file for HUBANE
+2025-08-20 15:23:27,806 - INFO - 
+[76/174] Processing: HWASAN
+2025-08-20 15:23:27,806 - INFO - Processing HWASAN (@hwasan)
+2025-08-20 15:23:27,807 - INFO - Created brand info file for HWASAN
+2025-08-20 15:23:31,340 - INFO - 
+[77/174] Processing: IDIEDLASTNIGHT
+2025-08-20 15:23:31,340 - INFO - Processing IDIEDLASTNIGHT (@idiedlastnight)
+2025-08-20 15:23:31,341 - INFO - Created brand info file for IDIEDLASTNIGHT
+2025-08-20 15:23:34,803 - INFO - 
+[78/174] Processing: IN_LOVING_MEMORY
+2025-08-20 15:23:34,805 - INFO - Processing IN_LOVING_MEMORY (@inlovingmemoryny)
+2025-08-20 15:23:34,810 - INFO - Created brand info file for IN_LOVING_MEMORY
+2025-08-20 15:23:38,292 - INFO - 
+[79/174] Processing: JACKJOHNJR
+2025-08-20 15:23:38,293 - INFO - Processing JACKJOHNJR (@jackjohnjr)
+2025-08-20 15:23:38,293 - INFO - Created brand info file for JACKJOHNJR
+2025-08-20 15:23:41,730 - INFO - 
+[80/174] Processing: JAKISCHRIST
+2025-08-20 15:23:41,730 - INFO - Processing JAKISCHRIST (@jakischrist)
+2025-08-20 15:23:41,730 - INFO - Created brand info file for JAKISCHRIST
+2025-08-20 15:23:45,144 - INFO - 
+[81/174] Processing: JALONISDEAD
+2025-08-20 15:23:45,144 - INFO - Processing JALONISDEAD (@jalonisdead)
+2025-08-20 15:23:45,145 - INFO - Created brand info file for JALONISDEAD
+2025-08-20 15:23:48,541 - INFO - Skipping JAXON JET - no Instagram link
+2025-08-20 15:23:48,542 - INFO - 
+[83/174] Processing: KITOWARES
+2025-08-20 15:23:48,542 - INFO - Processing KITOWARES (@kitowares)
+2025-08-20 15:23:48,542 - INFO - Created brand info file for KITOWARES
+2025-08-20 15:23:51,975 - INFO - 
+[84/174] Processing: KNARE
+2025-08-20 15:23:51,975 - INFO - Processing KNARE (@k.nxre)
+2025-08-20 15:23:51,976 - INFO - Created brand info file for KNARE
+2025-08-20 15:23:55,461 - INFO - 
+[85/174] Processing: KORRUPT
+2025-08-20 15:23:55,462 - INFO - Processing KORRUPT (@korrupt.world)
+2025-08-20 15:23:55,464 - INFO - Created brand info file for KORRUPT
+2025-08-20 15:23:58,843 - INFO - 
+[86/174] Processing: LE LOSANGE
+2025-08-20 15:23:58,843 - INFO - Processing LE LOSANGE (@lelosangeofficial)
+2025-08-20 15:23:58,844 - INFO - Created brand info file for LE LOSANGE
+2025-08-20 15:24:02,243 - INFO - 
+[87/174] Processing: LILBASTARDBOY
+2025-08-20 15:24:02,244 - INFO - Processing LILBASTARDBOY (@lilbastardboy)
+2025-08-20 15:24:02,244 - INFO - Created brand info file for LILBASTARDBOY
+2025-08-20 15:24:05,682 - INFO - 
+[88/174] Processing: LONEARCHIVE
+2025-08-20 15:24:05,683 - INFO - Processing LONEARCHIVE (@lonearchive)
+2025-08-20 15:24:05,683 - INFO - Created brand info file for LONEARCHIVE
+2025-08-20 15:24:09,194 - INFO - Skipping LOSE RELIGION - no Instagram link
+2025-08-20 15:24:09,195 - INFO - 
+[90/174] Processing: LOVE, AMERICA
+2025-08-20 15:24:09,195 - INFO - Processing LOVE, AMERICA (@loveamericaloveamerica)
+2025-08-20 15:24:09,195 - INFO - Created brand info file for LOVE, AMERICA
+2025-08-20 15:24:12,599 - INFO - 
+[91/174] Processing: LOVEDYLANTHOMAS
+2025-08-20 15:24:12,600 - INFO - Processing LOVEDYLANTHOMAS (@lovedylanthomas)
+2025-08-20 15:24:12,600 - INFO - Created brand info file for LOVEDYLANTHOMAS
+2025-08-20 15:24:15,974 - INFO - 
+[92/174] Processing: LOVEHARDT
+2025-08-20 15:24:15,974 - INFO - Processing LOVEHARDT (@lovehardt.xyz)
+2025-08-20 15:24:15,974 - INFO - Created brand info file for LOVEHARDT
+2025-08-20 15:24:19,441 - INFO - 
+[93/174] Processing: LUCIEN SAGAR
+2025-08-20 15:24:19,442 - INFO - Processing LUCIEN SAGAR (@luciensagar)
+2025-08-20 15:24:19,443 - INFO - Created brand info file for LUCIEN SAGAR
+2025-08-20 15:24:22,893 - INFO - Skipping LUXENBURG - no Instagram link
+2025-08-20 15:24:22,893 - INFO - 
+[95/174] Processing: MANIC DIARIES
+2025-08-20 15:24:22,893 - INFO - Processing MANIC DIARIES (@manicdiaries)
+2025-08-20 15:24:22,894 - INFO - Created brand info file for MANIC DIARIES
+2025-08-20 15:24:26,273 - INFO - 
+[96/174] Processing: MICU
+2025-08-20 15:24:26,275 - INFO - Processing MICU (@micu.nyc)
+2025-08-20 15:24:26,275 - INFO - Created brand info file for MICU
+2025-08-20 15:24:29,753 - INFO - 
+[97/174] Processing: MILES FRANKLIN
+2025-08-20 15:24:29,754 - INFO - Processing MILES FRANKLIN (@milesfrankl1n)
+2025-08-20 15:24:29,755 - INFO - Created brand info file for MILES FRANKLIN
+2025-08-20 15:24:33,150 - INFO - 
+[98/174] Processing: MIND BOWLING
+2025-08-20 15:24:33,151 - INFO - Processing MIND BOWLING (@mind_bowling)
+2025-08-20 15:24:33,151 - INFO - Created brand info file for MIND BOWLING
+2025-08-20 15:24:36,577 - INFO - 
+[99/174] Processing: MORALE
+2025-08-20 15:24:36,578 - INFO - Processing MORALE (@moraleusa)
+2025-08-20 15:24:36,578 - INFO - Created brand info file for MORALE
+2025-08-20 15:24:40,014 - INFO - 
+[100/174] Processing: NETSU DENIM
+2025-08-20 15:24:40,014 - INFO - Processing NETSU DENIM (@netsudenim)
+2025-08-20 15:24:40,015 - INFO - Created brand info file for NETSU DENIM
+2025-08-20 15:24:43,310 - INFO - 
+[101/174] Processing: NIK BENTEL STUDIO
+2025-08-20 15:24:43,310 - INFO - Processing NIK BENTEL STUDIO (@nikbentelstudio)
+2025-08-20 15:24:43,311 - INFO - Created brand info file for NIK BENTEL STUDIO
+2025-08-20 15:24:46,744 - INFO - 
+[102/174] Processing: NO.ERRORS
+2025-08-20 15:24:46,746 - INFO - Processing NO.ERRORS (@no.errors)
+2025-08-20 15:24:46,746 - INFO - Created brand info file for NO.ERRORS
+2025-08-20 15:24:50,180 - INFO - 
+[103/174] Processing: NOCIETY
+2025-08-20 15:24:50,181 - INFO - Processing NOCIETY (@nocietyy)
+2025-08-20 15:24:50,181 - INFO - Created brand info file for NOCIETY
+2025-08-20 15:24:53,678 - INFO - 
+[104/174] Processing: NOT1%FLAW
+2025-08-20 15:24:53,678 - INFO - Processing NOT1%FLAW (@not1flaw)
+2025-08-20 15:24:53,679 - INFO - Created brand info file for NOT1%FLAW
+2025-08-20 15:24:57,437 - INFO - 
+[105/174] Processing: OBJECT FROM NOTHING
+2025-08-20 15:24:57,437 - INFO - Processing OBJECT FROM NOTHING (@objectfromnothing)
+2025-08-20 15:24:57,438 - INFO - Created brand info file for OBJECT FROM NOTHING
+2025-08-20 15:25:00,935 - INFO - 
+[106/174] Processing: OMNEE WORLD
+2025-08-20 15:25:00,936 - INFO - Processing OMNEE WORLD (@omneeworld)
+2025-08-20 15:25:00,936 - INFO - Created brand info file for OMNEE WORLD
+2025-08-20 15:25:04,266 - INFO - 
+[107/174] Processing: OMOSTUDIOZ
+2025-08-20 15:25:04,267 - INFO - Processing OMOSTUDIOZ (@311us)
+2025-08-20 15:25:04,267 - INFO - Created brand info file for OMOSTUDIOZ
+2025-08-20 15:25:07,725 - INFO - 
+[108/174] Processing: ONLYTHEBADSTUDIOS
+2025-08-20 15:25:07,725 - INFO - Processing ONLYTHEBADSTUDIOS (@onlythebadstudios)
+2025-08-20 15:25:07,726 - INFO - Created brand info file for ONLYTHEBADSTUDIOS
+2025-08-20 15:25:11,132 - INFO - 
+[109/174] Processing: PANELS BY THOMASJAMES
+2025-08-20 15:25:11,132 - INFO - Processing PANELS BY THOMASJAMES (@panels.bythomasjames)
+2025-08-20 15:25:11,133 - INFO - Created brand info file for PANELS BY THOMASJAMES
+2025-08-20 15:25:14,525 - INFO - 
+[110/174] Processing: PANELS.
+2025-08-20 15:25:14,525 - INFO - Processing PANELS. (@bypanels)
+2025-08-20 15:25:14,525 - INFO - Created brand info file for PANELS.
+2025-08-20 15:25:17,971 - INFO - 
+[111/174] Processing: PARAPHERNALIA ⁹⁷
+2025-08-20 15:25:17,972 - INFO - Processing PARAPHERNALIA ⁹⁷ (@paraphernalia.97)
+2025-08-20 15:25:17,973 - INFO - Created brand info file for PARAPHERNALIA ⁹⁷
+2025-08-20 15:25:21,681 - INFO - 
+[112/174] Processing: PLA4
+2025-08-20 15:25:21,682 - INFO - Processing PLA4 (@plaa4444)
+2025-08-20 15:25:21,682 - INFO - Created brand info file for PLA4
+2025-08-20 15:25:25,017 - INFO - 
+[113/174] Processing: PLAGUEROUND
+2025-08-20 15:25:25,018 - INFO - Processing PLAGUEROUND (@plagueround.world)
+2025-08-20 15:25:25,019 - INFO - Created brand info file for PLAGUEROUND
+2025-08-20 15:25:28,547 - INFO - 
+[114/174] Processing: PLASTIC STUDIOS
+2025-08-20 15:25:28,548 - INFO - Processing PLASTIC STUDIOS (@plasticstudios)
+2025-08-20 15:25:28,549 - INFO - Created brand info file for PLASTIC STUDIOS
+2025-08-20 15:25:31,953 - INFO - 
+[115/174] Processing: PO5HBOY
+2025-08-20 15:25:31,953 - INFO - Processing PO5HBOY (@po5hboy)
+2025-08-20 15:25:31,954 - INFO - Created brand info file for PO5HBOY
+2025-08-20 15:25:35,291 - INFO - 
+[116/174] Processing: POLO CUTTY
+2025-08-20 15:25:35,292 - INFO - Processing POLO CUTTY (@polo_cutty)
+2025-08-20 15:25:35,292 - INFO - Created brand info file for POLO CUTTY
+2025-08-20 15:25:38,685 - INFO - 
+[117/174] Processing: PRESTON SEVIN
+2025-08-20 15:25:38,686 - INFO - Processing PRESTON SEVIN (@prestonsevin)
+2025-08-20 15:25:38,686 - INFO - Created brand info file for PRESTON SEVIN
+2025-08-20 15:25:42,150 - INFO - 
+[118/174] Processing: PRIVATE AFFAIR
+2025-08-20 15:25:42,150 - INFO - Processing PRIVATE AFFAIR (@privateaffair.us)
+2025-08-20 15:25:42,150 - INFO - Created brand info file for PRIVATE AFFAIR
+2025-08-20 15:25:45,608 - INFO - 
+[119/174] Processing: PROHIBITISM
+2025-08-20 15:25:45,608 - INFO - Processing PROHIBITISM (@p)
+2025-08-20 15:25:45,609 - INFO - Created brand info file for PROHIBITISM
+2025-08-20 15:25:48,960 - INFO - 
+[120/174] Processing: PSYCHWARD
+2025-08-20 15:25:48,963 - INFO - Processing PSYCHWARD (@psychwardusa)
+2025-08-20 15:25:48,964 - INFO - Created brand info file for PSYCHWARD
+2025-08-20 15:25:52,411 - INFO - 
+[121/174] Processing: PUBLIC HOUSING SKATE TEAM
+2025-08-20 15:25:52,412 - INFO - Processing PUBLIC HOUSING SKATE TEAM (@publichousingskateteam)
+2025-08-20 15:25:52,414 - INFO - Created brand info file for PUBLIC HOUSING SKATE TEAM
+2025-08-20 15:25:55,828 - INFO - 
+[122/174] Processing: PUPPET THEATER
+2025-08-20 15:25:55,830 - INFO - Processing PUPPET THEATER (@puppet___theater)
+2025-08-20 15:25:55,830 - INFO - Created brand info file for PUPPET THEATER
+2025-08-20 15:25:59,248 - INFO - 
+[123/174] Processing: PURGATORY
+2025-08-20 15:25:59,248 - INFO - Processing PURGATORY (@purgatory)
+2025-08-20 15:25:59,249 - INFO - Created brand info file for PURGATORY
+2025-08-20 15:26:02,791 - INFO - 
+[124/174] Processing: PYTHIA
+2025-08-20 15:26:02,793 - INFO - Processing PYTHIA (@pythiaclothing)
+2025-08-20 15:26:02,793 - INFO - Created brand info file for PYTHIA
+2025-08-20 15:26:06,317 - INFO - 
+[125/174] Processing: RAWCKSTAR LIFESTYLE
+2025-08-20 15:26:06,318 - INFO - Processing RAWCKSTAR LIFESTYLE (@prod.rockstarlifestyle)
+2025-08-20 15:26:06,318 - INFO - Created brand info file for RAWCKSTAR LIFESTYLE
+2025-08-20 15:26:09,791 - INFO - 
+[126/174] Processing: REDHEAT
+2025-08-20 15:26:09,792 - INFO - Processing REDHEAT (@redheatofficial)
+2025-08-20 15:26:09,793 - INFO - Created brand info file for REDHEAT
+2025-08-20 15:26:13,242 - INFO - 
+[127/174] Processing: REVENIGHTS
+2025-08-20 15:26:13,242 - INFO - Processing REVENIGHTS (@revenights)
+2025-08-20 15:26:13,243 - INFO - Created brand info file for REVENIGHTS
+2025-08-20 15:26:16,635 - INFO - 
+[128/174] Processing: RITTEN
+2025-08-20 15:26:16,635 - INFO - Processing RITTEN (@rittenonline)
+2025-08-20 15:26:16,636 - INFO - Created brand info file for RITTEN
+2025-08-20 15:26:20,021 - INFO - 
+[129/174] Processing: ROMANCATCHER
+2025-08-20 15:26:20,021 - INFO - Processing ROMANCATCHER (@romancatcher)
+2025-08-20 15:26:20,022 - INFO - Created brand info file for ROMANCATCHER
+2025-08-20 15:26:23,441 - INFO - 
+[130/174] Processing: ROY PUBLIC LABEL
+2025-08-20 15:26:23,442 - INFO - Processing ROY PUBLIC LABEL (@roypubliclabel)
+2025-08-20 15:26:23,442 - INFO - Created brand info file for ROY PUBLIC LABEL
+2025-08-20 15:26:26,838 - INFO - 
+[131/174] Processing: RSEKAI
+2025-08-20 15:26:26,839 - INFO - Processing RSEKAI (@rsekai.internet)
+2025-08-20 15:26:26,839 - INFO - Created brand info file for RSEKAI
+2025-08-20 15:26:30,176 - INFO - 
+[132/174] Processing: SCAPEGRACE
+2025-08-20 15:26:30,176 - INFO - Processing SCAPEGRACE (@iscapegrace)
+2025-08-20 15:26:30,177 - INFO - Created brand info file for SCAPEGRACE
+2025-08-20 15:26:33,622 - INFO - 
+[133/174] Processing: SCY BY JULIUS
+2025-08-20 15:26:33,622 - INFO - Processing SCY BY JULIUS (@scyssor)
+2025-08-20 15:26:33,623 - INFO - Created brand info file for SCY BY JULIUS
+2025-08-20 15:26:37,157 - INFO - 
+[134/174] Processing: SHAWZIP
+2025-08-20 15:26:37,157 - INFO - Processing SHAWZIP (@shaw.zip)
+2025-08-20 15:26:37,157 - INFO - Created brand info file for SHAWZIP
+2025-08-20 15:26:40,653 - INFO - 
+[135/174] Processing: SHEFF
+2025-08-20 15:26:40,654 - INFO - Processing SHEFF (@sheff_g)
+2025-08-20 15:26:40,654 - INFO - Created brand info file for SHEFF
+2025-08-20 15:26:44,012 - INFO - 
+[136/174] Processing: SLUMPMAN
+2025-08-20 15:26:44,012 - INFO - Processing SLUMPMAN (@slumpmandidthat)
+2025-08-20 15:26:44,012 - INFO - Created brand info file for SLUMPMAN
+2025-08-20 15:26:47,423 - INFO - 
+[137/174] Processing: SONGSAMNOUNG
+2025-08-20 15:26:47,423 - INFO - Processing SONGSAMNOUNG (@songsamnoung)
+2025-08-20 15:26:47,423 - INFO - Created brand info file for SONGSAMNOUNG
+2025-08-20 15:26:50,805 - INFO - 
+[138/174] Processing: SOUTH OF HEAVEN
+2025-08-20 15:26:50,806 - INFO - Processing SOUTH OF HEAVEN (@southofheavenusa)
+2025-08-20 15:26:50,806 - INFO - Created brand info file for SOUTH OF HEAVEN
+2025-08-20 15:26:54,145 - INFO - 
+[139/174] Processing: SPECTRUM THEORY
+2025-08-20 15:26:54,146 - INFO - Processing SPECTRUM THEORY (@spectrumtheory)
+2025-08-20 15:26:54,146 - INFO - Created brand info file for SPECTRUM THEORY
+2025-08-20 15:26:57,618 - INFO - 
+[140/174] Processing: SQUIGGLES
+2025-08-20 15:26:57,619 - INFO - Processing SQUIGGLES (@squiggles)
+2025-08-20 15:26:57,619 - INFO - Created brand info file for SQUIGGLES
+2025-08-20 15:27:01,040 - INFO - 
+[141/174] Processing: STAFF PICKS
+2025-08-20 15:27:01,040 - INFO - Processing STAFF PICKS (@staffpicks_official)
+2025-08-20 15:27:01,041 - INFO - Created brand info file for STAFF PICKS
+2025-08-20 15:27:04,397 - INFO - 
+[142/174] Processing: STOLEN ARTS
+2025-08-20 15:27:04,397 - INFO - Processing STOLEN ARTS (@stolenarts_)
+2025-08-20 15:27:04,398 - INFO - Created brand info file for STOLEN ARTS
+2025-08-20 15:27:08,064 - INFO - 
+[143/174] Processing: STOMACH ?
+2025-08-20 15:27:08,065 - INFO - Processing STOMACH ? (@stomachofyourdeadsoulmate)
+2025-08-20 15:27:08,065 - INFO - Created brand info file for STOMACH ?
+2025-08-20 15:27:11,490 - INFO - 
+[144/174] Processing: SUNNY UNDERGROUND MARKET
+2025-08-20 15:27:11,491 - INFO - Processing SUNNY UNDERGROUND MARKET (@sunnyugm)
+2025-08-20 15:27:11,491 - INFO - Created brand info file for SUNNY UNDERGROUND MARKET
+2025-08-20 15:27:14,913 - INFO - 
+[145/174] Processing: SUNSHINE REIGNS
+2025-08-20 15:27:14,914 - INFO - Processing SUNSHINE REIGNS (@sunshine__reigns)
+2025-08-20 15:27:14,915 - INFO - Created brand info file for SUNSHINE REIGNS
+2025-08-20 15:27:18,495 - INFO - 
+[146/174] Processing: SWNK-X9
+2025-08-20 15:27:18,503 - INFO - Processing SWNK-X9 (@swnk.x9)
+2025-08-20 15:27:18,510 - INFO - Created brand info file for SWNK-X9
+2025-08-20 15:27:21,980 - INFO - 
+[147/174] Processing: TATE MARSLAND
+2025-08-20 15:27:21,980 - INFO - Processing TATE MARSLAND (@tatemarsland)
+2025-08-20 15:27:21,981 - INFO - Created brand info file for TATE MARSLAND
+2025-08-20 15:27:25,408 - INFO - 
+[148/174] Processing: TECNINE GROUP
+2025-08-20 15:27:25,408 - INFO - Processing TECNINE GROUP (@tecninegroup)
+2025-08-20 15:27:25,408 - INFO - Created brand info file for TECNINE GROUP
+2025-08-20 15:27:28,865 - INFO - 
+[149/174] Processing: THE BLANK TRAVELER
+2025-08-20 15:27:28,866 - INFO - Processing THE BLANK TRAVELER (@theblanktraveler)
+2025-08-20 15:27:28,866 - INFO - Created brand info file for THE BLANK TRAVELER
+2025-08-20 15:27:32,162 - INFO - 
+[150/174] Processing: THE CHARTREUSE HUMAN
+2025-08-20 15:27:32,163 - INFO - Processing THE CHARTREUSE HUMAN (@thechartreusehuman)
+2025-08-20 15:27:32,163 - INFO - Created brand info file for THE CHARTREUSE HUMAN
+2025-08-20 15:27:35,546 - INFO - 
+[151/174] Processing: THE LAUGHING GEISHA
+2025-08-20 15:27:35,547 - INFO - Processing THE LAUGHING GEISHA (@thelaughinggeisha)
+2025-08-20 15:27:35,548 - INFO - Created brand info file for THE LAUGHING GEISHA
+2025-08-20 15:27:39,045 - INFO - 
+[152/174] Processing: THE PEACEFUL PEOPLE
+2025-08-20 15:27:39,046 - INFO - Processing THE PEACEFUL PEOPLE (@tpp.jp)
+2025-08-20 15:27:39,046 - INFO - Created brand info file for THE PEACEFUL PEOPLE
+2025-08-20 15:27:42,501 - INFO - 
+[153/174] Processing: TRIPPIE GLUCK
+2025-08-20 15:27:42,502 - INFO - Processing TRIPPIE GLUCK (@trippiegluck)
+2025-08-20 15:27:42,503 - INFO - Created brand info file for TRIPPIE GLUCK
+2025-08-20 15:27:46,602 - INFO - 
+[154/174] Processing: TROUBLE NYC
+2025-08-20 15:27:46,603 - INFO - Processing TROUBLE NYC (@trouble__nyc)
+2025-08-20 15:27:46,604 - INFO - Created brand info file for TROUBLE NYC
+2025-08-20 15:27:50,007 - INFO - 
+[155/174] Processing: UNWARRANTED.ATL
+2025-08-20 15:27:50,009 - INFO - Processing UNWARRANTED.ATL (@unwarranted.atl)
+2025-08-20 15:27:50,009 - INFO - Created brand info file for UNWARRANTED.ATL
+2025-08-20 15:27:53,464 - INFO - 
+[156/174] Processing: VACANT WINTER
+2025-08-20 15:27:53,464 - INFO - Processing VACANT WINTER (@vacantwinter)
+2025-08-20 15:27:53,465 - INFO - Created brand info file for VACANT WINTER
+2025-08-20 15:27:56,850 - INFO - 
+[157/174] Processing: VENGEANCE STUDIOS
+2025-08-20 15:27:56,851 - INFO - Processing VENGEANCE STUDIOS (@vengeance_studios)
+2025-08-20 15:27:56,852 - INFO - Created brand info file for VENGEANCE STUDIOS
+2025-08-20 15:28:00,182 - INFO - 
+[158/174] Processing: VISUALS BY JADA
+2025-08-20 15:28:00,184 - INFO - Processing VISUALS BY JADA (@visualsbyjada)
+2025-08-20 15:28:00,185 - INFO - Created brand info file for VISUALS BY JADA
+2025-08-20 15:28:03,610 - INFO - 
+[159/174] Processing: VOSTRETTI
+2025-08-20 15:28:03,610 - INFO - Processing VOSTRETTI (@vostretti)
+2025-08-20 15:28:03,611 - INFO - Created brand info file for VOSTRETTI
+2025-08-20 15:28:06,927 - INFO - 
+[160/174] Processing: VUOTA
+2025-08-20 15:28:06,929 - INFO - Processing VUOTA (@v.uota)
+2025-08-20 15:28:06,929 - INFO - Created brand info file for VUOTA
+2025-08-20 15:28:10,285 - INFO - 
+[161/174] Processing: WAVEY WAKARU
+2025-08-20 15:28:10,286 - INFO - Processing WAVEY WAKARU (@waveywakaruofficial)
+2025-08-20 15:28:10,286 - INFO - Created brand info file for WAVEY WAKARU
+2025-08-20 15:28:13,940 - INFO - 
+[162/174] Processing: WHELM
+2025-08-20 15:28:13,941 - INFO - Processing WHELM (@wheeelm)
+2025-08-20 15:28:13,942 - INFO - Created brand info file for WHELM
+2025-08-20 15:28:17,691 - INFO - 
+[163/174] Processing: WHYW0ULDULIE
+2025-08-20 15:28:17,691 - INFO - Processing WHYW0ULDULIE (@whyw0uldulie)
+2025-08-20 15:28:17,691 - INFO - Created brand info file for WHYW0ULDULIE
+2025-08-20 15:28:21,449 - INFO - 
+[164/174] Processing: WICKED GLIMMER
+2025-08-20 15:28:21,450 - INFO - Processing WICKED GLIMMER (@wicked.glimmer)
+2025-08-20 15:28:21,450 - INFO - Created brand info file for WICKED GLIMMER
+2025-08-20 15:28:25,177 - INFO - 
+[165/174] Processing: WNTD APPAREL
+2025-08-20 15:28:25,178 - INFO - Processing WNTD APPAREL (@wntdapparel)
+2025-08-20 15:28:25,178 - INFO - Created brand info file for WNTD APPAREL
+2025-08-20 15:28:28,558 - INFO - Skipping WOMEN'S - no Instagram link
+2025-08-20 15:28:28,559 - INFO - 
+[167/174] Processing: WORKSOFMADNESS
+2025-08-20 15:28:28,559 - INFO - Processing WORKSOFMADNESS (@worksofmadness)
+2025-08-20 15:28:28,559 - INFO - Created brand info file for WORKSOFMADNESS
+2025-08-20 15:28:32,353 - INFO - Skipping WORSHIP - no Instagram link
+2025-08-20 15:28:32,353 - INFO - 
+[169/174] Processing: WORSTCASE
+2025-08-20 15:28:32,353 - INFO - Processing WORSTCASE (@worstcase.jpg)
+2025-08-20 15:28:32,354 - INFO - Created brand info file for WORSTCASE
+2025-08-20 15:28:36,035 - INFO - 
+[170/174] Processing: XENON
+2025-08-20 15:28:36,036 - INFO - Processing XENON (@xenon.fshn)
+2025-08-20 15:28:36,036 - INFO - Created brand info file for XENON
+2025-08-20 15:28:39,320 - INFO - 
+[171/174] Processing: YACHTY IN ELIAS
+2025-08-20 15:28:39,320 - INFO - Processing YACHTY IN ELIAS (@lowheads_)
+2025-08-20 15:28:39,321 - INFO - Created brand info file for YACHTY IN ELIAS
+2025-08-20 15:28:43,090 - INFO - 
+[172/174] Processing: YAMI MIYAZAKI
+2025-08-20 15:28:43,091 - INFO - Processing YAMI MIYAZAKI (@yami.miyazaki)
+2025-08-20 15:28:43,091 - INFO - Created brand info file for YAMI MIYAZAKI
+2025-08-20 15:28:46,869 - INFO - 
+[173/174] Processing: YOURAVGCADET
+2025-08-20 15:28:46,871 - INFO - Processing YOURAVGCADET (@youravgcadet)
+2025-08-20 15:28:46,871 - INFO - Created brand info file for YOURAVGCADET
+2025-08-20 15:28:50,268 - INFO - 
+[174/174] Processing: YOUTH MOVEMENT
+2025-08-20 15:28:50,268 - INFO - Processing YOUTH MOVEMENT (@weareyouthmovement)
+2025-08-20 15:28:50,269 - INFO - Created brand info file for YOUTH MOVEMENT
+2025-08-20 15:28:53,675 - INFO - 
+Completed! Successfully processed 165 out of 174 brands
+2025-08-20 15:28:53,675 - INFO - Check the 'downloads/instagram_data' folder for downloaded content.
