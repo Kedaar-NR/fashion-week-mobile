@@ -17,22 +17,32 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const colorScheme = useColorScheme();
 
-  // ADDED (OTP state)
+  // OTP verification state
   const [otpVisible, setOtpVisible] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
-  // ADDED: username availability state
+  // Username availability state
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<null | boolean>(
     null
   );
 
+  // Email availability state
+  const [checkingEmail, setCheckingEmail] = useState(false);
+  const [emailAvailable, setEmailAvailable] = useState<null | boolean>(null);
+
+  // Per-button loading
+  const [signInLoading, setSignInLoading] = useState(false);
+  const [signUpLoading, setSignUpLoading] = useState(false);
+
   const isValidUsername = (name: string) => /^[A-Za-z0-9._]+$/.test(name);
+  const isValidEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   useEffect(() => {
     if (mode !== "signup") return;
@@ -68,21 +78,61 @@ export default function Auth() {
     return () => clearTimeout(t);
   }, [username, mode]);
 
-  async function signInWithEmail() {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) {
-      Alert.alert(error.message);
-      setLoading(false);
+  // Check email availability in user_profiles table
+  useEffect(() => {
+    if (mode !== "signup") return;
+    const emailTrimmed = email.trim();
+    if (emailTrimmed.length < 3 || !isValidEmail(emailTrimmed)) {
+      setEmailAvailable(null);
+      setCheckingEmail(false);
       return;
     }
-    setLoading(false);
+    setCheckingEmail(true);
+    const t = setTimeout(async () => {
+      try {
+        const { data, count, error } = await supabase
+          .from("user_profiles")
+          .select("email", { count: "exact" })
+          .eq("email", emailTrimmed);
+
+        console.log("Email check for:", emailTrimmed);
+        console.log("Matching emails found:", data);
+        console.log("Count:", count);
+
+        if (error) {
+          console.log("Error checking email:", error);
+          setEmailAvailable(null);
+        } else {
+          setEmailAvailable((count ?? 0) === 0);
+        }
+      } catch (_e) {
+        console.log("Exception checking email:", _e);
+        setEmailAvailable(null);
+      } finally {
+        setCheckingEmail(false);
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [email, mode]);
+
+  async function signInWithEmail() {
+    try {
+      setSignInLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+      if (error) {
+        Alert.alert("Login Failed", error.message);
+        return;
+      }
+      // Successfully signed in; navigation handled elsewhere by auth listener.
+    } finally {
+      setSignInLoading(false);
+    }
   }
 
-  // CHANGED: use OTP flow instead of email confirmation
+  // Create user account with email verification
   async function signUpWithEmail() {
     const name = username.trim();
     if (name.length < 3 || !usernameAvailable) {
@@ -92,55 +142,102 @@ export default function Auth() {
       );
       return;
     }
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: true, data: { display_name: name } },
-    });
-    setLoading(false);
-    if (error) {
-      Alert.alert(error.message);
+    if (!emailAvailable) {
+      Alert.alert(
+        "Account Exists",
+        "An account already exists with that email."
+      );
       return;
     }
-    setOtp("");
-    setOtpVisible(true);
+    try {
+      setSignUpLoading(true);
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: { display_name: name },
+        },
+      });
+      if (error) {
+        Alert.alert("Sign up failed", error.message);
+        return;
+      }
+      // Account created! Show OTP modal
+      setOtp("");
+      setOtpVisible(true);
+    } finally {
+      setSignUpLoading(false);
+    }
   }
 
-  // ADDED: verify OTP
+  // Verify 6-digit OTP from {{ .Token }} (email confirmation)
   async function verifyOtp() {
-    if (otp.length !== 6) {
-      Alert.alert("Enter the 6-digit code sent to your email.");
-      return;
+    try {
+      setOtpLoading(true);
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: otp,
+        type: "email", // verify the email confirmation code (signup/magiclink types are deprecated)
+      });
+
+      if (error) {
+        Alert.alert("Verification failed", error.message);
+        return;
+      }
+
+      setOtpVisible(false);
+      setOtp("");
+
+      // Navigate to onboarding/style-quiz
+      router.replace("/onboarding");
+
+      // OPTIONAL: If your Supabase project doesn't auto-create a session on confirm,
+      // you can sign the user in now:
+      // if (!data.session) {
+      //   const { error: signInErr } = await supabase.auth.signInWithPassword({
+      //     email: email.trim(),
+      //     password,
+      //   });
+      //   if (signInErr) Alert.alert("Sign-in failed", signInErr.message);
+      // }
+    } catch (e: any) {
+      Alert.alert("Verification error", e?.message ?? "Unknown error");
+    } finally {
+      setOtpLoading(false);
     }
-    setOtpLoading(true);
-    const { error } = await supabase.auth.verifyOtp({
-      email,
-      token: otp,
-      type: "email",
-    });
-    setOtpLoading(false);
-    if (error) {
-      Alert.alert(error.message);
-      return;
-    }
-    setOtpVisible(false);
-    router.replace("/onboarding");
   }
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  async function resendOtp() {
+    try {
+      setResending(true);
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: email.trim(),
+      });
+      if (error) {
+        Alert.alert("Could not resend", error.message);
+      } else {
+        Alert.alert("Sent", "A new code was sent to your email.");
+      }
+    } finally {
+      setResending(false);
+    }
+  }
+
+  const togglePasswordVisibility = () => setShowPassword((s) => !s);
 
   const CustomButton = ({
     title,
     onPress,
     disabled = false,
     variant = "primary",
+    loading = false,
   }: {
     title: string;
     onPress: () => void;
     disabled?: boolean;
     variant?: "primary" | "secondary";
+    loading?: boolean;
   }) => (
     <TouchableOpacity
       className={`px-6 py-4 rounded-xl mb-4 w-full items-center ${
@@ -243,14 +340,15 @@ export default function Auth() {
           <CustomButton
             title="SIGN IN"
             onPress={signInWithEmail}
-            disabled={loading}
+            disabled={signInLoading}
+            loading={signInLoading}
           />
 
           <CustomButton
             title="BACK"
             onPress={() => setMode("landing")}
             variant="secondary"
-            disabled={loading}
+            disabled={signInLoading}
           />
         </View>
       </View>
@@ -310,7 +408,7 @@ export default function Auth() {
 
         <View className="relative w-full mb-6">
           <TextInput
-            className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white"
+            className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white pr-12"
             placeholder="Email"
             placeholderTextColor="#9CA3AF"
             value={email}
@@ -321,6 +419,30 @@ export default function Auth() {
             returnKeyType="next"
             enablesReturnKeyAutomatically={true}
           />
+          {/* Email availability indicator */}
+          {email.trim().length >= 3 && isValidEmail(email.trim()) && (
+            <View className="absolute right-4 top-0 bottom-0 justify-center">
+              {checkingEmail ? (
+                <ActivityIndicator size="small" color="#9CA3AF" />
+              ) : emailAvailable ? (
+                <Text className="text-green-600 text-xl">✓</Text>
+              ) : emailAvailable === false ? (
+                <Text className="text-red-500 text-xl">✕</Text>
+              ) : null}
+            </View>
+          )}
+          {email.length > 0 && !isValidEmail(email) && (
+            <Text className="text-red-500 text-xs mt-2">
+              Please enter a valid email address.
+            </Text>
+          )}
+          {email.length > 0 &&
+            isValidEmail(email) &&
+            emailAvailable === false && (
+              <Text className="text-red-500 text-xs mt-2">
+                An account already exists with this email.
+              </Text>
+            )}
         </View>
 
         <View className="relative w-full mb-6">
@@ -353,24 +475,32 @@ export default function Auth() {
           title="CREATE ACCOUNT"
           onPress={signUpWithEmail}
           disabled={
-            loading || checkingUsername || !(usernameAvailable === true)
+            signUpLoading ||
+            checkingUsername ||
+            checkingEmail ||
+            !(usernameAvailable === true) ||
+            !(emailAvailable === true)
           }
+          loading={signUpLoading}
         />
 
         <CustomButton
           title="BACK"
           onPress={() => setMode("landing")}
           variant="secondary"
-          disabled={loading}
+          disabled={signUpLoading}
         />
       </View>
 
-      {/* ADDED: OTP Modal */}
+      {/* OTP Verification Modal */}
       <Modal transparent visible={otpVisible} animationType="fade">
         <View className="flex-1 bg-black/40 justify-center items-center px-6">
           <View className="w-full max-w-sm bg-white rounded-2xl p-6">
             <Text className="text-2xl font-bold text-center mb-4 text-black">
               Verify your email
+            </Text>
+            <Text className="text-base text-center mb-6 text-gray-600">
+              Enter the 6-digit code sent to your email
             </Text>
             <TextInput
               className="border border-gray-200 rounded-xl px-4 py-4 w-full text-base bg-white text-center tracking-widest mb-6"
@@ -381,14 +511,25 @@ export default function Auth() {
               onChangeText={setOtp}
             />
             <CustomButton
-              title="VERIFY"
+              title={otpLoading ? "VERIFYING..." : "VERIFY"}
               onPress={verifyOtp}
               disabled={otpLoading || otp.length !== 6}
+              loading={otpLoading}
+            />
+            <CustomButton
+              title={resending ? "RESENDING..." : "RESEND CODE"}
+              variant="secondary"
+              onPress={resendOtp}
+              disabled={resending}
+              loading={resending}
             />
             <CustomButton
               title="CANCEL"
               variant="secondary"
-              onPress={() => setOtpVisible(false)}
+              onPress={() => {
+                setOtpVisible(false);
+                setOtp("");
+              }}
             />
           </View>
         </View>

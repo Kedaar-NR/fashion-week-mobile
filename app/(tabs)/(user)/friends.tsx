@@ -1,10 +1,12 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { Session } from "@supabase/supabase-js";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -24,6 +26,8 @@ export default function FriendsScreen() {
   const [session, setSession] = useState<Session | null>(null);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredFriends, setFilteredFriends] = useState<Friend[]>([]);
 
   useEffect(() => {
     console.log("🚀 Setting up auth listeners...");
@@ -210,25 +214,37 @@ export default function FriendsScreen() {
   };
 
   const renderFriend = ({ item }: { item: Friend }) => (
-    <View className="flex-row items-center justify-between p-4 border-b border-gray-200">
+    <TouchableOpacity
+      className="flex-row items-center justify-between p-4 border-b border-gray-200"
+      onPress={() => {
+        router.push({
+          pathname: "/(tabs)/(user)/[friend]",
+          params: { friend: item.friend_id },
+        });
+      }}
+      activeOpacity={0.7}
+    >
       <View className="flex-1">
         <Text className="text-base font-medium">
           {item.friend.display_name}
         </Text>
-        <Text className="text-sm text-gray-500">
+        {/* <Text className="text-sm text-gray-500">
           Friends since{" "}
           {new Date(item.friendship_created_at).toLocaleDateString()}
-        </Text>
+        </Text> */}
       </View>
 
       <TouchableOpacity
-        onPress={() => removeFriend(item.id)}
+        onPress={(e) => {
+          e.stopPropagation();
+          removeFriend(item.id);
+        }}
         disabled={loading}
         className="bg-red-500 px-3 py-1 rounded-full"
       >
         <Text className="text-white text-sm font-medium">Remove</Text>
       </TouchableOpacity>
-    </View>
+    </TouchableOpacity>
   );
 
   useFocusEffect(
@@ -248,14 +264,40 @@ export default function FriendsScreen() {
     }, [session])
   );
 
+  // Filter friends based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredFriends(friends);
+    } else {
+      const filtered = friends.filter((friend) =>
+        friend.friend.display_name
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      );
+      setFilteredFriends(filtered);
+    }
+  }, [searchQuery, friends]);
+
   return (
     <View className="flex-1 px-4">
-      {/* Header */}
+      {/* Header with Search Bar */}
       <View className="py-4">
-        <Text className="text-2xl font-bold text-gray-800">My Friends</Text>
-        <Text className="text-gray-600 mt-1">
-          {friends.length} {friends.length === 1 ? "friend" : "friends"}
-        </Text>
+        {/* <Text className="text-2xl font-bold text-gray-800 mb-3">
+          My Friends
+        </Text> */}
+        <TextInput
+          className="border border-gray-300 rounded-lg px-4 py-3 text-base bg-white"
+          placeholder="Search friends..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoCapitalize="words"
+        />
+        {searchQuery.trim() !== "" && (
+          <Text className="text-gray-600 mt-2 text-sm">
+            {filteredFriends.length}{" "}
+            {filteredFriends.length === 1 ? "friend" : "friends"} found
+          </Text>
+        )}
       </View>
 
       {/* Friends List */}
@@ -264,18 +306,31 @@ export default function FriendsScreen() {
           <ActivityIndicator size="large" />
           <Text className="mt-2 text-gray-600">Loading friends...</Text>
         </View>
-      ) : friends.length === 0 ? (
+      ) : filteredFriends.length === 0 ? (
         <View className="flex-1 justify-center items-center">
-          <Text className="text-gray-600 text-center">
-            You don't have any friends yet
-          </Text>
-          <Text className="text-gray-500 text-center mt-2">
-            Add friends from the Add Friends page
-          </Text>
+          {searchQuery.trim() !== "" ? (
+            <>
+              <Text className="text-gray-600 text-center">
+                No friends found matching "{searchQuery}"
+              </Text>
+              <Text className="text-gray-500 text-center mt-2">
+                Try a different search term
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text className="text-gray-600 text-center">
+                You don't have any friends yet
+              </Text>
+              <Text className="text-gray-500 text-center mt-2">
+                Add friends from the Add Friends page
+              </Text>
+            </>
+          )}
         </View>
       ) : (
         <FlatList
-          data={friends}
+          data={filteredFriends}
           keyExtractor={(item) => item.id}
           renderItem={renderFriend}
           showsVerticalScrollIndicator={false}

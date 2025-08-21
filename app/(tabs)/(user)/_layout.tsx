@@ -11,6 +11,7 @@ export default function UserLayout() {
       <Stack.Screen name="add-friends" options={{ headerShown: false }} />
       <Stack.Screen name="friends" options={{ headerShown: false }} />
       <Stack.Screen name="archive" options={{ headerShown: false }} />
+      <Stack.Screen name="[friend]" options={{ headerShown: false }} />
     </Stack>
   );
 }

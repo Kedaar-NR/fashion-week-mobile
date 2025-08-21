@@ -9,10 +9,10 @@ import {
   View,
 } from "react-native";
 
+import { supabase } from "@/lib/supabase";
 import EventEmitter from "eventemitter3";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { IconSymbol } from "./IconSymbol";
-import { supabase } from "@/lib/supabase";
 // @ts-ignore
 export const feedFilterEmitter = new EventEmitter();
 
@@ -59,8 +59,6 @@ export function NavBar({
       "/user",
     ];
 
-    console.log("PATHHHHH", path);
-
     // Check if the path starts with any of the hamburger pages
     const shouldShowHamburger = hamburgerPages.some((page) => {
       if (page === "/") {
@@ -87,6 +85,8 @@ export function NavBar({
     if (path.includes("/archive")) return "ARCHIVE";
     if (path.includes("/style-quiz")) return "STYLE QUIZ";
     if (path.includes("/search-results")) return "SEARCH RESULTS";
+    if (segments && segments.includes("[friend]")) return "FRIENDS";
+    console.log("segments", segments);
     console.log("path", path);
 
     // Default fallback
@@ -187,7 +187,7 @@ export function NavBar({
             },
           },
           {
-            label: "PRODUCTS", 
+            label: "PRODUCTS",
             onPress: () => {
               router.push("/(tabs)/(drops)");
               setMenuOpen(false);
@@ -266,7 +266,7 @@ export function NavBar({
             },
           },
           {
-            label: "ADD FRIENDS", 
+            label: "ADD FRIENDS",
             onPress: () => {
               router.push("/(tabs)/(user)/add-friends");
               setMenuOpen(false);
