@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabase";
 import { useFocusEffect } from "@react-navigation/native";
 import { Session } from "@supabase/supabase-js";
 import { router } from "expo-router";
@@ -10,7 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { supabase } from "../../../lib/supabase";
 
 interface Friend {
   id: string;
@@ -218,7 +218,7 @@ export default function FriendsScreen() {
       className="flex-row items-center justify-between p-4 border-b border-gray-200"
       onPress={() => {
         router.push({
-          pathname: "/(tabs)/(user)/[friend]",
+          pathname: "/(tabs)/(user)/(friends)/[friend]",
           params: { friend: item.friend_id },
         });
       }}
@@ -249,7 +249,7 @@ export default function FriendsScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      console.log("📍 Current path: /(tabs)/(user)/friends");
+      console.log("📍 Current path: /(tabs)/(user)/(friends)/friends");
       console.log("🔑 Session state:", {
         hasSession: !!session,
         hasUser: !!session?.user,

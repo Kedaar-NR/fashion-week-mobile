@@ -370,7 +370,7 @@ export default function UserScreen() {
             {/* Brands Archived */}
             <TouchableOpacity
               className="items-center mr-10"
-              onPress={() => router.push("/(tabs)/(user)/archive")}
+              onPress={() => router.push("/(tabs)/(user)/(archive)/archive")}
             >
               <Text className="text-lg font-bold text-gray-800">
                 {loadingSavedBrands ? "..." : savedBrandsCount}
@@ -381,7 +381,7 @@ export default function UserScreen() {
             {/* Friends */}
             <TouchableOpacity
               className="items-center"
-              onPress={() => router.push("/(tabs)/(user)/friends")}
+              onPress={() => router.push("/(tabs)/(user)/(friends)/friends")}
             >
               <Text className="text-lg font-bold text-gray-800">
                 {loadingFriendsCount ? "..." : friendsCount}

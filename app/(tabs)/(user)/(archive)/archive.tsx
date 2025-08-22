@@ -1,3 +1,4 @@
+import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { Session } from "@supabase/supabase-js";
@@ -11,7 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { supabase } from "../../../lib/supabase";
 
 interface ArchiveItem {
   id: string;
@@ -33,8 +33,8 @@ const ArchiveItem = ({
   <TouchableOpacity
     className="flex-row items-center mb-3 ml-4 mr-4"
     onPress={() => {
-      // Navigate to brand detail page
-      router.push({
+      // Navigate to brand detail page - use router.navigate to break out of current group context
+      router.navigate({
         pathname: "/(tabs)/[brand]",
         params: { brand: item.brandName },
       });
@@ -235,7 +235,7 @@ export default function ArchiveScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      console.log("📍 Current path: /(tabs)/archive");
+      console.log("📍 Current path: /(tabs)/(user)/(archive)/archive");
       if (session) {
         fetchSavedBrands();
         // Reset unfilled bookmarks when entering the page
