@@ -693,7 +693,7 @@ export default function CollectionScreen() {
                 />
               </View>
 
-              <View className="mb-6">
+              {/* <View className="mb-6">
                 <Text className="text-sm font-medium text-gray-700 mb-2">
                   Description (Optional)
                 </Text>
@@ -707,7 +707,7 @@ export default function CollectionScreen() {
                   textAlignVertical="top"
                   maxLength={200}
                 />
-              </View>
+              </View> */}
             </ScrollView>
           </TouchableOpacity>
         </TouchableOpacity>
