@@ -27,9 +27,23 @@ interface CollectionPiece {
 }
 
 const BUCKET_URL =
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/brand-content/brand_content";
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/brand-content";
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
+
+// Function to get display name for a sanitized brand name
+function getBrandDisplayName(sanitizedName: string): string {
+  // This mapping should ideally be imported from a shared file
+  // For now, converting sanitized names back to display format
+  return sanitizedName
+    .split("_")
+    .join(" ")
+    .replace("TM", "™")
+    .replace("FASHON", "[FÀSH•ON]")
+    .replace("97", "⁹⁷")
+    .replace("STONECOLD STUDIOS PRODUCTION", "STONECOLD STUDIOS PRODUCTION")
+    .replace("1FLAW", "1%FLAW");
+}
 
 const { width } = Dimensions.get("window");
 // Calculate width for 2 columns with proper spacing
@@ -245,7 +259,7 @@ export default function BrandDetailScreen() {
       const { data: brandData, error: brandError } = await supabase
         .from("brand")
         .select("id, brand_name, brand_tagline, brand_page_content_path")
-        .eq("brand_name", safeBrand)
+        .eq("media_filepath", safeBrand)
         .single();
 
       if (brandError) {
@@ -326,7 +340,7 @@ export default function BrandDetailScreen() {
 
   async function fetchFirstMedia(brandName: string) {
     try {
-      const indexUrl = `${BUCKET_URL}/${brandName}/index.json`;
+      const indexUrl = `${BUCKET_URL}/${brandName}/scrolling_brand_media/index.json`;
       const res = await fetch(indexUrl);
       if (!res.ok) return;
 
@@ -341,7 +355,7 @@ export default function BrandDetailScreen() {
           return type
             ? {
                 type,
-                url: `${BUCKET_URL}/${brandName}/${name}`,
+                url: `${BUCKET_URL}/${brandName}/scrolling_brand_media/${name}`,
               }
             : null;
         })
@@ -467,7 +481,7 @@ export default function BrandDetailScreen() {
           {/* Brand Name and Follow Button HStack */}
           <View className="flex-row justify-between items-start mb-2">
             <Text className="text-2xl font-bold uppercase flex-1">
-              {safeBrand}
+              {getBrandDisplayName(safeBrand)}
             </Text>
             <TouchableOpacity
               className={`px-3 py-1.5 rounded-full border ${

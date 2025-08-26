@@ -1,0 +1,245 @@
+import os
+import sys
+from supabase import create_client, Client
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Initialize Supabase client
+url = os.environ.get("EXPO_PUBLIC_SUPABASE_URL")
+key = os.environ.get("EXPO_PUBLIC_SUPABASE_ANON_KEY")
+supabase: Client = create_client(url, key)
+
+BRANDS = {
+    "5MOREDAYS": "5MOREDAYS",
+    "629": "629",
+    "ABSTRAITE_DESIGN": "ABSTRAITE DESIGN",  # Original: ABSTRAITE DESIGN
+    "ACDTM": "ACD™",  # Original: ACD™
+    "ACTIVIST_PARIS": "ACTIVIST PARIS",  # Original: ACTIVIST PARIS
+    "AKHIELO": "AKHIELO",
+    "ALREADY_WRITTEN": "ALREADY WRITTEN",  # Original: ALREADY WRITTEN
+    "AMBERBYSOUL": "AMBERBYSOUL",
+    "AMESCENSE": "AMESCENSE",
+    "ANGEL_ARCADE": "ANGEL ARCADE",  # Original: ANGEL ARCADE
+    "ANTHONY_JAMES": "ANTHONY JAMES",  # Original: ANTHONY JAMES
+    "APRILLAND": "APRILLAND",
+    "ARRIVAL_WORLDWIDE": "ARRIVAL WORLDWIDE",  # Original: ARRIVAL WORLDWIDE
+    "A_STONECOLD_STUDIOS_PRODUCTION": "A STONECOLD STUDIOS PRODUCTION",  # Original: A STONECOLD STUDIOS PRODUCTION
+    "BAD_HABITS_LA": "BAD HABITS LA",  # Original: BAD HABITS LA
+    "BAGJIO": "BAGJIO",
+    "BANISHDIARIES": "BANISHDIARIES",
+    "BANISHEDUSA": "BANISHEDUSA",
+    "BEANIES": "BEANIES",
+    "BEANS": "BEANS",
+    "BELACARTES": "BELACARTES",
+    "BIRTH_OF_ROYAL_CHILD": "BIRTH OF ROYAL CHILD",  # Original: BIRTH OF ROYAL CHILD
+    "BIZZRAD": "BIZZRAD",
+    "BORIS_KRUEGER": "BORIS KRUEGER",  # Original: BORIS KRUEGER
+    "BORNTODIETM": "BORNTODIE™",  # Original: BORNTODIE™
+    "BRAKKA_GARMENTS": "BRAKKA GARMENTS",  # Original: BRAKKA GARMENTS
+    "BRANDONWVARGAS": "BRANDONWVARGAS",
+    "CAMP_XTRA": "CAMP XTRA",  # Original: CAMP XTRA
+    "CASPER": "CASPER",
+    "CBAKAPS": "CBAKAPS",
+    "CHALK.PRESS": "CHALK.PRESS",
+    "CHEATIN_SNAKES_WORLDWIDE": "CHEATIN SNAKES WORLDWIDE",  # Original: CHEATIN SNAKES WORLDWIDE
+    "CHILLDREN": "CHILLDREN",
+    "CIELOS_LOS_ANGELES": "CIELOS LOS ANGELES",  # Original: CIELOS LOS ANGELES
+    "CORRUPTKID": "CORRUPTKID",
+    "COUCOU_BEBE": "COUCOU BEBE",  # Original: COUCOU BEBE
+    "COWBOY_HEARTS": "COWBOY HEARTS",  # Original: COWBOY HEARTS
+    "CRYSTAL_RIVER": "CRYSTAL RIVER",  # Original: CRYSTAL RIVER
+    "CUTS_BY_LOWHEADS": "CUTS BY LOWHEADS",  # Original: CUTS BY LOWHEADS
+    "DAEKER": "DAEKER",
+    "DEATH_56_SENTENCE": "DEATH 56 SENTENCE",  # Original: DEATH 56 SENTENCE
+    "DEMIKNJ": "DEMIKNJ",
+    "DENIM": "DENIM",
+    "DESCENDANT": "DESCENDANT",
+    "DINGBATS-FONT": "DINGBATS-FONT",
+    "DOCTORGARMENTZ": "DOCTORGARMENTZ",
+    "DOLOR": "DOLOR",
+    "E4ENYTHING": "E4ENYTHING",
+    "EMERSON_STONE": "EMERSON STONE",  # Original: EMERSON STONE
+    "EMOTIONAL_DISTRESS": "EMOTIONAL DISTRESS",  # Original: EMOTIONAL DISTRESS
+    "EMPTY_SPACES": "EMPTY SPACES",  # Original: EMPTY SPACES
+    "EREHWON": "EREHWON",
+    "EXCESS": "EXCESS",
+    "EXISTS_PURE": "EXISTS PURE",  # Original: EXISTS PURE
+    "EYECRAVE": "EYECRAVE",
+    "FACIANE_FASHON": "FACIANE [FÀSH•ON]",  # Original: FACIANE [FÀSH•ON]
+    "FAIT_PAR_LUI": "FAIT PAR LUI",  # Original: FAIT PAR LUI
+    "FALSEWORKCLUB": "FALSEWORKCLUB",
+    "FISHFELON": "FISHFELON",
+    "FNKSTUDIOS": "FNKSTUDIOS",
+    "FOUNTAIN_OF_SOUL": "FOUNTAIN OF SOUL",  # Original: FOUNTAIN OF SOUL
+    "FRAUDULENT": "FRAUDULENT",
+    "GBUCK": "GBUCK",
+    "GEMINI": "GEMINI",
+    "GEN_2": "GEN 2",  # Original: GEN 2
+    "GINKO_ULTRA": "GINKO ULTRA",  # Original: GINKO ULTRA
+    "GLVSSIC": "GLVSSIC",
+    "GOKYO": "GOKYO",
+    "HAVEYOUDIEDBEFORE": "HAVEYOUDIEDBEFORE",
+    "HEAVROLET": "HEAVROLET",
+    "HIS_CARNAGE": "HIS CARNAGE",  # Original: HIS CARNAGE
+    "HLYWRK": "HLYWRK",
+    "HORN_HEROES": "HORN HEROES",  # Original: HORN HEROES
+    "HUBANE": "HUBANE",
+    "HWASAN": "HWASAN",
+    "IDIEDLASTNIGHT": "IDIEDLASTNIGHT",
+    "IN_LOVING_MEMORY": "IN_LOVING_MEMORY",
+    "JACKJOHNJR": "JACKJOHNJR",
+    "JAKISCHRIST": "JAKISCHRIST",
+    "JALONISDEAD": "JALONISDEAD",
+    "JAXON_JET": "JAXON JET",  # Original: JAXON JET
+    "KITOWARES": "KITOWARES",
+    "KNARE": "KNARE",
+    "KORRUPT": "KORRUPT",
+    "LE_LOSANGE": "LE LOSANGE",  # Original: LE LOSANGE
+    "LILBASTARDBOY": "LILBASTARDBOY",
+    "LONEARCHIVE": "LONEARCHIVE",
+    "LOSE_RELIGION": "LOSE RELIGION",  # Original: LOSE RELIGION
+    "LOVEDYLANTHOMAS": "LOVEDYLANTHOMAS",
+    "LOVEHARDT": "LOVEHARDT",
+    "LOVE_AMERICA": "LOVE, AMERICA",  # Original: LOVE, AMERICA
+    "LUCIEN_SAGAR": "LUCIEN SAGAR",  # Original: LUCIEN SAGAR
+    "LUXENBURG": "LUXENBURG",
+    "MANIC_DIARIES": "MANIC DIARIES",  # Original: MANIC DIARIES
+    "MICU": "MICU",
+    "MILES_FRANKLIN": "MILES FRANKLIN",  # Original: MILES FRANKLIN
+    "MIND_BOWLING": "MIND BOWLING",  # Original: MIND BOWLING
+    "MORALE": "MORALE",
+    "NETSU_DENIM": "NETSU DENIM",  # Original: NETSU DENIM
+    "NIK_BENTEL_STUDIO": "NIK BENTEL STUDIO",  # Original: NIK BENTEL STUDIO
+    "NO.ERRORS": "NO.ERRORS",
+    "NOCIETY": "NOCIETY",
+    "NOT1FLAW": "NOT1%FLAW",  # Original: NOT1%FLAW
+    "OBJECT_FROM_NOTHING": "OBJECT FROM NOTHING",  # Original: OBJECT FROM NOTHING
+    "OMNEE_WORLD": "OMNEE WORLD",  # Original: OMNEE WORLD
+    "OMOSTUDIOZ": "OMOSTUDIOZ",
+    "ONLYTHEBADSTUDIOS": "ONLYTHEBADSTUDIOS",
+    "PANELS.": "PANELS.",
+    "PANELS_BY_THOMASJAMES": "PANELS BY THOMASJAMES",  # Original: PANELS BY THOMASJAMES
+    "PARAPHERNALIA_97": "PARAPHERNALIA ⁹⁷",  # Original: PARAPHERNALIA ⁹⁷
+    "PLA4": "PLA4",
+    "PLAGUEROUND": "PLAGUEROUND",
+    "PLASTIC_STUDIOS": "PLASTIC STUDIOS",  # Original: PLASTIC STUDIOS
+    "PO5HBOY": "PO5HBOY",
+    "POLO_CUTTY": "POLO CUTTY",  # Original: POLO CUTTY
+    "PRESTON_SEVIN": "PRESTON SEVIN",  # Original: PRESTON SEVIN
+    "PRIVATE_AFFAIR": "PRIVATE AFFAIR",  # Original: PRIVATE AFFAIR
+    "PROHIBITISM": "PROHIBITISM",
+    "PSYCHWARD": "PSYCHWARD",
+    "PUBLIC_HOUSING_SKATE_TEAM": "PUBLIC HOUSING SKATE TEAM",  # Original: PUBLIC HOUSING SKATE TEAM
+    "PUPPET_THEATER": "PUPPET THEATER",  # Original: PUPPET THEATER
+    "PURGATORY": "PURGATORY",
+    "PYTHIA": "PYTHIA",
+    "RAWCKSTAR_LIFESTYLE": "RAWCKSTAR LIFESTYLE",  # Original: RAWCKSTAR LIFESTYLE
+    "REDHEAT": "REDHEAT",
+    "REVENIGHTS": "REVENIGHTS",
+    "RITTEN": "RITTEN",
+    "ROMANCATCHER": "ROMANCATCHER",
+    "ROY_PUBLIC_LABEL": "ROY PUBLIC LABEL",  # Original: ROY PUBLIC LABEL
+    "RSEKAI": "RSEKAI",
+    "SCAPEGRACE": "SCAPEGRACE",
+    "SCY_BY_JULIUS": "SCY BY JULIUS",  # Original: SCY BY JULIUS
+    "SHAWZIP": "SHAWZIP",
+    "SHEFF": "SHEFF",
+    "SLUMPMAN": "SLUMPMAN",
+    "SONGSAMNOUNG": "SONGSAMNOUNG",
+    "SOUTH_OF_HEAVEN": "SOUTH OF HEAVEN",  # Original: SOUTH OF HEAVEN
+    "SPECTRUM_THEORY": "SPECTRUM THEORY",  # Original: SPECTRUM THEORY
+    "SQUIGGLES": "SQUIGGLES",
+    "STAFF_PICKS": "STAFF PICKS",  # Original: STAFF PICKS
+    "STOLEN_ARTS": "STOLEN ARTS",  # Original: STOLEN ARTS
+    "STOMACH_": "STOMACH ?",  # Original: STOMACH ?
+    "SUNNY_UNDERGROUND_MARKET": "SUNNY UNDERGROUND MARKET",  # Original: SUNNY UNDERGROUND MARKET
+    "SUNSHINE_REIGNS": "SUNSHINE REIGNS",  # Original: SUNSHINE REIGNS
+    "SWNK-X9": "SWNK-X9",
+    "TATE_MARSLAND": "TATE MARSLAND",  # Original: TATE MARSLAND
+    "TECNINE_GROUP": "TECNINE GROUP",  # Original: TECNINE GROUP
+    "THE_BLANK_TRAVELER": "THE BLANK TRAVELER",  # Original: THE BLANK TRAVELER
+    "THE_CHARTREUSE_HUMAN": "THE CHARTREUSE HUMAN",  # Original: THE CHARTREUSE HUMAN
+    "THE_LAUGHING_GEISHA": "THE LAUGHING GEISHA",  # Original: THE LAUGHING GEISHA
+    "THE_PEACEFUL_PEOPLE": "THE PEACEFUL PEOPLE",  # Original: THE PEACEFUL PEOPLE
+    "TRIPPIE_GLUCK": "TRIPPIE GLUCK",  # Original: TRIPPIE GLUCK
+    "TROUBLE_NYC": "TROUBLE NYC",  # Original: TROUBLE NYC
+    "UNWARRANTED.ATL": "UNWARRANTED.ATL",
+    "VACANT_WINTER": "VACANT WINTER",  # Original: VACANT WINTER
+    "VENGEANCE_STUDIOS": "VENGEANCE STUDIOS",  # Original: VENGEANCE STUDIOS
+    "VISUALS_BY_JADA": "VISUALS BY JADA",  # Original: VISUALS BY JADA
+    "VOSTRETTI": "VOSTRETTI",
+    "VUOTA": "VUOTA",
+    "WAVEY_WAKARU": "WAVEY WAKARU",  # Original: WAVEY WAKARU
+    "WHELM": "WHELM",
+    "WHYW0ULDULIE": "WHYW0ULDULIE",
+    "WICKED_GLIMMER": "WICKED GLIMMER",  # Original: WICKED GLIMMER
+    "WNTD_APPAREL": "WNTD APPAREL",  # Original: WNTD APPAREL
+    "WOMENS": "WOMEN'S",  # Original: WOMEN'S
+    "WORKSOFMADNESS": "WORKSOFMADNESS",
+    "WORSHIP": "WORSHIP",
+    "WORSTCASE": "WORSTCASE",
+    "XENON": "XENON",
+    "YACHTY_IN_ELIAS": "YACHTY IN ELIAS",  # Original: YACHTY IN ELIAS
+    "YAMI_MIYAZAKI": "YAMI MIYAZAKI",  # Original: YAMI MIYAZAKI
+    "YOURAVGCADET": "YOURAVGCADET",
+    "YOUTH_MOVEMENT": "YOUTH MOVEMENT"  # Original: YOUTH MOVEMENT
+}
+
+def fill_brand_table():
+    """
+    Fill the brand table with data from the BRANDS dictionary.
+    """
+    print("Starting to fill brand table...")
+    
+    # Prepare data for insertion
+    brand_data = []
+    
+    for key, value in BRANDS.items():
+        brand_record = {
+            "brand_name": value,
+            "brand_tagline": None,  # Not adding taglines as requested
+            "media_filepath": key,
+            "profile_pic_filepath": f"{key}.jpg",
+            "brand_page_content_path": None  # Not specified in requirements
+        }
+        brand_data.append(brand_record)
+    
+    try:
+        # Insert all brands into the table
+        result = supabase.table("brand").insert(brand_data).execute()
+        
+        print(f"Successfully inserted {len(brand_data)} brands into the table.")
+        print("Brand table population completed!")
+        
+        return result
+        
+    except Exception as e:
+        print(f"Error inserting brands: {e}")
+        return None
+
+def main():
+    """
+    Main function to run the brand table population script.
+    """
+    print("Brand Table Population Script")
+    print("=" * 40)
+    
+    # Check if Supabase credentials are available
+    if not url or not key:
+        print("Error: SUPABASE_URL and SUPABASE_ANON_KEY environment variables are required.")
+        print("Please set these in your .env file.")
+        sys.exit(1)
+    
+    # Run the population script
+    result = fill_brand_table()
+    
+    if result:
+        print("\nScript completed successfully!")
+    else:
+        print("\nScript failed. Please check the error messages above.")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()

@@ -29,109 +29,188 @@ import { supabase } from "../../lib/supabase";
 const { height: screenHeight } = Dimensions.get("window");
 
 const BUCKET_URL =
-  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/brand-content/brand_content";
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/brand-content";
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 
-const BRANDS = [
-  "2001odysey",
-  "22kilogram",
-  "aliasonline.us",
-  "allure.newyork",
-  "alreadywritten",
-  "angel333online",
-  "ArtificialFever",
-  "astonecoldstudiosproduction",
-  "attachmentsonline",
-  "awaitedmilitia",
-  "badson.us",
-  "berlinc.co",
-  "blanksbythirteen",
-  "bomiworks",
-  "brotherlylove",
-  "byjeshal",
-  "bykodyphillips",
-  "california.arts",
-  "chinatowncountryclub",
-  "chxmicalover",
-  "concrete_orchids",
-  "corporateworld",
-  "cozy.worldwidee",
-  "cyvist",
-  "deadatlantic",
-  "demiknj",
-  "derschutze_clo",
-  "ditch",
-  "drolandmiller",
-  "emestudios_",
-  "emptyspaces",
-  "eraworldwideclub",
-  "eternal_artwear",
-  "eternalloveworld",
-  "fine.culture",
-  "fnkstudios",
-  "forcesunseen",
-  "forevakaash",
-  "fortytwoco",
-  "fourfour.jpg",
-  "friedrice_nyc",
-  "haveyoudiedbefore",
-  "__heavencanwait__",
-  "heavenonearthstudios",
-  "hidden.season",
-  "hypedept.co",
-  "iconaclub",
-  "idle____time",
-  "ihp.ihp.ihp",
-  "insain.worldwide",
-  "kinejkt",
-  "kontend__",
-  "kyonijr",
-  "lantiki_official",
-  "lildenimjean",
-  "liquidlagoon",
-  "maharishi",
-  "menacelosangeles",
-  "misanthropestudios",
-  "Mutimer.co",
-  "nihil.ny",
-  "nomaintenance",
-  "oedemaa",
-  "omneeworld",
-  "outlw.usa",
-  "paradoxeparis",
-  "pdf.channel",
-  "peaceandwar89",
-  "personalfears",
-  "poolhousenewyork",
-  "profitminded.clo",
-  "qbsay",
-  "rangercartel",
-  "rdvstudios",
-  "roypubliclabel",
-  "saeminium",
-  "sensorydept",
-  "septemberseventhstudios",
-  "shineluxurystudios",
-  "shmuie",
-  "sixshooter.us",
-  "slovakiandreams",
-  "somar.us",
-  "srrysora",
-  "ssstufff.official",
-  "stolenarts_",
-  "sundae.school",
-  "thegvgallery",
-  "throneroomx",
-  "vega9602k",
-  "vengeance_studios",
-  "vicinity_de",
-  "winterhouse__",
-  "youngchickenpox",
-];
+const BRANDS = {
+  "5MOREDAYS": "5MOREDAYS",
+  "629": "629",
+  ABSTRAITE_DESIGN: "ABSTRAITE DESIGN",
+  ACDTM: "ACD™",
+  ACTIVIST_PARIS: "ACTIVIST PARIS",
+  AKHIELO: "AKHIELO",
+  ALREADY_WRITTEN: "ALREADY WRITTEN",
+  AMBERBYSOUL: "AMBERBYSOUL",
+  AMESCENSE: "AMESCENSE",
+  ANGEL_ARCADE: "ANGEL ARCADE",
+  ANTHONY_JAMES: "ANTHONY JAMES",
+  APRILLAND: "APRILLAND",
+  ARRIVAL_WORLDWIDE: "ARRIVAL WORLDWIDE",
+  A_STONECOLD_STUDIOS_PRODUCTION: "A STONECOLD STUDIOS PRODUCTION",
+  BAD_HABITS_LA: "BAD HABITS LA",
+  BAGJIO: "BAGJIO",
+  BANISHDIARIES: "BANISHDIARIES",
+  BANISHEDUSA: "BANISHEDUSA",
+  BEANIES: "BEANIES",
+  BEANS: "BEANS",
+  BELACARTES: "BELACARTES",
+  BIRTH_OF_ROYAL_CHILD: "BIRTH OF ROYAL CHILD",
+  BIZZRAD: "BIZZRAD",
+  BORIS_KRUEGER: "BORIS KRUEGER",
+  BORNTODIETM: "BORNTODIE™",
+  BRAKKA_GARMENTS: "BRAKKA GARMENTS",
+  BRANDONWVARGAS: "BRANDONWVARGAS",
+  CAMP_XTRA: "CAMP XTRA",
+  CASPER: "CASPER",
+  CBAKAPS: "CBAKAPS",
+  "CHALK.PRESS": "CHALK.PRESS",
+  CHEATIN_SNAKES_WORLDWIDE: "CHEATIN SNAKES WORLDWIDE",
+  CHILLDREN: "CHILLDREN",
+  CIELOS_LOS_ANGELES: "CIELOS LOS ANGELES",
+  CORRUPTKID: "CORRUPTKID",
+  COUCOU_BEBE: "COUCOU BEBE",
+  COWBOY_HEARTS: "COWBOY HEARTS",
+  CRYSTAL_RIVER: "CRYSTAL RIVER",
+  CUTS_BY_LOWHEADS: "CUTS BY LOWHEADS",
+  DAEKER: "DAEKER",
+  DEATH_56_SENTENCE: "DEATH 56 SENTENCE",
+  DEMIKNJ: "DEMIKNJ",
+  DENIM: "DENIM",
+  DESCENDANT: "DESCENDANT",
+  "DINGBATS-FONT": "DINGBATS-FONT",
+  DOCTORGARMENTZ: "DOCTORGARMENTZ",
+  DOLOR: "DOLOR",
+  E4ENYTHING: "E4ENYTHING",
+  EMERSON_STONE: "EMERSON STONE",
+  EMOTIONAL_DISTRESS: "EMOTIONAL DISTRESS",
+  EMPTY_SPACES: "EMPTY SPACES",
+  EREHWON: "EREHWON",
+  EXCESS: "EXCESS",
+  EXISTS_PURE: "EXISTS PURE",
+  EYECRAVE: "EYECRAVE",
+  FACIANE_FASHON: "FACIANE [FÀSH•ON]",
+  FAIT_PAR_LUI: "FAIT PAR LUI",
+  FALSEWORKCLUB: "FALSEWORKCLUB",
+  FISHFELON: "FISHFELON",
+  FNKSTUDIOS: "FNKSTUDIOS",
+  FOUNTAIN_OF_SOUL: "FOUNTAIN OF SOUL",
+  FRAUDULENT: "FRAUDULENT",
+  GBUCK: "GBUCK",
+  GEMINI: "GEMINI",
+  GEN_2: "GEN 2",
+  GINKO_ULTRA: "GINKO ULTRA",
+  GLVSSIC: "GLVSSIC",
+  GOKYO: "GOKYO",
+  HAVEYOUDIEDBEFORE: "HAVEYOUDIEDBEFORE",
+  HEAVROLET: "HEAVROLET",
+  HIS_CARNAGE: "HIS CARNAGE",
+  HLYWRK: "HLYWRK",
+  HORN_HEROES: "HORN HEROES",
+  HUBANE: "HUBANE",
+  HWASAN: "HWASAN",
+  IDIEDLASTNIGHT: "IDIEDLASTNIGHT",
+  IN_LOVING_MEMORY: "IN_LOVING_MEMORY",
+  JACKJOHNJR: "JACKJOHNJR",
+  JAKISCHRIST: "JAKISCHRIST",
+  JALONISDEAD: "JALONISDEAD",
+  JAXON_JET: "JAXON JET",
+  KITOWARES: "KITOWARES",
+  KNARE: "KNARE",
+  KORRUPT: "KORRUPT",
+  LE_LOSANGE: "LE LOSANGE",
+  LILBASTARDBOY: "LILBASTARDBOY",
+  LONEARCHIVE: "LONEARCHIVE",
+  LOSE_RELIGION: "LOSE RELIGION",
+  LOVEDYLANTHOMAS: "LOVEDYLANTHOMAS",
+  LOVEHARDT: "LOVEHARDT",
+  LOVE_AMERICA: "LOVE, AMERICA",
+  LUCIEN_SAGAR: "LUCIEN SAGAR",
+  LUXENBURG: "LUXENBURG",
+  MANIC_DIARIES: "MANIC DIARIES",
+  MICU: "MICU",
+  MILES_FRANKLIN: "MILES FRANKLIN",
+  MIND_BOWLING: "MIND BOWLING",
+  MORALE: "MORALE",
+  NETSU_DENIM: "NETSU DENIM",
+  NIK_BENTEL_STUDIO: "NIK BENTEL STUDIO",
+  "NO.ERRORS": "NO.ERRORS",
+  NOCIETY: "NOCIETY",
+  NOT1FLAW: "NOT1%FLAW",
+  OBJECT_FROM_NOTHING: "OBJECT FROM NOTHING",
+  OMNEE_WORLD: "OMNEE WORLD",
+  OMOSTUDIOZ: "OMOSTUDIOZ",
+  ONLYTHEBADSTUDIOS: "ONLYTHEBADSTUDIOS",
+  "PANELS.": "PANELS.",
+  PANELS_BY_THOMASJAMES: "PANELS BY THOMASJAMES",
+  PARAPHERNALIA_97: "PARAPHERNALIA ⁹⁷",
+  PLA4: "PLA4",
+  PLAGUEROUND: "PLAGUEROUND",
+  PLASTIC_STUDIOS: "PLASTIC STUDIOS",
+  PO5HBOY: "PO5HBOY",
+  POLO_CUTTY: "POLO CUTTY",
+  PRESTON_SEVIN: "PRESTON SEVIN",
+  PRIVATE_AFFAIR: "PRIVATE AFFAIR",
+  PROHIBITISM: "PROHIBITISM",
+  PSYCHWARD: "PSYCHWARD",
+  PUBLIC_HOUSING_SKATE_TEAM: "PUBLIC HOUSING SKATE TEAM",
+  PUPPET_THEATER: "PUPPET THEATER",
+  PURGATORY: "PURGATORY",
+  PYTHIA: "PYTHIA",
+  RAWCKSTAR_LIFESTYLE: "RAWCKSTAR LIFESTYLE",
+  REDHEAT: "REDHEAT",
+  REVENIGHTS: "REVENIGHTS",
+  RITTEN: "RITTEN",
+  ROMANCATCHER: "ROMANCATCHER",
+  ROY_PUBLIC_LABEL: "ROY PUBLIC LABEL",
+  RSEKAI: "RSEKAI",
+  SCAPEGRACE: "SCAPEGRACE",
+  SCY_BY_JULIUS: "SCY BY JULIUS",
+  SHAWZIP: "SHAWZIP",
+  SHEFF: "SHEFF",
+  SLUMPMAN: "SLUMPMAN",
+  SONGSAMNOUNG: "SONGSAMNOUNG",
+  SOUTH_OF_HEAVEN: "SOUTH OF HEAVEN",
+  SPECTRUM_THEORY: "SPECTRUM THEORY",
+  SQUIGGLES: "SQUIGGLES",
+  STAFF_PICKS: "STAFF PICKS",
+  STOLEN_ARTS: "STOLEN ARTS",
+  STOMACH_: "STOMACH ?",
+  SUNNY_UNDERGROUND_MARKET: "SUNNY UNDERGROUND MARKET",
+  SUNSHINE_REIGNS: "SUNSHINE REIGNS",
+  "SWNK-X9": "SWNK-X9",
+  TATE_MARSLAND: "TATE MARSLAND",
+  TECNINE_GROUP: "TECNINE GROUP",
+  THE_BLANK_TRAVELER: "THE BLANK TRAVELER",
+  THE_CHARTREUSE_HUMAN: "THE CHARTREUSE HUMAN",
+  THE_LAUGHING_GEISHA: "THE LAUGHING GEISHA",
+  THE_PEACEFUL_PEOPLE: "THE PEACEFUL PEOPLE",
+  TRIPPIE_GLUCK: "TRIPPIE GLUCK",
+  TROUBLE_NYC: "TROUBLE NYC",
+  "UNWARRANTED.ATL": "UNWARRANTED.ATL",
+  VACANT_WINTER: "VACANT WINTER",
+  VENGEANCE_STUDIOS: "VENGEANCE STUDIOS",
+  VISUALS_BY_JADA: "VISUALS BY JADA",
+  VOSTRETTI: "VOSTRETTI",
+  VUOTA: "VUOTA",
+  WAVEY_WAKARU: "WAVEY WAKARU",
+  WHELM: "WHELM",
+  WHYW0ULDULIE: "WHYW0ULDULIE",
+  WICKED_GLIMMER: "WICKED GLIMMER",
+  WNTD_APPAREL: "WNTD APPAREL",
+  WOMENS: "WOMEN'S",
+  WORKSOFMADNESS: "WORKSOFMADNESS",
+  WORSHIP: "WORSHIP",
+  WORSTCASE: "WORSTCASE",
+  XENON: "XENON",
+  YACHTY_IN_ELIAS: "YACHTY IN ELIAS",
+  YAMI_MIYAZAKI: "YAMI MIYAZAKI",
+  YOURAVGCADET: "YOURAVGCADET",
+  YOUTH_MOVEMENT: "YOUTH MOVEMENT",
+} as const;
 
-// Sanitize brand names to remove file extensions
-const sanitizedBrands = BRANDS.map((b) => b.replace(/\.[^/.]+$/, ""));
+// Get sanitized brand names (keys) for file paths
+const sanitizedBrands = Object.keys(BRANDS);
 
 // Seeded random number generator (Mulberry32)
 function mulberry32(seed: number) {
@@ -165,7 +244,7 @@ async function getBrandId(brandName: string): Promise<number | null> {
     const { data, error } = await supabase
       .from("brand")
       .select("id")
-      .eq("brand_name", brandName)
+      .eq("media_filepath", brandName)
       .single();
 
     if (error || !data) {
@@ -245,39 +324,101 @@ async function unsaveBrand(brandId: number, userId: string): Promise<boolean> {
 }
 
 async function fetchBrandMediaFromIndex(brand: string) {
-  // Fetch index.json from the brand's folder
-  const indexUrl = `${BUCKET_URL}/${brand}/index.json`;
+  // Fetch index.json from the brand's scrolling_brand_media folder
+  const indexUrl = `${BUCKET_URL}/${brand}/scrolling_brand_media/index.json`;
+  console.log(`🔍 [MEDIA DEBUG] Fetching index for brand: ${brand}`);
+  console.log(`📍 [MEDIA DEBUG] Index URL: ${indexUrl}`);
+
   try {
+    const startTime = Date.now();
     const res = await fetch(indexUrl);
-    if (!res.ok) return null;
+    const fetchTime = Date.now() - startTime;
+
+    console.log(`⏱️ [MEDIA DEBUG] Fetch took ${fetchTime}ms for ${brand}`);
+    console.log(
+      `📊 [MEDIA DEBUG] Response status: ${res.status} ${res.statusText}`
+    );
+
+    if (!res.ok) {
+      console.warn(
+        `❌ [MEDIA DEBUG] Failed to fetch index for ${brand}: ${res.status} ${res.statusText}`
+      );
+      return null;
+    }
+
     const data = await res.json();
-    // console.log(data);
-    if (!Array.isArray(data.files)) return null;
+    console.log(
+      `📄 [MEDIA DEBUG] Index data for ${brand}:`,
+      JSON.stringify(data, null, 2)
+    );
+
+    if (!Array.isArray(data.files)) {
+      console.warn(
+        `❌ [MEDIA DEBUG] Invalid index structure for ${brand}: files is not an array`
+      );
+      console.log(`🔍 [MEDIA DEBUG] Data.files type:`, typeof data.files);
+      console.log(`🔍 [MEDIA DEBUG] Data.files value:`, data.files);
+      return null;
+    }
+
+    console.log(
+      `📁 [MEDIA DEBUG] Found ${data.files.length} files for ${brand}`
+    );
 
     // Normalize: get array of filenames (strings)
     const filenames = data.files
       .map((f: any) => (typeof f === "string" ? f : f?.name))
       .filter(Boolean);
 
+    console.log(
+      `📝 [MEDIA DEBUG] Normalized filenames for ${brand}:`,
+      filenames
+    );
+
     // Prioritize video
     let file = filenames.find((name: string) =>
       VIDEO_EXTENSIONS.some((ext) => name.endsWith(ext))
     );
     let type: "video" | "image" | null = null;
-    if (file) type = "video";
+    if (file) {
+      type = "video";
+      console.log(`🎬 [MEDIA DEBUG] Found video file for ${brand}: ${file}`);
+    }
     if (!file) {
       file = filenames.find((name: string) =>
         IMAGE_EXTENSIONS.some((ext) => name.endsWith(ext))
       );
-      if (file) type = "image";
+      if (file) {
+        type = "image";
+        console.log(`🖼️ [MEDIA DEBUG] Found image file for ${brand}: ${file}`);
+      }
     }
-    if (!file || !type) return null;
+
+    if (!file || !type) {
+      console.warn(`❌ [MEDIA DEBUG] No valid media files found for ${brand}`);
+      console.log(`🔍 [MEDIA DEBUG] Available filenames:`, filenames);
+      console.log(`🔍 [MEDIA DEBUG] Video extensions:`, VIDEO_EXTENSIONS);
+      console.log(`🔍 [MEDIA DEBUG] Image extensions:`, IMAGE_EXTENSIONS);
+      return null;
+    }
+
+    const finalUrl = `${BUCKET_URL}/${brand}/scrolling_brand_media/${file}`;
+    console.log(
+      `✅ [MEDIA DEBUG] Successfully processed ${brand}: ${type} - ${finalUrl}`
+    );
+
     return {
       id: brand,
       type,
-      url: `${BUCKET_URL}/${brand}/${file}`,
+      url: finalUrl,
     };
-  } catch {
+  } catch (error) {
+    console.error(`💥 [MEDIA DEBUG] Error fetching media for ${brand}:`, error);
+    console.error(`💥 [MEDIA DEBUG] Error details:`, {
+      name: error instanceof Error ? error.name : "Unknown",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return null;
   }
 }
@@ -296,6 +437,14 @@ const MediaItem = React.memo(
     isScreenFocused: boolean;
     panHandlers?: any;
   }) => {
+    console.log(
+      `🎬 [MEDIA ITEM DEBUG] Rendering ${item.type} for brand ${item.id}:`
+    );
+    console.log(`📍 [MEDIA ITEM DEBUG] URL: ${item.url}`);
+    console.log(
+      `👁️ [MEDIA ITEM DEBUG] Visible: ${isVisible}, Screen focused: ${isScreenFocused}, Muted: ${muted}`
+    );
+
     if (item.type === "video") {
       return (
         <View
@@ -312,6 +461,45 @@ const MediaItem = React.memo(
             isLooping={true}
             isMuted={muted === undefined ? false : muted}
             volume={1.0}
+            onLoad={() => {
+              console.log(
+                `✅ [VIDEO DEBUG] Video loaded successfully for ${item.id}: ${item.url}`
+              );
+            }}
+            onLoadStart={() => {
+              console.log(
+                `⏳ [VIDEO DEBUG] Video load started for ${item.id}: ${item.url}`
+              );
+            }}
+            onError={(error) => {
+              console.error(
+                `💥 [VIDEO DEBUG] Video error for ${item.id}:`,
+                error
+              );
+              console.error(`💥 [VIDEO DEBUG] Failed URL: ${item.url}`);
+            }}
+            onPlaybackStatusUpdate={(status) => {
+              if (status.isLoaded) {
+                console.log(
+                  `▶️ [VIDEO DEBUG] Playback status for ${item.id}:`,
+                  {
+                    isPlaying: status.isPlaying,
+                    positionMillis: status.positionMillis,
+                    durationMillis: status.durationMillis,
+                    shouldPlay: status.shouldPlay,
+                  }
+                );
+              } else if (
+                !status.isLoaded &&
+                "error" in status &&
+                status.error
+              ) {
+                console.error(
+                  `💥 [VIDEO DEBUG] Playback error for ${item.id}:`,
+                  status.error
+                );
+              }
+            }}
           />
         </View>
       );
@@ -326,6 +514,23 @@ const MediaItem = React.memo(
           source={{ uri: item.url }}
           style={{ width: "100%", height: screenHeight }}
           contentFit="cover"
+          onLoad={() => {
+            console.log(
+              `✅ [IMAGE DEBUG] Image loaded successfully for ${item.id}: ${item.url}`
+            );
+          }}
+          onLoadStart={() => {
+            console.log(
+              `⏳ [IMAGE DEBUG] Image load started for ${item.id}: ${item.url}`
+            );
+          }}
+          onError={(error) => {
+            console.error(
+              `💥 [IMAGE DEBUG] Image error for ${item.id}:`,
+              error
+            );
+            console.error(`💥 [IMAGE DEBUG] Failed URL: ${item.url}`);
+          }}
         />
       </View>
     );
@@ -335,58 +540,184 @@ MediaItem.displayName = "MediaItem";
 
 // 1. Fetch all media for all brands at once
 async function fetchAllBrandsMedia(brands: string[]) {
+  console.log(
+    `🚀 [BRANDS DEBUG] Starting fetchAllBrandsMedia for ${brands.length} brands`
+  );
+  console.log(`📋 [BRANDS DEBUG] Brand list:`, brands);
+
+  const startTime = Date.now();
   const all = await Promise.all(
-    brands.map(async (brand) => {
-      const indexUrl = `${BUCKET_URL}/${brand}/index.json`;
+    brands.map(async (brand, index) => {
+      console.log(
+        `🔄 [BRANDS DEBUG] Processing brand ${index + 1}/${brands.length}: ${brand}`
+      );
+      const indexUrl = `${BUCKET_URL}/${brand}/scrolling_brand_media/index.json`;
+
       try {
+        console.log(
+          `📡 [BRANDS DEBUG] Fetching index for ${brand}: ${indexUrl}`
+        );
+        const fetchStart = Date.now();
         const res = await fetch(indexUrl);
-        if (!res.ok) return null;
+        const fetchTime = Date.now() - fetchStart;
+
+        console.log(
+          `⏱️ [BRANDS DEBUG] Fetch for ${brand} took ${fetchTime}ms - Status: ${res.status}`
+        );
+
+        if (!res.ok) {
+          console.warn(
+            `❌ [BRANDS DEBUG] Failed to fetch ${brand}: ${res.status} ${res.statusText}`
+          );
+          return null;
+        }
+
         const data = await res.json();
-        if (!Array.isArray(data.files)) return null;
-        const files = data.files
+        console.log(`📄 [BRANDS DEBUG] Index data for ${brand}:`, {
+          filesCount: Array.isArray(data.files)
+            ? data.files.length
+            : "Not an array",
+          filesType: typeof data.files,
+          sampleFiles: Array.isArray(data.files)
+            ? data.files.slice(0, 3)
+            : data.files,
+        });
+
+        if (!Array.isArray(data.files)) {
+          console.warn(
+            `❌ [BRANDS DEBUG] Invalid files structure for ${brand}:`,
+            data
+          );
+          return null;
+        }
+
+        const rawFiles = data.files
           .map((f: any) => (typeof f === "string" ? f : f?.name))
-          .filter(Boolean)
+          .filter(Boolean);
+
+        console.log(`📁 [BRANDS DEBUG] Raw files for ${brand}:`, rawFiles);
+
+        const files = rawFiles
           .map((name: string) => {
             const type = getMediaType(name);
-            return type
+            const result = type
               ? {
                   type,
-                  url: `${BUCKET_URL}/${brand}/${name}`,
+                  url: `${BUCKET_URL}/${brand}/scrolling_brand_media/${name}`,
                   name,
                 }
               : null;
+
+            if (result) {
+              console.log(
+                `✅ [BRANDS DEBUG] Valid media file for ${brand}: ${name} (${type})`
+              );
+            } else {
+              console.log(
+                `⚠️ [BRANDS DEBUG] Skipped file for ${brand}: ${name} (unknown type)`
+              );
+            }
+
+            return result;
           })
           .filter(Boolean);
+
+        console.log(
+          `🎯 [BRANDS DEBUG] Processed ${files.length} valid media files for ${brand}`
+        );
+
         // Move the first video (if any) to the front
         let reorderedFiles = files;
         const firstVideoIdx = files.findIndex((f: any) => f.type === "video");
+
         if (firstVideoIdx > 0) {
+          console.log(
+            `🎬 [BRANDS DEBUG] Moving video to front for ${brand}: video at index ${firstVideoIdx}`
+          );
           const [video] = files.splice(firstVideoIdx, 1);
           reorderedFiles = [video, ...files];
+        } else if (firstVideoIdx === 0) {
+          console.log(`🎬 [BRANDS DEBUG] Video already at front for ${brand}`);
+        } else {
+          console.log(
+            `📷 [BRANDS DEBUG] No videos found for ${brand}, keeping original order`
+          );
         }
 
         // Fetch brand tagline from database
         let tagline = null;
         try {
+          console.log(
+            `📝 [BRANDS DEBUG] Fetching tagline for ${brand} from database`
+          );
+          const taglineStart = Date.now();
           const { data: brandData, error } = await supabase
             .from("brand")
             .select("brand_tagline")
             .eq("brand_name", brand)
             .single();
 
+          const taglineTime = Date.now() - taglineStart;
+          console.log(
+            `⏱️ [BRANDS DEBUG] Tagline fetch for ${brand} took ${taglineTime}ms`
+          );
+
           if (!error && brandData) {
             tagline = brandData.brand_tagline;
+            console.log(
+              `✅ [BRANDS DEBUG] Got tagline for ${brand}: "${tagline}"`
+            );
+          } else {
+            console.log(
+              `⚠️ [BRANDS DEBUG] No tagline found for ${brand}:`,
+              error
+            );
           }
         } catch (error) {
-          console.log(`Error fetching tagline for ${brand}:`, error);
+          console.error(
+            `💥 [BRANDS DEBUG] Error fetching tagline for ${brand}:`,
+            error
+          );
         }
 
-        return { brand, media: reorderedFiles, tagline };
-      } catch {
+        const result = { brand, media: reorderedFiles, tagline };
+        console.log(
+          `✅ [BRANDS DEBUG] Successfully processed ${brand}: ${reorderedFiles.length} media files, tagline: ${tagline ? '"' + tagline + '"' : "null"}`
+        );
+
+        return result;
+      } catch (error) {
+        console.error(`💥 [BRANDS DEBUG] Error processing ${brand}:`, error);
+        console.error(`💥 [BRANDS DEBUG] Error details for ${brand}:`, {
+          name: error instanceof Error ? error.name : "Unknown",
+          message: error instanceof Error ? error.message : String(error),
+          indexUrl,
+        });
         return null;
       }
     })
   );
+
+  const totalTime = Date.now() - startTime;
+  const successful = all.filter(Boolean);
+  const failed = all.length - successful.length;
+
+  console.log(
+    `🏁 [BRANDS DEBUG] fetchAllBrandsMedia completed in ${totalTime}ms`
+  );
+  console.log(
+    `📊 [BRANDS DEBUG] Results: ${successful.length} successful, ${failed} failed`
+  );
+  console.log(
+    `📋 [BRANDS DEBUG] Successful brands:`,
+    successful.map((b) => b?.brand)
+  );
+
+  if (failed > 0) {
+    const failedBrands = brands.filter((brand, index) => !all[index]);
+    console.warn(`⚠️ [BRANDS DEBUG] Failed brands:`, failedBrands);
+  }
+
   // Type guard to filter out nulls
   return all.filter(
     (
@@ -397,6 +728,228 @@ async function fetchAllBrandsMedia(brands: string[]) {
       tagline: string | null;
     } => !!b
   );
+}
+
+// --- Fetch Products Data ---
+async function fetchAllProductsMedia(products: any[]) {
+  console.log(
+    `🚀 [PRODUCTS DEBUG] Starting fetchAllProductsMedia for ${products.length} products`
+  );
+
+  const startTime = Date.now();
+  const all = await Promise.all(
+    products.map(async (product, index) => {
+      console.log(
+        `🔄 [PRODUCTS DEBUG] Processing product ${index + 1}/${products.length}: ${product.product_name}`
+      );
+
+      try {
+        const brandKey =
+          product.brand?.media_filepath ||
+          product.media_filepath?.split("/")[0];
+        const indexUrl = `${BUCKET_URL}/${brandKey}/scrolling_product_media/${product.media_filepath?.split("/")[2] || "unknown"}/index.json`;
+
+        console.log(
+          `📡 [PRODUCTS DEBUG] Fetching index for ${product.product_name}: ${indexUrl}`
+        );
+        const fetchStart = Date.now();
+        const res = await fetch(indexUrl);
+        const fetchTime = Date.now() - fetchStart;
+
+        console.log(
+          `⏱️ [PRODUCTS DEBUG] Fetch for ${product.product_name} took ${fetchTime}ms - Status: ${res.status}`
+        );
+
+        if (!res.ok) {
+          console.warn(
+            `❌ [PRODUCTS DEBUG] Failed to fetch ${product.product_name}: ${res.status} ${res.statusText}`
+          );
+          return null;
+        }
+
+        const data = await res.json();
+        if (!Array.isArray(data.files)) {
+          console.warn(
+            `❌ [PRODUCTS DEBUG] Invalid files structure for ${product.product_name}:`,
+            data
+          );
+          return null;
+        }
+
+        const rawFiles = data.files
+          .map((f: any) => (typeof f === "string" ? f : f?.name))
+          .filter(Boolean);
+
+        const files = rawFiles
+          .map((name: string) => {
+            const type = getMediaType(name);
+            return type
+              ? {
+                  type,
+                  url: `${BUCKET_URL}/${brandKey}/scrolling_product_media/${product.media_filepath?.split("/")[2] || "unknown"}/${name}`,
+                  name,
+                }
+              : null;
+          })
+          .filter(Boolean);
+
+        // Prioritize videos
+        let reorderedFiles = files;
+        const firstVideoIdx = files.findIndex((f: any) => f.type === "video");
+        if (firstVideoIdx > 0) {
+          const [video] = files.splice(firstVideoIdx, 1);
+          reorderedFiles = [video, ...files];
+        }
+
+        return {
+          product: product.product_name,
+          brand: product.brand?.brand_name || "Unknown",
+          media: reorderedFiles,
+          tagline: `${product.brand?.brand_name || "Unknown"} - ${product.product_name}`,
+          price: product.price,
+          type: "product",
+        };
+      } catch (error) {
+        console.error(
+          `💥 [PRODUCTS DEBUG] Error processing ${product.product_name}:`,
+          error
+        );
+        return null;
+      }
+    })
+  );
+
+  const successful = all.filter(Boolean);
+  const totalTime = Date.now() - startTime;
+
+  console.log(
+    `🏁 [PRODUCTS DEBUG] fetchAllProductsMedia completed in ${totalTime}ms`
+  );
+  console.log(
+    `📊 [PRODUCTS DEBUG] Results: ${successful.length} successful, ${all.length - successful.length} failed`
+  );
+
+  return successful.filter(
+    (
+      p
+    ): p is {
+      product: string;
+      brand: string;
+      media: { type: "video" | "image"; url: string; name: string }[];
+      tagline: string;
+      price: number | null;
+      type: "product";
+    } => !!p
+  );
+}
+
+// --- Fetch Products from Database ---
+async function fetchProductsFromDatabase() {
+  try {
+    console.log(`🚀 [PRODUCTS DEBUG] Fetching products from database`);
+    const { data, error } = await supabase
+      .from("product")
+      .select(
+        `
+        id,
+        product_name,
+        product_desc,
+        media_filepath,
+        price,
+        type,
+        color,
+        brand:brand_id (
+          id,
+          brand_name,
+          brand_tagline,
+          media_filepath
+        )
+      `
+      )
+      .limit(50); // Limit for performance
+
+    if (error) {
+      console.error("Error fetching products:", error);
+      return [];
+    }
+
+    console.log(
+      `✅ [PRODUCTS DEBUG] Fetched ${data?.length || 0} products from database`
+    );
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return [];
+  }
+}
+
+// --- Fetch Following Data ---
+async function fetchFollowingMedia(userId?: string) {
+  console.log(
+    `🚀 [FOLLOWING DEBUG] Starting fetchFollowingMedia - fetching saved brands for user: ${userId}`
+  );
+
+  if (!userId) {
+    console.log(
+      `⚠️ [FOLLOWING DEBUG] No user ID provided, returning empty array`
+    );
+    return [];
+  }
+
+  try {
+    // Fetch saved brands for the user
+    const { data: savedBrandsData, error } = await supabase
+      .from("saved_brands")
+      .select(
+        `
+        id,
+        brand_id,
+        brand:brand_id (
+          id,
+          brand_name,
+          brand_tagline,
+          media_filepath
+        )
+      `
+      )
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Error fetching saved brands:", error);
+      return [];
+    }
+
+    console.log(
+      `✅ [FOLLOWING DEBUG] Fetched ${savedBrandsData?.length || 0} saved brands`
+    );
+
+    const brandKeys =
+      savedBrandsData
+        ?.map((item) => (item as any).brand?.media_filepath)
+        .filter(Boolean) || [];
+    return await fetchAllBrandsMedia(brandKeys);
+  } catch (error) {
+    console.error("Error fetching following media:", error);
+    return [];
+  }
+}
+
+// --- Fetch Featured Data ---
+async function fetchFeaturedMedia() {
+  console.log(
+    `🚀 [FEATURED DEBUG] Starting fetchFeaturedMedia - fetching featured content`
+  );
+
+  // For now, this will return a curated selection of popular brands
+  // In a real implementation, you'd have a featured content system
+  const featuredBrands = [
+    "629",
+    "A_STONECOLD_STUDIOS_PRODUCTION",
+    "ABSTRAITE_DESIGN",
+    "ACTIVIST_PARIS",
+    "AKHIELO",
+  ];
+  return await fetchAllBrandsMedia(featuredBrands);
 }
 
 // --- Recommendation Algorithm ---
@@ -564,8 +1117,11 @@ export default function HomeScreen() {
   const [brandsMedia, setBrandsMedia] = useState<
     {
       brand: string;
+      product?: string;
       media: { type: "video" | "image"; url: string; name: string }[];
       tagline: string | null;
+      price?: number | null;
+      type?: "brand" | "product";
     }[]
   >([]);
   const [loading, setLoading] = useState(true);
@@ -582,6 +1138,9 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const lastTapRef = useRef<{ [key: string]: number }>({});
   const [filter, setFilter] = useState<"all" | "liked">("all");
+  const [contentType, setContentType] = useState<
+    "brands" | "products" | "following" | "featured"
+  >("brands");
   const isFocused = useIsFocused();
   const [allPaused, setAllPaused] = useState(false);
 
@@ -681,6 +1240,20 @@ export default function HomeScreen() {
     };
   }, []);
 
+  useEffect(() => {
+    const handler = (
+      newContentType: "brands" | "products" | "following" | "featured"
+    ) => {
+      setContentType(newContentType);
+      setLoading(true);
+      setVerticalIndex(0);
+    };
+    feedFilterEmitter.on("contentType", handler);
+    return () => {
+      feedFilterEmitter.off("contentType", handler);
+    };
+  }, []);
+
   // --- Track Linger Time ---
   useEffect(() => {
     if (brandsMedia.length === 0) return;
@@ -770,66 +1343,177 @@ export default function HomeScreen() {
     }
   };
 
-  // --- Replace shuffle logic in loadBrands and reshuffle ---
-  useEffect(() => {
-    const loadBrands = async () => {
-      const recommended = recommendBrands(
-        sanitizedBrands,
-        brandScores,
-        sessionBrands,
-        session?.user?.id // Pass userId for seeding
+  // --- Load Content Based on Type ---
+  const loadContent = async () => {
+    console.log(
+      `🚀 [LOAD DEBUG] Starting content loading for type: ${contentType}`
+    );
+    setLoading(true);
+
+    try {
+      let content: any[] = [];
+
+      switch (contentType) {
+        case "brands":
+          console.log(
+            `📊 [LOAD DEBUG] Loading brands - Available brands count: ${sanitizedBrands.length}`
+          );
+          const recommended = recommendBrands(
+            sanitizedBrands,
+            brandScores,
+            sessionBrands,
+            session?.user?.id
+          );
+          const brandsContent = await fetchAllBrandsMedia(recommended);
+          content = brandsContent.map((b) => ({ ...b, type: "brand" }));
+          setSessionBrands(new Set(recommended));
+          break;
+
+        case "products":
+          console.log(`🛍️ [LOAD DEBUG] Loading products from database`);
+          const productsData = await fetchProductsFromDatabase();
+          const productsContent = await fetchAllProductsMedia(productsData);
+          content = productsContent;
+          break;
+
+        case "following":
+          console.log(`👥 [LOAD DEBUG] Loading following content`);
+          const followingContent = await fetchFollowingMedia(session?.user?.id);
+          content = followingContent.map((b) => ({ ...b, type: "brand" }));
+          break;
+
+        case "featured":
+          console.log(`⭐ [LOAD DEBUG] Loading featured content`);
+          const featuredContent = await fetchFeaturedMedia();
+          content = featuredContent.map((b) => ({ ...b, type: "brand" }));
+          break;
+
+        default:
+          console.warn(`❌ [LOAD DEBUG] Unknown content type: ${contentType}`);
+          break;
+      }
+
+      console.log(
+        `✅ [LOAD DEBUG] Successfully loaded ${content.length} items for ${contentType}`
       );
-      const all = await fetchAllBrandsMedia(recommended);
-      setBrandsMedia(
-        all.filter(
-          (
-            b
-          ): b is {
-            brand: string;
-            media: { type: "video" | "image"; url: string; name: string }[];
-            tagline: string | null;
-          } => !!b
-        )
-      );
-      setSessionBrands(new Set(recommended));
+      setBrandsMedia(content);
+      setVerticalIndex(0);
       setLoading(false);
-    };
-    loadBrands();
+    } catch (error) {
+      console.error(
+        `💥 [LOAD DEBUG] Error loading ${contentType} content:`,
+        error
+      );
+      setLoading(false);
+    }
+  };
+
+  // Initial load
+  useEffect(() => {
+    loadContent();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Load content when type changes
+  useEffect(() => {
+    if (contentType) {
+      loadContent();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contentType]);
 
   const handleVerticalScroll = React.useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
       const offsetY = e.nativeEvent.contentOffset.y;
       const newIndex = Math.round(offsetY / screenHeight);
+
+      console.log(
+        `📜 [SCROLL DEBUG] Scroll event - offsetY: ${offsetY}, newIndex: ${newIndex}, brandsMedia.length: ${brandsMedia.length}`
+      );
+
       if (brandsMedia.length > 0 && newIndex >= brandsMedia.length - 1) {
-        // Reshuffle brands and reset to top
-        const recommended = recommendBrands(
-          sanitizedBrands,
-          brandScores,
-          sessionBrands
+        console.log(
+          `🔄 [SCROLL DEBUG] Reached end of feed, triggering reload for ${contentType}...`
         );
-        (async () => {
-          const all = await fetchAllBrandsMedia(recommended);
-          setBrandsMedia(
-            all.filter(
-              (
-                b
-              ): b is {
-                brand: string;
-                media: { type: "video" | "image"; url: string; name: string }[];
-                tagline: string | null;
-              } => !!b
-            )
+
+        // Only reshuffle for brands content type
+        if (contentType === "brands") {
+          console.log(
+            `📈 [SCROLL DEBUG] Current brand scores before reshuffle:`,
+            brandScores
           );
-          setSessionBrands(new Set(recommended));
-          setVerticalIndex(0);
-        })();
+          console.log(
+            `🎯 [SCROLL DEBUG] Session brands before reshuffle:`,
+            Array.from(sessionBrands)
+          );
+
+          // Reshuffle brands and reset to top
+          const startTime = Date.now();
+          const recommended = recommendBrands(
+            sanitizedBrands,
+            brandScores,
+            sessionBrands
+          );
+          const recommendTime = Date.now() - startTime;
+
+          console.log(
+            `🤖 [SCROLL DEBUG] Reshuffle recommendation took ${recommendTime}ms`
+          );
+          console.log(`📋 [SCROLL DEBUG] New recommended brands:`, recommended);
+
+          (async () => {
+            const fetchStart = Date.now();
+            const all = await fetchAllBrandsMedia(recommended);
+            const fetchTime = Date.now() - fetchStart;
+
+            console.log(
+              `📁 [SCROLL DEBUG] Reshuffle media fetch took ${fetchTime}ms`
+            );
+            console.log(
+              `✅ [SCROLL DEBUG] Loaded ${all.length} brands for reshuffle`
+            );
+
+            const finalContent = all.map((b) => ({
+              ...b,
+              type: "brand" as const,
+            }));
+
+            console.log(
+              `🎬 [SCROLL DEBUG] Final reshuffled content:`,
+              finalContent.map((b) => ({
+                brand: b.brand,
+                mediaCount: b.media.length,
+              }))
+            );
+
+            setBrandsMedia(finalContent);
+            setSessionBrands(new Set(recommended));
+            setVerticalIndex(0);
+
+            console.log(
+              `🏁 [SCROLL DEBUG] Reshuffle completed, reset to index 0`
+            );
+          })();
+        } else {
+          // For other content types, just reload the content
+          console.log(`🔄 [SCROLL DEBUG] Reloading ${contentType} content`);
+          loadContent();
+        }
       } else {
+        if (newIndex !== verticalIndex) {
+          console.log(
+            `📍 [SCROLL DEBUG] Index changed from ${verticalIndex} to ${newIndex}`
+          );
+          if (brandsMedia[newIndex]) {
+            console.log(
+              `🎯 [SCROLL DEBUG] Now viewing brand: ${brandsMedia[newIndex].brand}`
+            );
+          }
+        }
         setVerticalIndex((prev) => (prev !== newIndex ? newIndex : prev));
       }
     },
-    [brandsMedia.length, brandScores, sessionBrands]
+    [brandsMedia.length, brandScores, sessionBrands, verticalIndex]
   );
 
   const [visibleVerticalIndex, setVisibleVerticalIndex] = useState(0);
@@ -968,12 +1652,18 @@ export default function HomeScreen() {
 
   const renderBrandMedia = React.useCallback(
     ({
-      item: { brand, media },
+      item,
       index: vIndex,
     }: {
-      item: { brand: string; media: any[] };
+      item: {
+        brand: string;
+        product?: string;
+        media: any[];
+        type?: "brand" | "product";
+      };
       index: number;
     }) => {
+      const { brand, media } = item;
       const horizontalIndex = horizontalIndices[brand] || 0;
       return (
         <FlatList
@@ -1017,6 +1707,7 @@ export default function HomeScreen() {
                 lastTapRef.current[lastTapKey] &&
                 now - lastTapRef.current[lastTapKey] < 300
               ) {
+                // Always save the brand, even for products
                 handleSaveBrand(brand);
               }
               lastTapRef.current[lastTapKey] = now;
@@ -1106,8 +1797,18 @@ export default function HomeScreen() {
       : brandsMedia;
 
   if (loading || filteredBrandsMedia.length === 0) {
+    console.log(
+      `⏳ [APP DEBUG] Loading state: loading=${loading}, brandsMedia.length=${brandsMedia.length}, filteredBrandsMedia.length=${filteredBrandsMedia.length}`
+    );
     return <ActivityIndicator size="large" className="flex-1 self-center" />;
   }
+
+  console.log(
+    `🎬 [APP DEBUG] Rendering feed with ${filteredBrandsMedia.length} brands (filter: ${filter})`
+  );
+  console.log(
+    `📊 [APP DEBUG] Current state: verticalIndex=${verticalIndex}, visibleVerticalIndex=${visibleVerticalIndex}`
+  );
 
   if (filter === "liked" && filteredBrandsMedia.length === 0) {
     return (
@@ -1180,31 +1881,51 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Brand name overlay */}
+        {/* Content overlay */}
         {filteredBrandsMedia[verticalIndex] && (
           <View className="bg-black/30 px-4 py-3 rounded-full flex-row items-center justify-between">
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => {
-                // Navigate to brand detail component
-                console.log(
-                  "Navigating to brand:",
-                  filteredBrandsMedia[verticalIndex].brand
-                );
-                router.push({
-                  pathname: "/(tabs)/[brand]",
-                  params: { brand: filteredBrandsMedia[verticalIndex].brand },
-                });
+                const currentItem = filteredBrandsMedia[verticalIndex];
+                if (currentItem.type === "product") {
+                  // For products, navigate to brand page
+                  console.log(
+                    "Navigating to brand from product:",
+                    currentItem.brand
+                  );
+                  router.push({
+                    pathname: "/(tabs)/[brand]",
+                    params: { brand: currentItem.brand },
+                  });
+                } else {
+                  // For brands, navigate to brand detail
+                  console.log("Navigating to brand:", currentItem.brand);
+                  router.push({
+                    pathname: "/(tabs)/[brand]",
+                    params: { brand: currentItem.brand },
+                  });
+                }
               }}
               className="flex-1 items-start justify-center pl-2"
             >
               <Text className="text-white text-sm font-semibold text-left">
-                {filteredBrandsMedia[verticalIndex].brand}
+                {filteredBrandsMedia[verticalIndex].type === "product"
+                  ? `${filteredBrandsMedia[verticalIndex].brand} - ${filteredBrandsMedia[verticalIndex].product}`
+                  : BRANDS[
+                      filteredBrandsMedia[verticalIndex]
+                        .brand as keyof typeof BRANDS
+                    ] || filteredBrandsMedia[verticalIndex].brand}
               </Text>
               <Text className="text-white text-xs opacity-80 text-left mt-1">
-                {BRAND_AI_SUMMARIES[filteredBrandsMedia[verticalIndex].brand] ||
-                  filteredBrandsMedia[verticalIndex].tagline ||
-                  "No tagline available"}
+                {filteredBrandsMedia[verticalIndex].type === "product" &&
+                filteredBrandsMedia[verticalIndex].price
+                  ? `$${filteredBrandsMedia[verticalIndex].price}`
+                  : BRAND_AI_SUMMARIES[
+                      filteredBrandsMedia[verticalIndex].brand
+                    ] ||
+                    filteredBrandsMedia[verticalIndex].tagline ||
+                    "No description available"}
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
