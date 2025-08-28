@@ -20,6 +20,8 @@ Requirements:
 import os
 import sys
 import mimetypes
+import argparse
+import json
 import time
 import unicodedata
 import re
@@ -54,6 +56,7 @@ SUPPORTED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.mp4', '.mov', '.webp'}
 # Progress tracking
 total_files = 0
 processed_files = 0
+skipped_files = 0
 errors = []
 failed_uploads = []  # Detailed failure tracking for CSV export
 
@@ -70,6 +73,57 @@ def sanitize_key_component(component: str) -> str:
     # Allow only safe characters: letters, numbers, dashes, underscores, dots
     component = re.sub(r"[^A-Za-z0-9._-]", "", component)
     return component
+
+def resolve_folder_name(suspect_name: str, base_dir: Path) -> Optional[str]:
+    """Resolve a possibly-sanitized brand name to the actual on-disk folder name under base_dir.
+    
+    Tries, in order:
+    - Exact match
+    - Case-insensitive match
+    - Sanitized-name match (using sanitize_key_component)
+    Returns the real folder name if found, otherwise None.
+    """
+    try:
+        if not base_dir.exists() or not base_dir.is_dir():
+            return None
+        # Exact match
+        exact_path = base_dir / suspect_name
+        if exact_path.exists() and exact_path.is_dir():
+            return suspect_name
+        suspect_lower = suspect_name.lower()
+        suspect_sanitized = sanitize_key_component(suspect_name).lower()
+        # Case-insensitive match
+        for item in base_dir.iterdir():
+            if item.is_dir() and item.name.lower() == suspect_lower:
+                return item.name
+        # Sanitized-name match
+        for item in base_dir.iterdir():
+            if not item.is_dir():
+                continue
+            if sanitize_key_component(item.name).lower() == suspect_sanitized:
+                return item.name
+    except Exception:
+        return None
+    return None
+
+def load_brands_from_file(path: str) -> List[str]:
+    """Load brand names from a file supporting JSON array or newline/comma-separated lists."""
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            content = f.read().strip()
+            # Try JSON array first
+            try:
+                data = json.loads(content)
+                if isinstance(data, list):
+                    return [str(x).strip() for x in data if str(x).strip()]
+            except Exception:
+                pass
+            # Fallback: newline or comma separated
+            parts = [p.strip() for p in re.split(r"[\n,]", content) if p.strip()]
+            return parts
+    except Exception as e:
+        print(f"❌ Failed to read brands file {path}: {e}")
+        return []
 
 def get_mime_type(file_path: Path) -> str:
     """Get MIME type for a file."""
@@ -89,11 +143,34 @@ def get_mime_type(file_path: Path) -> str:
     }
     return mime_map.get(ext, 'application/octet-stream')
 
+def storage_file_exists(supabase: Client, storage_path: str) -> bool:
+    """Check if a file already exists at storage_path in the bucket."""
+    try:
+        parent = str(Path(storage_path).parent)
+        filename = Path(storage_path).name
+        list_path = '' if parent == '.' else parent
+        result = supabase.storage.from_(BUCKET_NAME).list(list_path)
+        if not result:
+            return False
+        for item in result:
+            if isinstance(item, dict) and item.get('name') == filename:
+                return True
+        return False
+    except Exception:
+        # If unsure, assume it does not exist to proceed with upload
+        return False
+
 def upload_file(supabase: Client, local_path: Path, storage_path: str, retries: int = 3) -> bool:
-    """Upload file to Supabase storage with retry logic."""
-    global processed_files, failed_uploads
+    """Upload file to Supabase storage with retry logic. Skips if already exists."""
+    global processed_files, skipped_files, failed_uploads
     
     try:
+        # Skip upload if the file already exists to prevent duplicates
+        if storage_file_exists(supabase, storage_path):
+            skipped_files += 1
+            print(f"⏭️  Skipping (exists): {storage_path}")
+            return True
+
         print(f"📤 Uploading: {storage_path}")
         
         mime_type = get_mime_type(local_path)
@@ -104,8 +181,7 @@ def upload_file(supabase: Client, local_path: Path, storage_path: str, retries: 
                 file=f,
                 path=storage_path,
                 file_options={
-                    "content-type": mime_type,
-                    "upsert": "true"
+                    "content-type": mime_type
                 }
             )
         
@@ -155,33 +231,27 @@ def get_media_files(dir_path: Path) -> List[Path]:
     
     return files
 
-def count_total_files() -> int:
-    """Count total files to process."""
+def count_total_files(brand_names: List[str]) -> int:
+    """Count total files to process across both sources for provided brands."""
     print('📊 Counting files to process...')
     
     count = 0
     
-    if not INSTAGRAM_DATA_DIR.exists():
-        print(f"⚠️  Instagram data directory not found: {INSTAGRAM_DATA_DIR}")
-        return count
-    
-    for brand_dir in INSTAGRAM_DATA_DIR.iterdir():
-        if not brand_dir.is_dir():
-            continue
+    for brand_name in brand_names:
+        # Resolve Instagram folder
+        ig_resolved = resolve_folder_name(brand_name, INSTAGRAM_DATA_DIR)
+        if ig_resolved:
+            brand_dir = INSTAGRAM_DATA_DIR / ig_resolved
+            images_dir = brand_dir / 'images'
+            videos_dir = brand_dir / 'videos'
+            image_files = get_media_files(images_dir)
+            video_files = get_media_files(videos_dir)
+            count += len(image_files) + len(video_files)
         
-        brand_name = brand_dir.name
-        
-        # Count Instagram media files (images and videos directories)
-        images_dir = brand_dir / 'images'
-        videos_dir = brand_dir / 'videos'
-        
-        image_files = get_media_files(images_dir)
-        video_files = get_media_files(videos_dir)
-        count += len(image_files) + len(video_files)
-        
-        # Count shop content files
-        brand_shop_dir = SHOP_CONTENT_DIR / brand_name
-        if brand_shop_dir.exists():
+        # Resolve Shop content folder
+        shop_resolved = resolve_folder_name(brand_name, SHOP_CONTENT_DIR)
+        if shop_resolved:
+            brand_shop_dir = SHOP_CONTENT_DIR / shop_resolved
             shop_files = get_media_files(brand_shop_dir)
             count += len(shop_files)
     
@@ -314,13 +384,16 @@ def generate_report() -> None:
     """Generate progress report."""
     print('\n📋 MIGRATION REPORT')
     print('=' * 50)
-    print(f"Total files processed: {processed_files}/{total_files}")
+    print(f"Total files considered: {total_files}")
+    print(f"- Uploaded: {processed_files}")
+    print(f"- Skipped (already existed): {skipped_files}")
     
     if total_files > 0:
-        success_rate = (processed_files / total_files) * 100
-        print(f"Success rate: {success_rate:.2f}%")
+        completed = processed_files + skipped_files
+        success_rate = (completed / total_files) * 100
+        print(f"Completion rate (uploaded or skipped): {success_rate:.2f}%")
     else:
-        print("Success rate: 0%")
+        print("Completion rate: 0%")
     
     print(f"Errors: {len(errors)}")
     
@@ -347,14 +420,12 @@ def main():
         print('Please set EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY')
         sys.exit(1)
     
-    # Verify directories exist
+    # Verify directories exist (warn but do not exit to allow processing from whichever exists)
     if not INSTAGRAM_DATA_DIR.exists():
-        print(f"❌ Instagram data directory not found: {INSTAGRAM_DATA_DIR}")
-        sys.exit(1)
+        print(f"⚠️  Instagram data directory not found: {INSTAGRAM_DATA_DIR}")
     
     if not SHOP_CONTENT_DIR.exists():
-        print(f"❌ Shop content directory not found: {SHOP_CONTENT_DIR}")
-        sys.exit(1)
+        print(f"⚠️  Shop content directory not found: {SHOP_CONTENT_DIR}")
     
     # Initialize Supabase client
     try:
@@ -368,32 +439,81 @@ def main():
         print('❌ Cannot access Supabase storage bucket')
         sys.exit(1)
     
-    # Count total files
-    total_files = count_total_files()
+    # CLI arguments to optionally scope brands
+    parser = argparse.ArgumentParser(description="Migrate scraped content to Supabase Storage")
+    parser.add_argument(
+        "--brands-file",
+        dest="brands_file",
+        type=str,
+        default=None,
+        help="Path to a file containing brand names (JSON array or newline/comma separated)",
+    )
+    parser.add_argument(
+        "--brands",
+        dest="brands",
+        type=str,
+        default=None,
+        help="Comma-separated list of brand names",
+    )
+    args = parser.parse_args()
+
+    # Build union of brand names from both sources, optionally restricted by CLI args
+    instagram_brands = set()
+    shop_content_brands = set()
+    if INSTAGRAM_DATA_DIR.exists():
+        instagram_brands = {item.name for item in INSTAGRAM_DATA_DIR.iterdir() if item.is_dir()}
+    if SHOP_CONTENT_DIR.exists():
+        shop_content_brands = {item.name for item in SHOP_CONTENT_DIR.iterdir() if item.is_dir()}
+
+    discovered_brands = sorted(instagram_brands.union(shop_content_brands))
+
+    brand_names: List[str] = []
+    if args.brands_file:
+        brand_names = load_brands_from_file(args.brands_file)
+        print(f"📋 Loaded {len(brand_names)} brands from file: {args.brands_file}")
+    elif args.brands:
+        brand_names = [b.strip() for b in args.brands.split(',') if b.strip()]
+        print(f"📋 Loaded {len(brand_names)} brands from --brands argument")
+    else:
+        brand_names = discovered_brands
+        print(f"📋 Using discovered brands from sources")
+    
+    print("BRAND NAMES: ", brand_names)
+    
+    # Count total files across the selected set
+    total_files = count_total_files(brand_names)
     print(f"📊 Total files to process: {total_files}")
     
     if total_files == 0:
         print('⚠️  No files found to migrate')
         return
     
-    # Get all brand folders from Instagram data
-    brand_names = [
-        item.name for item in INSTAGRAM_DATA_DIR.iterdir() 
-        if item.is_dir()
-    ]
+    print(f"📦 Found {len(brand_names)} brands to process (union of sources)")
     
-    print(f"📦 Found {len(brand_names)} brands to process")
-    
+
     # Process each brand
     for brand_name in brand_names:
         try:
+            ig_resolved = resolve_folder_name(brand_name, INSTAGRAM_DATA_DIR)
+            shop_resolved = resolve_folder_name(brand_name, SHOP_CONTENT_DIR)
+
             print(f"\n🏢 Processing brand: {brand_name}")
+            print(f"INSTAGRAM_DATA_DIR requested: {INSTAGRAM_DATA_DIR / brand_name}")
+            print(f"INSTAGRAM_DATA_DIR resolved:  {INSTAGRAM_DATA_DIR / ig_resolved if ig_resolved else 'None'}")
+            print(f"SHOP_CONTENT_DIR requested:  {SHOP_CONTENT_DIR / brand_name}")
+            print(f"SHOP_CONTENT_DIR resolved:   {SHOP_CONTENT_DIR / shop_resolved if shop_resolved else 'None'}")
+
+            # Process Instagram data (scrolling_brand_media) only if source exists
+            if ig_resolved:
+                process_instagram_data(supabase, ig_resolved)
+            else:
+                print(f"ℹ️  No Instagram data for: {brand_name} (skipping brand media)")
             
-            # Process Instagram data (scrolling_brand_media)
-            process_instagram_data(supabase, brand_name)
-            
-            # Process shop content (scrolling_product_media)
-            process_shop_content(supabase, brand_name)
+            # Process shop content (scrolling_product_media) only if source exists
+            if shop_resolved:
+                process_shop_content(supabase, shop_resolved)
+            else:
+                print(f"ℹ️  No shop content for: {brand_name} (skipping product media)")
             
         except Exception as error:
             error_msg = f"Failed to process brand {brand_name}: {str(error)}"

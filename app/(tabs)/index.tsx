@@ -326,54 +326,26 @@ async function unsaveBrand(brandId: number, userId: string): Promise<boolean> {
 async function fetchBrandMediaFromIndex(brand: string) {
   // Fetch index.json from the brand's scrolling_brand_media folder
   const indexUrl = `${BUCKET_URL}/${brand}/scrolling_brand_media/index.json`;
-  console.log(`🔍 [MEDIA DEBUG] Fetching index for brand: ${brand}`);
-  console.log(`📍 [MEDIA DEBUG] Index URL: ${indexUrl}`);
 
   try {
-    const startTime = Date.now();
     const res = await fetch(indexUrl);
-    const fetchTime = Date.now() - startTime;
-
-    console.log(`⏱️ [MEDIA DEBUG] Fetch took ${fetchTime}ms for ${brand}`);
-    console.log(
-      `📊 [MEDIA DEBUG] Response status: ${res.status} ${res.statusText}`
-    );
 
     if (!res.ok) {
-      console.warn(
-        `❌ [MEDIA DEBUG] Failed to fetch index for ${brand}: ${res.status} ${res.statusText}`
-      );
+      console.warn(`Failed to fetch media for ${brand}: ${res.status}`);
       return null;
     }
 
     const data = await res.json();
-    console.log(
-      `📄 [MEDIA DEBUG] Index data for ${brand}:`,
-      JSON.stringify(data, null, 2)
-    );
 
     if (!Array.isArray(data.files)) {
-      console.warn(
-        `❌ [MEDIA DEBUG] Invalid index structure for ${brand}: files is not an array`
-      );
-      console.log(`🔍 [MEDIA DEBUG] Data.files type:`, typeof data.files);
-      console.log(`🔍 [MEDIA DEBUG] Data.files value:`, data.files);
+      console.warn(`Invalid media structure for ${brand}`);
       return null;
     }
-
-    console.log(
-      `📁 [MEDIA DEBUG] Found ${data.files.length} files for ${brand}`
-    );
 
     // Normalize: get array of filenames (strings)
     const filenames = data.files
       .map((f: any) => (typeof f === "string" ? f : f?.name))
       .filter(Boolean);
-
-    console.log(
-      `📝 [MEDIA DEBUG] Normalized filenames for ${brand}:`,
-      filenames
-    );
 
     // Prioritize video
     let file = filenames.find((name: string) =>
@@ -382,7 +354,6 @@ async function fetchBrandMediaFromIndex(brand: string) {
     let type: "video" | "image" | null = null;
     if (file) {
       type = "video";
-      console.log(`🎬 [MEDIA DEBUG] Found video file for ${brand}: ${file}`);
     }
     if (!file) {
       file = filenames.find((name: string) =>
@@ -390,22 +361,15 @@ async function fetchBrandMediaFromIndex(brand: string) {
       );
       if (file) {
         type = "image";
-        console.log(`🖼️ [MEDIA DEBUG] Found image file for ${brand}: ${file}`);
       }
     }
 
     if (!file || !type) {
-      console.warn(`❌ [MEDIA DEBUG] No valid media files found for ${brand}`);
-      console.log(`🔍 [MEDIA DEBUG] Available filenames:`, filenames);
-      console.log(`🔍 [MEDIA DEBUG] Video extensions:`, VIDEO_EXTENSIONS);
-      console.log(`🔍 [MEDIA DEBUG] Image extensions:`, IMAGE_EXTENSIONS);
+      console.warn(`No valid media files found for ${brand}`);
       return null;
     }
 
     const finalUrl = `${BUCKET_URL}/${brand}/scrolling_brand_media/${file}`;
-    console.log(
-      `✅ [MEDIA DEBUG] Successfully processed ${brand}: ${type} - ${finalUrl}`
-    );
 
     return {
       id: brand,
@@ -413,12 +377,7 @@ async function fetchBrandMediaFromIndex(brand: string) {
       url: finalUrl,
     };
   } catch (error) {
-    console.error(`💥 [MEDIA DEBUG] Error fetching media for ${brand}:`, error);
-    console.error(`💥 [MEDIA DEBUG] Error details:`, {
-      name: error instanceof Error ? error.name : "Unknown",
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
+    console.error(`Error fetching media for ${brand}:`, error);
     return null;
   }
 }
@@ -437,14 +396,6 @@ const MediaItem = React.memo(
     isScreenFocused: boolean;
     panHandlers?: any;
   }) => {
-    console.log(
-      `🎬 [MEDIA ITEM DEBUG] Rendering ${item.type} for brand ${item.id}:`
-    );
-    console.log(`📍 [MEDIA ITEM DEBUG] URL: ${item.url}`);
-    console.log(
-      `👁️ [MEDIA ITEM DEBUG] Visible: ${isVisible}, Screen focused: ${isScreenFocused}, Muted: ${muted}`
-    );
-
     if (item.type === "video") {
       return (
         <View
@@ -462,40 +413,24 @@ const MediaItem = React.memo(
             isMuted={muted === undefined ? false : muted}
             volume={1.0}
             onLoad={() => {
-              console.log(
-                `✅ [VIDEO DEBUG] Video loaded successfully for ${item.id}: ${item.url}`
-              );
+              // Video loaded
             }}
             onLoadStart={() => {
-              console.log(
-                `⏳ [VIDEO DEBUG] Video load started for ${item.id}: ${item.url}`
-              );
+              // Video load started
             }}
             onError={(error) => {
-              console.error(
-                `💥 [VIDEO DEBUG] Video error for ${item.id}:`,
-                error
-              );
-              console.error(`💥 [VIDEO DEBUG] Failed URL: ${item.url}`);
+              console.error(`Video error for ${item.id}:`, error);
             }}
             onPlaybackStatusUpdate={(status) => {
               if (status.isLoaded) {
-                console.log(
-                  `▶️ [VIDEO DEBUG] Playback status for ${item.id}:`,
-                  {
-                    isPlaying: status.isPlaying,
-                    positionMillis: status.positionMillis,
-                    durationMillis: status.durationMillis,
-                    shouldPlay: status.shouldPlay,
-                  }
-                );
+                // Playback status updated
               } else if (
                 !status.isLoaded &&
                 "error" in status &&
                 status.error
               ) {
                 console.error(
-                  `💥 [VIDEO DEBUG] Playback error for ${item.id}:`,
+                  `Video playback error for ${item.id}:`,
                   status.error
                 );
               }
@@ -515,21 +450,13 @@ const MediaItem = React.memo(
           style={{ width: "100%", height: screenHeight }}
           contentFit="cover"
           onLoad={() => {
-            console.log(
-              `✅ [IMAGE DEBUG] Image loaded successfully for ${item.id}: ${item.url}`
-            );
+            // Image loaded
           }}
           onLoadStart={() => {
-            console.log(
-              `⏳ [IMAGE DEBUG] Image load started for ${item.id}: ${item.url}`
-            );
+            // Image load started
           }}
           onError={(error) => {
-            console.error(
-              `💥 [IMAGE DEBUG] Image error for ${item.id}:`,
-              error
-            );
-            console.error(`💥 [IMAGE DEBUG] Failed URL: ${item.url}`);
+            console.error(`Image error for ${item.id}:`, error);
           }}
         />
       </View>
@@ -540,62 +467,45 @@ MediaItem.displayName = "MediaItem";
 
 // 1. Fetch all media for all brands at once
 async function fetchAllBrandsMedia(brands: string[]) {
-  console.log(
-    `🚀 [BRANDS DEBUG] Starting fetchAllBrandsMedia for ${brands.length} brands`
-  );
-  console.log(`📋 [BRANDS DEBUG] Brand list:`, brands);
+  console.log(`Loading media for ${brands.length} brands`);
 
   const startTime = Date.now();
   const all = await Promise.all(
     brands.map(async (brand, index) => {
-      console.log(
-        `🔄 [BRANDS DEBUG] Processing brand ${index + 1}/${brands.length}: ${brand}`
-      );
       const indexUrl = `${BUCKET_URL}/${brand}/scrolling_brand_media/index.json`;
 
       try {
-        console.log(
-          `📡 [BRANDS DEBUG] Fetching index for ${brand}: ${indexUrl}`
-        );
-        const fetchStart = Date.now();
         const res = await fetch(indexUrl);
-        const fetchTime = Date.now() - fetchStart;
-
-        console.log(
-          `⏱️ [BRANDS DEBUG] Fetch for ${brand} took ${fetchTime}ms - Status: ${res.status}`
-        );
 
         if (!res.ok) {
-          console.warn(
-            `❌ [BRANDS DEBUG] Failed to fetch ${brand}: ${res.status} ${res.statusText}`
-          );
+          try {
+            const contentType = res.headers.get("content-type") || "unknown";
+            const bodyText = await res
+              .text()
+              .catch(() => "<unable to read body>");
+            const snippet = bodyText ? bodyText.slice(0, 300) : "<empty body>";
+            console.warn(
+              `Failed to fetch ${brand}: ${res.status} ${res.statusText} | url=${indexUrl} | content-type=${contentType} | body[0..300]=\n${snippet}`
+            );
+          } catch (e) {
+            console.warn(
+              `Failed to fetch ${brand}: ${res.status} ${res.statusText} | url=${indexUrl} | <error while reading response body>`,
+              e
+            );
+          }
           return null;
         }
 
         const data = await res.json();
-        console.log(`📄 [BRANDS DEBUG] Index data for ${brand}:`, {
-          filesCount: Array.isArray(data.files)
-            ? data.files.length
-            : "Not an array",
-          filesType: typeof data.files,
-          sampleFiles: Array.isArray(data.files)
-            ? data.files.slice(0, 3)
-            : data.files,
-        });
 
         if (!Array.isArray(data.files)) {
-          console.warn(
-            `❌ [BRANDS DEBUG] Invalid files structure for ${brand}:`,
-            data
-          );
+          console.warn(`Invalid files structure for ${brand}`);
           return null;
         }
 
         const rawFiles = data.files
           .map((f: any) => (typeof f === "string" ? f : f?.name))
           .filter(Boolean);
-
-        console.log(`📁 [BRANDS DEBUG] Raw files for ${brand}:`, rawFiles);
 
         const files = rawFiles
           .map((name: string) => {
@@ -608,48 +518,22 @@ async function fetchAllBrandsMedia(brands: string[]) {
                 }
               : null;
 
-            if (result) {
-              console.log(
-                `✅ [BRANDS DEBUG] Valid media file for ${brand}: ${name} (${type})`
-              );
-            } else {
-              console.log(
-                `⚠️ [BRANDS DEBUG] Skipped file for ${brand}: ${name} (unknown type)`
-              );
-            }
-
             return result;
           })
           .filter(Boolean);
-
-        console.log(
-          `🎯 [BRANDS DEBUG] Processed ${files.length} valid media files for ${brand}`
-        );
 
         // Move the first video (if any) to the front
         let reorderedFiles = files;
         const firstVideoIdx = files.findIndex((f: any) => f.type === "video");
 
         if (firstVideoIdx > 0) {
-          console.log(
-            `🎬 [BRANDS DEBUG] Moving video to front for ${brand}: video at index ${firstVideoIdx}`
-          );
           const [video] = files.splice(firstVideoIdx, 1);
           reorderedFiles = [video, ...files];
-        } else if (firstVideoIdx === 0) {
-          console.log(`🎬 [BRANDS DEBUG] Video already at front for ${brand}`);
-        } else {
-          console.log(
-            `📷 [BRANDS DEBUG] No videos found for ${brand}, keeping original order`
-          );
         }
 
         // Fetch brand tagline from database
         let tagline = null;
         try {
-          console.log(
-            `📝 [BRANDS DEBUG] Fetching tagline for ${brand} from database`
-          );
           const taglineStart = Date.now();
           const { data: brandData, error } = await supabase
             .from("brand")
@@ -657,42 +541,18 @@ async function fetchAllBrandsMedia(brands: string[]) {
             .eq("brand_name", brand)
             .single();
 
-          const taglineTime = Date.now() - taglineStart;
-          console.log(
-            `⏱️ [BRANDS DEBUG] Tagline fetch for ${brand} took ${taglineTime}ms`
-          );
-
           if (!error && brandData) {
             tagline = brandData.brand_tagline;
-            console.log(
-              `✅ [BRANDS DEBUG] Got tagline for ${brand}: "${tagline}"`
-            );
-          } else {
-            console.log(
-              `⚠️ [BRANDS DEBUG] No tagline found for ${brand}:`,
-              error
-            );
           }
         } catch (error) {
-          console.error(
-            `💥 [BRANDS DEBUG] Error fetching tagline for ${brand}:`,
-            error
-          );
+          console.error(`Error fetching tagline for ${brand}:`, error);
         }
 
         const result = { brand, media: reorderedFiles, tagline };
-        console.log(
-          `✅ [BRANDS DEBUG] Successfully processed ${brand}: ${reorderedFiles.length} media files, tagline: ${tagline ? '"' + tagline + '"' : "null"}`
-        );
 
         return result;
       } catch (error) {
-        console.error(`💥 [BRANDS DEBUG] Error processing ${brand}:`, error);
-        console.error(`💥 [BRANDS DEBUG] Error details for ${brand}:`, {
-          name: error instanceof Error ? error.name : "Unknown",
-          message: error instanceof Error ? error.message : String(error),
-          indexUrl,
-        });
+        console.error(`Error processing ${brand}:`, error);
         return null;
       }
     })
@@ -703,19 +563,12 @@ async function fetchAllBrandsMedia(brands: string[]) {
   const failed = all.length - successful.length;
 
   console.log(
-    `🏁 [BRANDS DEBUG] fetchAllBrandsMedia completed in ${totalTime}ms`
-  );
-  console.log(
-    `📊 [BRANDS DEBUG] Results: ${successful.length} successful, ${failed} failed`
-  );
-  console.log(
-    `📋 [BRANDS DEBUG] Successful brands:`,
-    successful.map((b) => b?.brand)
+    `Loaded ${successful.length} brands (${failed} failed) in ${totalTime}ms`
   );
 
   if (failed > 0) {
     const failedBrands = brands.filter((brand, index) => !all[index]);
-    console.warn(`⚠️ [BRANDS DEBUG] Failed brands:`, failedBrands);
+    console.warn(`Failed to load brands:`, failedBrands);
   }
 
   // Type guard to filter out nulls
@@ -732,38 +585,35 @@ async function fetchAllBrandsMedia(brands: string[]) {
 
 // --- Fetch Products Data ---
 async function fetchAllProductsMedia(products: any[]) {
-  console.log(
-    `🚀 [PRODUCTS DEBUG] Starting fetchAllProductsMedia for ${products.length} products`
-  );
+  console.log(`Loading media for ${products.length} products`);
 
   const startTime = Date.now();
   const all = await Promise.all(
     products.map(async (product, index) => {
-      console.log(
-        `🔄 [PRODUCTS DEBUG] Processing product ${index + 1}/${products.length}: ${product.product_name}`
-      );
-
       try {
         const brandKey =
           product.brand?.media_filepath ||
           product.media_filepath?.split("/")[0];
         const indexUrl = `${BUCKET_URL}/${brandKey}/scrolling_product_media/${product.media_filepath?.split("/")[2] || "unknown"}/index.json`;
 
-        console.log(
-          `📡 [PRODUCTS DEBUG] Fetching index for ${product.product_name}: ${indexUrl}`
-        );
-        const fetchStart = Date.now();
         const res = await fetch(indexUrl);
-        const fetchTime = Date.now() - fetchStart;
-
-        console.log(
-          `⏱️ [PRODUCTS DEBUG] Fetch for ${product.product_name} took ${fetchTime}ms - Status: ${res.status}`
-        );
 
         if (!res.ok) {
-          console.warn(
-            `❌ [PRODUCTS DEBUG] Failed to fetch ${product.product_name}: ${res.status} ${res.statusText}`
-          );
+          try {
+            const contentType = res.headers.get("content-type") || "unknown";
+            const bodyText = await res
+              .text()
+              .catch(() => "<unable to read body>");
+            const snippet = bodyText ? bodyText.slice(0, 300) : "<empty body>";
+            console.warn(
+              `Failed to fetch product ${product.product_name}: ${res.status} ${res.statusText} | url=${indexUrl} | content-type=${contentType} | body[0..300]=\n${snippet}`
+            );
+          } catch (e) {
+            console.warn(
+              `Failed to fetch product ${product.product_name}: ${res.status} ${res.statusText} | url=${indexUrl} | <error while reading response body>`,
+              e
+            );
+          }
           return null;
         }
 
@@ -810,10 +660,7 @@ async function fetchAllProductsMedia(products: any[]) {
           type: "product",
         };
       } catch (error) {
-        console.error(
-          `💥 [PRODUCTS DEBUG] Error processing ${product.product_name}:`,
-          error
-        );
+        console.error(`Error processing ${product.product_name}:`, error);
         return null;
       }
     })
@@ -1345,9 +1192,7 @@ export default function HomeScreen() {
 
   // --- Load Content Based on Type ---
   const loadContent = async () => {
-    console.log(
-      `🚀 [LOAD DEBUG] Starting content loading for type: ${contentType}`
-    );
+    console.log(`Loading ${contentType} content`);
     setLoading(true);
 
     try {
@@ -1355,9 +1200,6 @@ export default function HomeScreen() {
 
       switch (contentType) {
         case "brands":
-          console.log(
-            `📊 [LOAD DEBUG] Loading brands - Available brands count: ${sanitizedBrands.length}`
-          );
           const recommended = recommendBrands(
             sanitizedBrands,
             brandScores,
@@ -1370,14 +1212,12 @@ export default function HomeScreen() {
           break;
 
         case "products":
-          console.log(`🛍️ [LOAD DEBUG] Loading products from database`);
           const productsData = await fetchProductsFromDatabase();
           const productsContent = await fetchAllProductsMedia(productsData);
           content = productsContent;
           break;
 
         case "following":
-          console.log(`👥 [LOAD DEBUG] Loading following content`);
           const followingContent = await fetchFollowingMedia(session?.user?.id);
           content = followingContent.map((b) => ({ ...b, type: "brand" }));
           break;
@@ -1427,26 +1267,11 @@ export default function HomeScreen() {
       const offsetY = e.nativeEvent.contentOffset.y;
       const newIndex = Math.round(offsetY / screenHeight);
 
-      console.log(
-        `📜 [SCROLL DEBUG] Scroll event - offsetY: ${offsetY}, newIndex: ${newIndex}, brandsMedia.length: ${brandsMedia.length}`
-      );
-
       if (brandsMedia.length > 0 && newIndex >= brandsMedia.length - 1) {
-        console.log(
-          `🔄 [SCROLL DEBUG] Reached end of feed, triggering reload for ${contentType}...`
-        );
+        console.log(`Reached end of feed, reloading content...`);
 
         // Only reshuffle for brands content type
         if (contentType === "brands") {
-          console.log(
-            `📈 [SCROLL DEBUG] Current brand scores before reshuffle:`,
-            brandScores
-          );
-          console.log(
-            `🎯 [SCROLL DEBUG] Session brands before reshuffle:`,
-            Array.from(sessionBrands)
-          );
-
           // Reshuffle brands and reset to top
           const startTime = Date.now();
           const recommended = recommendBrands(
@@ -1962,7 +1787,11 @@ export default function HomeScreen() {
       </View>
       <FlatList
         data={filteredBrandsMedia}
-        keyExtractor={(item) => item.brand}
+        keyExtractor={(item, index) =>
+          item?.type === "product"
+            ? `${item.brand}::${item.product ?? item.media?.[0]?.name ?? index}`
+            : `brand::${item.brand}`
+        }
         pagingEnabled
         showsVerticalScrollIndicator={false}
         snapToAlignment="start"

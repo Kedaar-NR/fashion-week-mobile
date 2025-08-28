@@ -25,6 +25,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Optional, Set
+import argparse
 from dotenv import load_dotenv
 from supabase import create_client, Client
 
@@ -146,18 +147,18 @@ def get_all_brand_folders(supabase: Client) -> List[str]:
     Get all brand folders from storage.
     """
     try:
-        # List all folders in the bucket root (brand folders are directly in bucket)
+        # List items in the bucket root (brand folders are directly in bucket)
         result = supabase.storage.from_(BUCKET_NAME).list('')
         
         if not result:
             return []
         
-        brand_folders = []
+        brand_folders: List[str] = []
         for item in result:
-            if isinstance(item, dict) and 'name' in item:
-                # Check if it's a folder (no extension) and is all caps (brand folder)
-                if '.' not in item['name'] and item['name'].isupper():
-                    brand_folders.append(item['name'])
+            if isinstance(item, dict) and 'name' in item and item['name']:
+                # Be permissive: many brand names contain dots/underscores/numbers/mixed case
+                # We assume items at root are brand folders in this bucket layout
+                brand_folders.append(item['name'])
         
         return sorted(brand_folders)
         
@@ -201,11 +202,12 @@ def process_brand_media(supabase: Client, brand_name: str) -> bool:
     files = list_files_in_storage_folder(supabase, brand_media_path)
     
     if not files:
-        print(f"⚠️  No media files found in {brand_media_path}")
-        return True  # Not an error, just empty
-    
-    # Create index.json file inside the scrolling_brand_media folder
-    success = create_index_file(supabase, brand_media_path, files)
+        # Still create an empty index.json so the app can fetch a valid structure
+        print(f"ℹ️  No media files in {brand_media_path} — creating empty index.json")
+        success = create_index_file(supabase, brand_media_path, [])
+    else:
+        # Create index.json file inside the scrolling_brand_media folder
+        success = create_index_file(supabase, brand_media_path, files)
     return success
 
 def process_product_media(supabase: Client, brand_name: str) -> int:
@@ -231,7 +233,10 @@ def process_product_media(supabase: Client, brand_name: str) -> int:
         files = list_files_in_storage_folder(supabase, product_media_path)
         
         if not files:
-            print(f"⚠️  No media files found in {product_media_path}")
+            # Create an empty index.json to keep app fetches happy
+            print(f"ℹ️  No media files in {product_media_path} — creating empty index.json")
+            if create_index_file(supabase, product_media_path, []):
+                successful_products += 1
             continue
         
         # Create index.json file for this product
@@ -274,6 +279,25 @@ def generate_report() -> None:
     
     print('\n✅ Index file generation completed!')
 
+def load_brands_from_file(path: str) -> List[str]:
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            content = f.read().strip()
+            # Try JSON array first
+            try:
+                data = json.loads(content)
+                if isinstance(data, list):
+                    return [str(x).strip() for x in data if str(x).strip()]
+            except Exception:
+                pass
+            # Fallback: newline or comma separated
+            parts = [p.strip() for p in re.split(r"[\n,]", content) if p.strip()]
+            return parts
+    except Exception as e:
+        print(f"❌ Failed to read brands file {path}: {e}")
+        return []
+
+
 def main():
     """
     Main function to generate all index.json files.
@@ -283,6 +307,24 @@ def main():
     print('🚀 Starting Index File Generation')
     print('=' * 50)
     
+    # CLI arguments
+    parser = argparse.ArgumentParser(description="Generate index.json files for brand content")
+    parser.add_argument(
+        "--brands-file",
+        dest="brands_file",
+        type=str,
+        default=None,
+        help="Path to a file containing brand names (JSON array or newline/comma separated)",
+    )
+    parser.add_argument(
+        "--brands",
+        dest="brands",
+        type=str,
+        default=None,
+        help="Comma-separated list of brand names",
+    )
+    args = parser.parse_args()
+
     # Verify environment
     if not SUPABASE_URL or not SUPABASE_ANON_KEY:
         print('❌ Missing Supabase environment variables')
@@ -301,8 +343,17 @@ def main():
         print('❌ Cannot access Supabase storage bucket')
         sys.exit(1)
     
-    # Get all brand folders
-    brand_folders = get_all_brand_folders(supabase)
+    # Determine brand list
+    brand_folders: List[str] = []
+    if args.brands_file:
+        brand_folders = load_brands_from_file(args.brands_file)
+        print(f"📋 Loaded {len(brand_folders)} brands from file: {args.brands_file}")
+    elif args.brands:
+        brand_folders = [b.strip() for b in args.brands.split(',') if b.strip()]
+        print(f"📋 Loaded {len(brand_folders)} brands from --brands argument")
+    else:
+        brand_folders = get_all_brand_folders(supabase)
+    
     
     if not brand_folders:
         print('⚠️  No brand folders found in storage')
