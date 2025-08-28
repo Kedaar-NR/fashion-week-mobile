@@ -1742,16 +1742,19 @@ export default function HomeScreen() {
                         .brand as keyof typeof BRANDS
                     ] || filteredBrandsMedia[verticalIndex].brand}
               </Text>
-              <Text className="text-white text-xs opacity-80 text-left mt-1">
-                {filteredBrandsMedia[verticalIndex].type === "product" &&
-                filteredBrandsMedia[verticalIndex].price
-                  ? `$${filteredBrandsMedia[verticalIndex].price}`
-                  : BRAND_AI_SUMMARIES[
-                      filteredBrandsMedia[verticalIndex].brand
-                    ] ||
-                    filteredBrandsMedia[verticalIndex].tagline ||
-                    "No description available"}
-              </Text>
+              {(filteredBrandsMedia[verticalIndex].type === "product" &&
+                filteredBrandsMedia[verticalIndex].price) ||
+              BRAND_AI_SUMMARIES[filteredBrandsMedia[verticalIndex].brand] ||
+              filteredBrandsMedia[verticalIndex].tagline ? (
+                <Text className="text-white text-xs opacity-80 text-left mt-1">
+                  {filteredBrandsMedia[verticalIndex].type === "product" &&
+                  filteredBrandsMedia[verticalIndex].price
+                    ? `$${filteredBrandsMedia[verticalIndex].price}`
+                    : BRAND_AI_SUMMARIES[
+                        filteredBrandsMedia[verticalIndex].brand
+                      ] || filteredBrandsMedia[verticalIndex].tagline}
+                </Text>
+              ) : null}
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.7}

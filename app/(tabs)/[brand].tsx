@@ -78,6 +78,9 @@ export default function BrandDetailScreen() {
   const [catalogActive, setCatalogActive] = useState(true);
   const [isArchived, setIsArchived] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
+  const [productThumbs, setProductThumbs] = useState<{
+    [id: number]: string | null;
+  }>({});
 
   // --- Authentication Setup ---
   useEffect(() => {
@@ -338,6 +341,14 @@ export default function BrandDetailScreen() {
     }
   };
 
+  useEffect(() => {
+    if (pieces && pieces.length > 0) {
+      loadProductThumbs(pieces);
+    } else {
+      setProductThumbs({});
+    }
+  }, [pieces]);
+
   async function fetchFirstMedia(brandName: string) {
     try {
       const indexUrl = `${BUCKET_URL}/${brandName}/scrolling_brand_media/index.json`;
@@ -372,6 +383,55 @@ export default function BrandDetailScreen() {
     }
   }
 
+  async function getProductThumbnailUrl(
+    mediaPath: string
+  ): Promise<string | null> {
+    try {
+      const indexUrl = `${BUCKET_URL}/${mediaPath}/index.json`;
+      const res = await fetch(indexUrl);
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!Array.isArray(data?.files)) return null;
+      const files: string[] = data.files
+        .map((f: any) => (typeof f === "string" ? f : f?.name))
+        .filter(Boolean);
+      if (!files.length) return null;
+      const lowerSet = new Set(files.map((f) => String(f).toLowerCase()));
+      let chosen: string | undefined = undefined;
+      if (lowerSet.has("listing_image.jpg")) {
+        chosen = files.find(
+          (f) => String(f).toLowerCase() === "listing_image.jpg"
+        );
+      }
+      if (!chosen) {
+        chosen = files.find((name) =>
+          IMAGE_EXTENSIONS.some((ext) =>
+            String(name).toLowerCase().endsWith(ext)
+          )
+        );
+      }
+      return chosen ? `${BUCKET_URL}/${mediaPath}/${chosen}` : null;
+    } catch (_e) {
+      return null;
+    }
+  }
+
+  async function loadProductThumbs(forPieces: CollectionPiece[]) {
+    try {
+      const entries = await Promise.all(
+        forPieces.map(async (p) => {
+          const url = p.media_filepath
+            ? await getProductThumbnailUrl(p.media_filepath)
+            : null;
+          return [p.id, url] as const;
+        })
+      );
+      setProductThumbs(Object.fromEntries(entries));
+    } catch (_e) {
+      // ignore errors
+    }
+  }
+
   useEffect(() => {
     fetchBrandPieces();
   }, [safeBrand]);
@@ -394,8 +454,12 @@ export default function BrandDetailScreen() {
           className="rounded-xl justify-center items-center mb-2 overflow-hidden bg-gray-200"
           style={{ width: gridItemWidth, height: gridItemWidth }}
         >
-          {item.media_filepath ? (
-            <Text className="text-xs opacity-50">Image</Text>
+          {productThumbs[item.id] ? (
+            <Image
+              source={{ uri: productThumbs[item.id] as string }}
+              className="w-full h-full"
+              resizeMode="cover"
+            />
           ) : (
             <Text className="text-xs opacity-50">No Image</Text>
           )}
@@ -512,26 +576,6 @@ export default function BrandDetailScreen() {
       <View className="flex-row justify-center gap-6 mb-6">
         <TouchableOpacity
           className={`px-3 py-1.5 rounded-full border ${
-            contentActive
-              ? "bg-white border-gray-400"
-              : "bg-gray-400 border-gray-400"
-          }`}
-          onPress={() => {
-            if (!contentActive || catalogActive) {
-              setContentActive(!contentActive);
-            }
-          }}
-        >
-          <Text
-            className={`font-bold text-xs ${
-              contentActive ? "text-gray-400" : "text-white"
-            }`}
-          >
-            CONTENT +
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          className={`px-3 py-1.5 rounded-full border ${
             catalogActive
               ? "bg-white border-gray-400"
               : "bg-gray-400 border-gray-400"
@@ -548,6 +592,26 @@ export default function BrandDetailScreen() {
             }`}
           >
             CATALOG +
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          className={`px-3 py-1.5 rounded-full border ${
+            contentActive
+              ? "bg-white border-gray-400"
+              : "bg-gray-400 border-gray-400"
+          }`}
+          onPress={() => {
+            if (!contentActive || catalogActive) {
+              setContentActive(!contentActive);
+            }
+          }}
+        >
+          <Text
+            className={`font-bold text-xs ${
+              contentActive ? "text-gray-400" : "text-white"
+            }`}
+          >
+            CONTENT +
           </Text>
         </TouchableOpacity>
       </View>
