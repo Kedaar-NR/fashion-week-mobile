@@ -33,184 +33,186 @@ const BUCKET_URL =
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 
-const BRANDS = {
-  "5MOREDAYS": "5MOREDAYS",
+const BRANDS: { [key: string]: string } = {
+  "5MOREDAYS": "5 More Days",
   "629": "629",
-  ABSTRAITE_DESIGN: "ABSTRAITE DESIGN",
-  ACDTM: "ACD™",
-  ACTIVIST_PARIS: "ACTIVIST PARIS",
-  AKHIELO: "AKHIELO",
-  ALREADY_WRITTEN: "ALREADY WRITTEN",
-  AMBERBYSOUL: "AMBERBYSOUL",
-  AMESCENSE: "AMESCENSE",
-  ANGEL_ARCADE: "ANGEL ARCADE",
-  ANTHONY_JAMES: "ANTHONY JAMES",
-  APRILLAND: "APRILLAND",
-  ARRIVAL_WORLDWIDE: "ARRIVAL WORLDWIDE",
-  A_STONECOLD_STUDIOS_PRODUCTION: "A STONECOLD STUDIOS PRODUCTION",
-  BAD_HABITS_LA: "BAD HABITS LA",
-  BAGJIO: "BAGJIO",
-  BANISHDIARIES: "BANISHDIARIES",
-  BANISHEDUSA: "BANISHEDUSA",
-  BEANIES: "BEANIES",
-  BEANS: "BEANS",
-  BELACARTES: "BELACARTES",
-  BIRTH_OF_ROYAL_CHILD: "BIRTH OF ROYAL CHILD",
-  BIZZRAD: "BIZZRAD",
-  BORIS_KRUEGER: "BORIS KRUEGER",
-  BORNTODIETM: "BORNTODIE™",
-  BRAKKA_GARMENTS: "BRAKKA GARMENTS",
-  BRANDONWVARGAS: "BRANDONWVARGAS",
-  CAMP_XTRA: "CAMP XTRA",
-  CASPER: "CASPER",
-  CBAKAPS: "CBAKAPS",
-  "CHALK.PRESS": "CHALK.PRESS",
-  CHEATIN_SNAKES_WORLDWIDE: "CHEATIN SNAKES WORLDWIDE",
-  CHILLDREN: "CHILLDREN",
-  CIELOS_LOS_ANGELES: "CIELOS LOS ANGELES",
-  CORRUPTKID: "CORRUPTKID",
-  COUCOU_BEBE: "COUCOU BEBE",
-  COWBOY_HEARTS: "COWBOY HEARTS",
-  CRYSTAL_RIVER: "CRYSTAL RIVER",
-  CUTS_BY_LOWHEADS: "CUTS BY LOWHEADS",
-  DAEKER: "DAEKER",
-  DEATH_56_SENTENCE: "DEATH 56 SENTENCE",
-  DEMIKNJ: "DEMIKNJ",
-  DENIM: "DENIM",
-  DESCENDANT: "DESCENDANT",
-  "DINGBATS-FONT": "DINGBATS-FONT",
-  DOCTORGARMENTZ: "DOCTORGARMENTZ",
-  DOLOR: "DOLOR",
-  E4ENYTHING: "E4ENYTHING",
-  EMERSON_STONE: "EMERSON STONE",
-  EMOTIONAL_DISTRESS: "EMOTIONAL DISTRESS",
-  EMPTY_SPACES: "EMPTY SPACES",
-  EREHWON: "EREHWON",
-  EXCESS: "EXCESS",
-  EXISTS_PURE: "EXISTS PURE",
-  EYECRAVE: "EYECRAVE",
-  FACIANE_FASHON: "FACIANE [FÀSH•ON]",
-  FAIT_PAR_LUI: "FAIT PAR LUI",
-  FALSEWORKCLUB: "FALSEWORKCLUB",
-  FISHFELON: "FISHFELON",
-  FNKSTUDIOS: "FNKSTUDIOS",
-  FOUNTAIN_OF_SOUL: "FOUNTAIN OF SOUL",
-  FRAUDULENT: "FRAUDULENT",
-  GBUCK: "GBUCK",
-  GEMINI: "GEMINI",
-  GEN_2: "GEN 2",
-  GINKO_ULTRA: "GINKO ULTRA",
-  GLVSSIC: "GLVSSIC",
-  GOKYO: "GOKYO",
-  HAVEYOUDIEDBEFORE: "HAVEYOUDIEDBEFORE",
-  HEAVROLET: "HEAVROLET",
-  HIS_CARNAGE: "HIS CARNAGE",
+  ABSTRAITE_DESIGN: "Abstraite Design",
+  ACDTM: "ACDTM",
+  ACTIVIST_PARIS: "Activist Paris",
+  AKHIELO: "Akhielo",
+  ALREADY_WRITTEN: "Already Written",
+  AMBERBYSOUL: "Amber By Soul",
+  AMESCENSE: "Amescense",
+  ANGEL_ARCADE: "Angel Arcade",
+  ANTHONY_JAMES: "Anthony James",
+  APRILLAND: "Aprilland",
+  ARRIVAL_WORLDWIDE: "Arrival Worldwide",
+  A_STONECOLD_STUDIOS_PRODUCTION: "A Stonecold Studios Production",
+  BAD_HABITS_LA: "Bad Habits LA",
+  BAGJIO: "Bagjio",
+  BANISHDIARIES: "Banish Diaries",
+  BANISHEDUSA: "Banished USA",
+  BEANIES: "Beanies",
+  BEANS: "Beans",
+  BELACARTES: "Belacartes",
+  BIRTH_OF_ROYAL_CHILD: "Birth of Royal Child",
+  BIZZRAD: "Bizzrad",
+  BORIS_KRUEGER: "Boris Krueger",
+  BORNTODIETM: "Born To Die TM",
+  BRAKKA_GARMENTS: "Brakka Garments",
+  BRANDONWVARGAS: "Brandon W Vargas",
+  CAMP_XTRA: "Camp Xtra",
+  CASPER: "Casper",
+  CBAKAPS: "Cbakaps",
+  "CHALK.PRESS": "Chalk Press",
+  CHEATIN_SNAKES_WORLDWIDE: "Cheatin Snakes Worldwide",
+  CHILLDREN: "Chilldren",
+  CIELOS_LOS_ANGELES: "Cielos Los Angeles",
+  CORRUPTKID: "Corrupt Kid",
+  COUCOU_BEBE: "Coucou Bebe",
+  COWBOY_HEARTS: "Cowboy Hearts",
+  CRYSTAL_RIVER: "Crystal River",
+  CUTS_BY_LOWHEADS: "Cuts by Lowheads",
+  DAEKER: "Daeker",
+  DEATH_56_SENTENCE: "Death 56 Sentence",
+  DEMIKNJ: "Demiknj",
+  DENIM: "Denim",
+  DESCENDANT: "Descendant",
+  "DINGBATS-FONT": "Dingbats Font",
+  DOCTORGARMENTZ: "Doctor Garmentz",
+  DOLOR: "Dolor",
+  E4ENYTHING: "E4enything",
+  EMERSON_STONE: "Emerson Stone",
+  EMOTIONAL_DISTRESS: "Emotional Distress",
+  EMPTY_SPACES: "Empty Spaces",
+  EREHWON: "Erehwon",
+  EXCESS: "Excess",
+  EXISTS_PURE: "Exists Pure",
+  EYECRAVE: "Eyecrave",
+  FACIANE_FASHON: "Faciane Fashon",
+  FAIT_PAR_LUI: "Fait Par Lui",
+  FALSEWORKCLUB: "Falsework Club",
+  FISHFELON: "Fish Felon",
+  FNKSTUDIOS: "FNK Studios",
+  FOUNTAIN_OF_SOUL: "Fountain of Soul",
+  FRAUDULENT: "Fraudulent",
+  GBUCK: "G Buck",
+  GEMINI: "Gemini",
+  GEN_2: "Gen 2",
+  GINKO_ULTRA: "Ginko Ultra",
+  GLVSSIC: "Glvssic",
+  GOKYO: "Gokyo",
+  HAVEYOUDIEDBEFORE: "Have You Died Before",
+  HEAVROLET: "Heavrolet",
+  HIS_CARNAGE: "His Carnage",
   HLYWRK: "HLYWRK",
-  HORN_HEROES: "HORN HEROES",
-  HUBANE: "HUBANE",
-  HWASAN: "HWASAN",
-  IDIEDLASTNIGHT: "IDIEDLASTNIGHT",
-  IN_LOVING_MEMORY: "IN_LOVING_MEMORY",
-  JACKJOHNJR: "JACKJOHNJR",
-  JAKISCHRIST: "JAKISCHRIST",
-  JALONISDEAD: "JALONISDEAD",
-  JAXON_JET: "JAXON JET",
-  KITOWARES: "KITOWARES",
-  KNARE: "KNARE",
-  KORRUPT: "KORRUPT",
-  LE_LOSANGE: "LE LOSANGE",
-  LILBASTARDBOY: "LILBASTARDBOY",
-  LONEARCHIVE: "LONEARCHIVE",
-  LOSE_RELIGION: "LOSE RELIGION",
-  LOVEDYLANTHOMAS: "LOVEDYLANTHOMAS",
-  LOVEHARDT: "LOVEHARDT",
-  LOVE_AMERICA: "LOVE, AMERICA",
-  LUCIEN_SAGAR: "LUCIEN SAGAR",
-  LUXENBURG: "LUXENBURG",
-  MANIC_DIARIES: "MANIC DIARIES",
-  MICU: "MICU",
-  MILES_FRANKLIN: "MILES FRANKLIN",
-  MIND_BOWLING: "MIND BOWLING",
-  MORALE: "MORALE",
-  NETSU_DENIM: "NETSU DENIM",
-  NIK_BENTEL_STUDIO: "NIK BENTEL STUDIO",
-  "NO.ERRORS": "NO.ERRORS",
-  NOCIETY: "NOCIETY",
-  NOT1FLAW: "NOT1%FLAW",
-  OBJECT_FROM_NOTHING: "OBJECT FROM NOTHING",
-  OMNEE_WORLD: "OMNEE WORLD",
-  OMOSTUDIOZ: "OMOSTUDIOZ",
-  ONLYTHEBADSTUDIOS: "ONLYTHEBADSTUDIOS",
-  "PANELS.": "PANELS.",
-  PANELS_BY_THOMASJAMES: "PANELS BY THOMASJAMES",
-  PARAPHERNALIA_97: "PARAPHERNALIA ⁹⁷",
+  HORN_HEROES: "Horn Heroes",
+  HUBANE: "Hubane",
+  HWASAN: "Hwasan",
+  IDIEDLASTNIGHT: "I Died Last Night",
+  IN_LOVING_MEMORY: "In Loving Memory",
+  JACKJOHNJR: "Jack John Jr",
+  JAKISCHRIST: "Jakis Christ",
+  JALONISDEAD: "Jalon Is Dead",
+  JAXON_JET: "Jaxon Jet",
+  KITOWARES: "Kito Wares",
+  KNARE: "Knare",
+  KORRUPT: "Korrupt",
+  LE_LOSANGE: "Le Losange",
+  LILBASTARDBOY: "Lil Bastard Boy",
+  LONEARCHIVE: "Lone Archive",
+  LOSE_RELIGION: "Lose Religion",
+  LOVEDYLANTHOMAS: "Love Dylan Thomas",
+  LOVEHARDT: "Love Hardt",
+  LOVE_AMERICA: "Love America",
+  LUCIEN_SAGAR: "Lucien Sagar",
+  LUXENBURG: "Luxenburg",
+  MANIC_DIARIES: "Manic Diaries",
+  MICU: "Micu",
+  MILES_FRANKLIN: "Miles Franklin",
+  MIND_BOWLING: "Mind Bowling",
+  MORALE: "Morale",
+  NETSU_DENIM: "Netsu Denim",
+  NIK_BENTEL_STUDIO: "Nik Bentel Studio",
+  "NO.ERRORS": "No Errors",
+  NOCIETY: "Nociety",
+  NOT1FLAW: "Not 1 Flaw",
+  OBJECT_FROM_NOTHING: "Object From Nothing",
+  OMNEE_WORLD: "Omnee World",
+  OMOSTUDIOZ: "Omo Studioz",
+  ONLYTHEBADSTUDIOS: "Only The Bad Studios",
+  "PANELS.": "Panels",
+  PANELS_BY_THOMASJAMES: "Panels by Thomas James",
+  PARAPHERNALIA_97: "Paraphernalia 97",
   PLA4: "PLA4",
-  PLAGUEROUND: "PLAGUEROUND",
-  PLASTIC_STUDIOS: "PLASTIC STUDIOS",
-  PO5HBOY: "PO5HBOY",
-  POLO_CUTTY: "POLO CUTTY",
-  PRESTON_SEVIN: "PRESTON SEVIN",
-  PRIVATE_AFFAIR: "PRIVATE AFFAIR",
-  PROHIBITISM: "PROHIBITISM",
-  PSYCHWARD: "PSYCHWARD",
-  PUBLIC_HOUSING_SKATE_TEAM: "PUBLIC HOUSING SKATE TEAM",
-  PUPPET_THEATER: "PUPPET THEATER",
-  PURGATORY: "PURGATORY",
-  PYTHIA: "PYTHIA",
-  RAWCKSTAR_LIFESTYLE: "RAWCKSTAR LIFESTYLE",
-  REDHEAT: "REDHEAT",
-  REVENIGHTS: "REVENIGHTS",
-  RITTEN: "RITTEN",
-  ROMANCATCHER: "ROMANCATCHER",
-  ROY_PUBLIC_LABEL: "ROY PUBLIC LABEL",
-  RSEKAI: "RSEKAI",
-  SCAPEGRACE: "SCAPEGRACE",
-  SCY_BY_JULIUS: "SCY BY JULIUS",
-  SHAWZIP: "SHAWZIP",
-  SHEFF: "SHEFF",
-  SLUMPMAN: "SLUMPMAN",
-  SONGSAMNOUNG: "SONGSAMNOUNG",
-  SOUTH_OF_HEAVEN: "SOUTH OF HEAVEN",
-  SPECTRUM_THEORY: "SPECTRUM THEORY",
-  SQUIGGLES: "SQUIGGLES",
-  STAFF_PICKS: "STAFF PICKS",
-  STOLEN_ARTS: "STOLEN ARTS",
-  STOMACH_: "STOMACH ?",
-  SUNNY_UNDERGROUND_MARKET: "SUNNY UNDERGROUND MARKET",
-  SUNSHINE_REIGNS: "SUNSHINE REIGNS",
+  PLAGUEROUND: "Plagueround",
+  PLASTIC_STUDIOS: "Plastic Studios",
+  PO5HBOY: "Po5h Boy",
+  POLO_CUTTY: "Polo Cutty",
+  PRESTON_SEVIN: "Preston Sevin",
+  PRIVATE_AFFAIR: "Private Affair",
+  PROHIBITISM: "Prohibitism",
+  PSYCHWARD: "Psych Ward",
+  PUBLIC_HOUSING_SKATE_TEAM: "Public Housing Skate Team",
+  PUPPET_THEATER: "Puppet Theater",
+  PURGATORY: "Purgatory",
+  PYTHIA: "Pythia",
+  RAWCKSTAR_LIFESTYLE: "Rawckstar Lifestyle",
+  REDHEAT: "Red Heat",
+  REVENIGHTS: "Revenights",
+  RITTEN: "Ritten",
+  ROMANCATCHER: "Romancatcher",
+  ROY_PUBLIC_LABEL: "Roy Public Label",
+  RSEKAI: "R Sekai",
+  SCAPEGRACE: "Scapegrace",
+  SCY_BY_JULIUS: "SCY by Julius",
+  SHAWZIP: "Shawzip",
+  SHEFF: "Sheff",
+  SLUMPMAN: "Slumpman",
+  SONGSAMNOUNG: "Song Sam Noung",
+  SOUTH_OF_HEAVEN: "South of Heaven",
+  SPECTRUM_THEORY: "Spectrum Theory",
+  SQUIGGLES: "Squiggles",
+  STAFF_PICKS: "Staff Picks",
+  STOLEN_ARTS: "Stolen Arts",
+  STOMACH_: "Stomach",
+  SUNNY_UNDERGROUND_MARKET: "Sunny Underground Market",
+  SUNSHINE_REIGNS: "Sunshine Reigns",
   "SWNK-X9": "SWNK-X9",
-  TATE_MARSLAND: "TATE MARSLAND",
-  TECNINE_GROUP: "TECNINE GROUP",
-  THE_BLANK_TRAVELER: "THE BLANK TRAVELER",
-  THE_CHARTREUSE_HUMAN: "THE CHARTREUSE HUMAN",
-  THE_LAUGHING_GEISHA: "THE LAUGHING GEISHA",
-  THE_PEACEFUL_PEOPLE: "THE PEACEFUL PEOPLE",
-  TRIPPIE_GLUCK: "TRIPPIE GLUCK",
-  TROUBLE_NYC: "TROUBLE NYC",
-  "UNWARRANTED.ATL": "UNWARRANTED.ATL",
-  VACANT_WINTER: "VACANT WINTER",
-  VENGEANCE_STUDIOS: "VENGEANCE STUDIOS",
-  VISUALS_BY_JADA: "VISUALS BY JADA",
-  VOSTRETTI: "VOSTRETTI",
-  VUOTA: "VUOTA",
-  WAVEY_WAKARU: "WAVEY WAKARU",
-  WHELM: "WHELM",
-  WHYW0ULDULIE: "WHYW0ULDULIE",
-  WICKED_GLIMMER: "WICKED GLIMMER",
-  WNTD_APPAREL: "WNTD APPAREL",
-  WOMENS: "WOMEN'S",
-  WORKSOFMADNESS: "WORKSOFMADNESS",
-  WORSHIP: "WORSHIP",
-  WORSTCASE: "WORSTCASE",
-  XENON: "XENON",
-  YACHTY_IN_ELIAS: "YACHTY IN ELIAS",
-  YAMI_MIYAZAKI: "YAMI MIYAZAKI",
-  YOURAVGCADET: "YOURAVGCADET",
-  YOUTH_MOVEMENT: "YOUTH MOVEMENT",
-} as const;
+  TATE_MARSLAND: "Tate Marsland",
+  TECNINE_GROUP: "Tecnine Group",
+  THE_BLANK_TRAVELER: "The Blank Traveler",
+  THE_CHARTREUSE_HUMAN: "The Chartreuse Human",
+  THE_LAUGHING_GEISHA: "The Laughing Geisha",
+  THE_PEACEFUL_PEOPLE: "The Peaceful People",
+  TRIPPIE_GLUCK: "Trippie Gluck",
+  TROUBLE_NYC: "Trouble NYC",
+  "UNWARRANTED.ATL": "Unwarranted ATL",
+  VACANT_WINTER: "Vacant Winter",
+  VENGEANCE_STUDIOS: "Vengeance Studios",
+  VISUALS_BY_JADA: "Visuals by Jada",
+  VOSTRETTI: "Vostretti",
+  VUOTA: "Vuota",
+  WAVEY_WAKARU: "Wavey Wakaru",
+  WHELM: "Whelm",
+  WHYW0ULDULIE: "Why Would U Lie",
+  WICKED_GLIMMER: "Wicked Glimmer",
+  WNTD_APPAREL: "WNTD Apparel",
+  WOMENS: "Womens",
+  WORKSOFMADNESS: "Works of Madness",
+  WORSHIP: "Worship",
+  WORSTCASE: "Worstcase",
+  XENON: "Xenon",
+  YACHTY_IN_ELIAS: "Yachty in Elias",
+  YAMI_MIYAZAKI: "Yami Miyazaki",
+  YOURAVGCADET: "Your Avg Cadet",
+  YOUTH_MOVEMENT: "Youth Movement",
+};
 
-// Get sanitized brand names (keys) for file paths
-const sanitizedBrands = Object.keys(BRANDS);
+// Sanitize brand names to remove file extensions
+const sanitizedBrands = Object.keys(BRANDS).map((b) =>
+  b.replace(/\.[^/.]+$/, "")
+);
 
 // Seeded random number generator (Mulberry32)
 function mulberry32(seed: number) {
@@ -248,13 +250,16 @@ async function getBrandId(brandName: string): Promise<number | null> {
       .single();
 
     if (error || !data) {
-      console.log(`Brand not found: ${brandName}`);
+      console.log(`Brand not found: ${BRANDS[brandName] || brandName}`);
       return null;
     }
 
     return data.id;
   } catch (error) {
-    console.log(`Error getting brand ID for ${brandName}:`, error);
+    console.log(
+      `Error getting brand ID for ${BRANDS[brandName] || brandName}:`,
+      error
+    );
     return null;
   }
 }
@@ -331,7 +336,9 @@ async function fetchBrandMediaFromIndex(brand: string) {
     const res = await fetch(indexUrl);
 
     if (!res.ok) {
-      console.warn(`Failed to fetch media for ${brand}: ${res.status}`);
+      console.warn(
+        `Failed to fetch media for ${BRANDS[brand] || brand}: ${res.status}`
+      );
       return null;
     }
 
@@ -352,33 +359,58 @@ async function fetchBrandMediaFromIndex(brand: string) {
       VIDEO_EXTENSIONS.some((ext) => name.endsWith(ext))
     );
     let type: "video" | "image" | null = null;
-    if (file) {
-      type = "video";
-    }
+    if (file) type = "video";
     if (!file) {
       file = filenames.find((name: string) =>
         IMAGE_EXTENSIONS.some((ext) => name.endsWith(ext))
       );
-      if (file) {
-        type = "image";
-      }
+      if (file) type = "image";
     }
-
-    if (!file || !type) {
-      console.warn(`No valid media files found for ${brand}`);
-      return null;
-    }
-
-    const finalUrl = `${BUCKET_URL}/${brand}/scrolling_brand_media/${file}`;
-
+    if (!file || !type) return null;
     return {
       id: brand,
       type,
-      url: finalUrl,
+      url: `${BUCKET_URL}/${brand}/scrolling_brand_media/${file}`,
     };
-  } catch (error) {
-    console.error(`Error fetching media for ${brand}:`, error);
+  } catch {
     return null;
+  }
+}
+
+// Function to get all brand folders from the bucket
+async function getBrandsFromBucket(): Promise<string[]> {
+  try {
+    // List all folders in the brand-content bucket
+    const { data, error } = await supabase.storage
+      .from("brand-content")
+      .list("", {
+        limit: 1000,
+        offset: 0,
+        sortBy: { column: "name", order: "asc" },
+      });
+
+    if (error) {
+      console.error("Error fetching brands from bucket:", error);
+      return [];
+    }
+
+    // Filter for folders (directories) and return their names
+    const brandFolders = data
+      .filter(
+        (item) =>
+          item.metadata?.mimetype === "application/octet-stream" ||
+          item.name.includes("/")
+      )
+      .map((item) => item.name);
+
+    console.log(
+      `Found ${brandFolders.length} brand folders in bucket:`,
+      brandFolders
+    );
+    return brandFolders;
+  } catch (error) {
+    console.error("Error fetching brands from bucket:", error);
+    return [];
   }
 }
 
@@ -412,29 +444,6 @@ const MediaItem = React.memo(
             isLooping={true}
             isMuted={muted === undefined ? false : muted}
             volume={1.0}
-            onLoad={() => {
-              // Video loaded
-            }}
-            onLoadStart={() => {
-              // Video load started
-            }}
-            onError={(error) => {
-              console.error(`Video error for ${item.id}:`, error);
-            }}
-            onPlaybackStatusUpdate={(status) => {
-              if (status.isLoaded) {
-                // Playback status updated
-              } else if (
-                !status.isLoaded &&
-                "error" in status &&
-                status.error
-              ) {
-                console.error(
-                  `Video playback error for ${item.id}:`,
-                  status.error
-                );
-              }
-            }}
           />
         </View>
       );
@@ -449,15 +458,6 @@ const MediaItem = React.memo(
           source={{ uri: item.url }}
           style={{ width: "100%", height: screenHeight }}
           contentFit="cover"
-          onLoad={() => {
-            // Image loaded
-          }}
-          onLoadStart={() => {
-            // Image load started
-          }}
-          onError={(error) => {
-            console.error(`Image error for ${item.id}:`, error);
-          }}
         />
       </View>
     );
@@ -467,65 +467,32 @@ MediaItem.displayName = "MediaItem";
 
 // 1. Fetch all media for all brands at once
 async function fetchAllBrandsMedia(brands: string[]) {
-  console.log(`Loading media for ${brands.length} brands`);
-
-  const startTime = Date.now();
   const all = await Promise.all(
-    brands.map(async (brand, index) => {
+    brands.map(async (brand) => {
+      // Updated to use scrolling_brand_media folder structure
       const indexUrl = `${BUCKET_URL}/${brand}/scrolling_brand_media/index.json`;
-
       try {
         const res = await fetch(indexUrl);
-
-        if (!res.ok) {
-          try {
-            const contentType = res.headers.get("content-type") || "unknown";
-            const bodyText = await res
-              .text()
-              .catch(() => "<unable to read body>");
-            const snippet = bodyText ? bodyText.slice(0, 300) : "<empty body>";
-            console.warn(
-              `Failed to fetch ${brand}: ${res.status} ${res.statusText} | url=${indexUrl} | content-type=${contentType} | body[0..300]=\n${snippet}`
-            );
-          } catch (e) {
-            console.warn(
-              `Failed to fetch ${brand}: ${res.status} ${res.statusText} | url=${indexUrl} | <error while reading response body>`,
-              e
-            );
-          }
-          return null;
-        }
-
+        if (!res.ok) return null;
         const data = await res.json();
-
-        if (!Array.isArray(data.files)) {
-          console.warn(`Invalid files structure for ${brand}`);
-          return null;
-        }
-
-        const rawFiles = data.files
+        if (!Array.isArray(data.files)) return null;
+        const files = data.files
           .map((f: any) => (typeof f === "string" ? f : f?.name))
-          .filter(Boolean);
-
-        const files = rawFiles
+          .filter(Boolean)
           .map((name: string) => {
             const type = getMediaType(name);
-            const result = type
+            return type
               ? {
                   type,
                   url: `${BUCKET_URL}/${brand}/scrolling_brand_media/${name}`,
                   name,
                 }
               : null;
-
-            return result;
           })
           .filter(Boolean);
-
         // Move the first video (if any) to the front
         let reorderedFiles = files;
         const firstVideoIdx = files.findIndex((f: any) => f.type === "video");
-
         if (firstVideoIdx > 0) {
           const [video] = files.splice(firstVideoIdx, 1);
           reorderedFiles = [video, ...files];
@@ -534,43 +501,28 @@ async function fetchAllBrandsMedia(brands: string[]) {
         // Fetch brand tagline from database
         let tagline = null;
         try {
-          const taglineStart = Date.now();
           const { data: brandData, error } = await supabase
             .from("brand")
             .select("brand_tagline")
-            .eq("brand_name", brand)
+            .eq("media_filepath", brand)
             .single();
 
           if (!error && brandData) {
             tagline = brandData.brand_tagline;
           }
         } catch (error) {
-          console.error(`Error fetching tagline for ${brand}:`, error);
+          console.log(
+            `Error fetching tagline for ${BRANDS[brand] || brand}:`,
+            error
+          );
         }
 
-        const result = { brand, media: reorderedFiles, tagline };
-
-        return result;
-      } catch (error) {
-        console.error(`Error processing ${brand}:`, error);
+        return { brand, media: reorderedFiles, tagline };
+      } catch {
         return null;
       }
     })
   );
-
-  const totalTime = Date.now() - startTime;
-  const successful = all.filter(Boolean);
-  const failed = all.length - successful.length;
-
-  console.log(
-    `Loaded ${successful.length} brands (${failed} failed) in ${totalTime}ms`
-  );
-
-  if (failed > 0) {
-    const failedBrands = brands.filter((brand, index) => !all[index]);
-    console.warn(`Failed to load brands:`, failedBrands);
-  }
-
   // Type guard to filter out nulls
   return all.filter(
     (
@@ -581,222 +533,6 @@ async function fetchAllBrandsMedia(brands: string[]) {
       tagline: string | null;
     } => !!b
   );
-}
-
-// --- Fetch Products Data ---
-async function fetchAllProductsMedia(products: any[]) {
-  console.log(`Loading media for ${products.length} products`);
-
-  const startTime = Date.now();
-  const all = await Promise.all(
-    products.map(async (product, index) => {
-      try {
-        const brandKey =
-          product.brand?.media_filepath ||
-          product.media_filepath?.split("/")[0];
-        const indexUrl = `${BUCKET_URL}/${brandKey}/scrolling_product_media/${product.media_filepath?.split("/")[2] || "unknown"}/index.json`;
-
-        const res = await fetch(indexUrl);
-
-        if (!res.ok) {
-          try {
-            const contentType = res.headers.get("content-type") || "unknown";
-            const bodyText = await res
-              .text()
-              .catch(() => "<unable to read body>");
-            const snippet = bodyText ? bodyText.slice(0, 300) : "<empty body>";
-            console.warn(
-              `Failed to fetch product ${product.product_name}: ${res.status} ${res.statusText} | url=${indexUrl} | content-type=${contentType} | body[0..300]=\n${snippet}`
-            );
-          } catch (e) {
-            console.warn(
-              `Failed to fetch product ${product.product_name}: ${res.status} ${res.statusText} | url=${indexUrl} | <error while reading response body>`,
-              e
-            );
-          }
-          return null;
-        }
-
-        const data = await res.json();
-        if (!Array.isArray(data.files)) {
-          console.warn(
-            `❌ [PRODUCTS DEBUG] Invalid files structure for ${product.product_name}:`,
-            data
-          );
-          return null;
-        }
-
-        const rawFiles = data.files
-          .map((f: any) => (typeof f === "string" ? f : f?.name))
-          .filter(Boolean);
-
-        const files = rawFiles
-          .map((name: string) => {
-            const type = getMediaType(name);
-            return type
-              ? {
-                  type,
-                  url: `${BUCKET_URL}/${brandKey}/scrolling_product_media/${product.media_filepath?.split("/")[2] || "unknown"}/${name}`,
-                  name,
-                }
-              : null;
-          })
-          .filter(Boolean);
-
-        // Prioritize videos
-        let reorderedFiles = files;
-        const firstVideoIdx = files.findIndex((f: any) => f.type === "video");
-        if (firstVideoIdx > 0) {
-          const [video] = files.splice(firstVideoIdx, 1);
-          reorderedFiles = [video, ...files];
-        }
-
-        return {
-          product: product.product_name,
-          brand: product.brand?.brand_name || "Unknown",
-          media: reorderedFiles,
-          tagline: `${product.brand?.brand_name || "Unknown"} - ${product.product_name}`,
-          price: product.price,
-          type: "product",
-        };
-      } catch (error) {
-        console.error(`Error processing ${product.product_name}:`, error);
-        return null;
-      }
-    })
-  );
-
-  const successful = all.filter(Boolean);
-  const totalTime = Date.now() - startTime;
-
-  console.log(
-    `🏁 [PRODUCTS DEBUG] fetchAllProductsMedia completed in ${totalTime}ms`
-  );
-  console.log(
-    `📊 [PRODUCTS DEBUG] Results: ${successful.length} successful, ${all.length - successful.length} failed`
-  );
-
-  return successful.filter(
-    (
-      p
-    ): p is {
-      product: string;
-      brand: string;
-      media: { type: "video" | "image"; url: string; name: string }[];
-      tagline: string;
-      price: number | null;
-      type: "product";
-    } => !!p
-  );
-}
-
-// --- Fetch Products from Database ---
-async function fetchProductsFromDatabase() {
-  try {
-    console.log(`🚀 [PRODUCTS DEBUG] Fetching products from database`);
-    const { data, error } = await supabase
-      .from("product")
-      .select(
-        `
-        id,
-        product_name,
-        product_desc,
-        media_filepath,
-        price,
-        type,
-        color,
-        brand:brand_id (
-          id,
-          brand_name,
-          brand_tagline,
-          media_filepath
-        )
-      `
-      )
-      .limit(50); // Limit for performance
-
-    if (error) {
-      console.error("Error fetching products:", error);
-      return [];
-    }
-
-    console.log(
-      `✅ [PRODUCTS DEBUG] Fetched ${data?.length || 0} products from database`
-    );
-    return data || [];
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    return [];
-  }
-}
-
-// --- Fetch Following Data ---
-async function fetchFollowingMedia(userId?: string) {
-  console.log(
-    `🚀 [FOLLOWING DEBUG] Starting fetchFollowingMedia - fetching saved brands for user: ${userId}`
-  );
-
-  if (!userId) {
-    console.log(
-      `⚠️ [FOLLOWING DEBUG] No user ID provided, returning empty array`
-    );
-    return [];
-  }
-
-  try {
-    // Fetch saved brands for the user
-    const { data: savedBrandsData, error } = await supabase
-      .from("saved_brands")
-      .select(
-        `
-        id,
-        brand_id,
-        brand:brand_id (
-          id,
-          brand_name,
-          brand_tagline,
-          media_filepath
-        )
-      `
-      )
-      .eq("user_id", userId);
-
-    if (error) {
-      console.error("Error fetching saved brands:", error);
-      return [];
-    }
-
-    console.log(
-      `✅ [FOLLOWING DEBUG] Fetched ${savedBrandsData?.length || 0} saved brands`
-    );
-
-    const brandKeys =
-      savedBrandsData
-        ?.map((item) => (item as any).brand?.media_filepath)
-        .filter(Boolean) || [];
-    return await fetchAllBrandsMedia(brandKeys);
-  } catch (error) {
-    console.error("Error fetching following media:", error);
-    return [];
-  }
-}
-
-// --- Fetch Featured Data ---
-async function fetchFeaturedMedia() {
-  console.log(
-    `🚀 [FEATURED DEBUG] Starting fetchFeaturedMedia - fetching featured content`
-  );
-
-  // For now, this will return a curated selection of popular brands
-  // In a real implementation, you'd have a featured content system
-  const featuredBrands = [
-    "629",
-    "A_STONECOLD_STUDIOS_PRODUCTION",
-    "ABSTRAITE_DESIGN",
-    "ACTIVIST_PARIS",
-    "AKHIELO",
-  ];
-  return await fetchAllBrandsMedia(featuredBrands);
 }
 
 // --- Recommendation Algorithm ---
@@ -964,11 +700,8 @@ export default function HomeScreen() {
   const [brandsMedia, setBrandsMedia] = useState<
     {
       brand: string;
-      product?: string;
       media: { type: "video" | "image"; url: string; name: string }[];
       tagline: string | null;
-      price?: number | null;
-      type?: "brand" | "product";
     }[]
   >([]);
   const [loading, setLoading] = useState(true);
@@ -985,9 +718,6 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const lastTapRef = useRef<{ [key: string]: number }>({});
   const [filter, setFilter] = useState<"all" | "liked">("all");
-  const [contentType, setContentType] = useState<
-    "brands" | "products" | "following" | "featured"
-  >("brands");
   const isFocused = useIsFocused();
   const [allPaused, setAllPaused] = useState(false);
 
@@ -1030,6 +760,7 @@ export default function HomeScreen() {
           brand_id,
           brand:brand_id (
             id,
+            media_filepath,
             brand_name
           )
         `
@@ -1041,12 +772,12 @@ export default function HomeScreen() {
         return;
       }
 
-      // Transform the data to get brand names
-      const brandNames = (data || [])
-        .map((item: any) => item.brand?.brand_name)
+      // Use media_filepath (sanitized key) for matching/feed and display
+      const brandKeys = (data || [])
+        .map((item: any) => item.brand?.media_filepath)
         .filter(Boolean);
 
-      setSavedBrands(new Set(brandNames));
+      setSavedBrands(new Set(brandKeys));
     } catch (error) {
       console.log("Error fetching saved brands:", error);
     }
@@ -1084,20 +815,6 @@ export default function HomeScreen() {
     feedFilterEmitter.on("filter", handler);
     return () => {
       feedFilterEmitter.off("filter", handler);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handler = (
-      newContentType: "brands" | "products" | "following" | "featured"
-    ) => {
-      setContentType(newContentType);
-      setLoading(true);
-      setVerticalIndex(0);
-    };
-    feedFilterEmitter.on("contentType", handler);
-    return () => {
-      feedFilterEmitter.off("contentType", handler);
     };
   }, []);
 
@@ -1139,7 +856,9 @@ export default function HomeScreen() {
     try {
       const brandId = await getBrandId(brandName);
       if (!brandId) {
-        console.log(`Could not find brand ID for: ${brandName}`);
+        console.log(
+          `Could not find brand ID for: ${BRANDS[brandName] || brandName}`
+        );
         return;
       }
 
@@ -1154,14 +873,14 @@ export default function HomeScreen() {
             newSet.delete(brandName);
             return newSet;
           });
-          console.log(`Unsaved brand: ${brandName}`);
+          console.log(`Unsaved brand: ${BRANDS[brandName] || brandName}`);
         }
       } else {
         // Save the brand
         const success = await saveBrand(brandId, session.user.id);
         if (success) {
           setSavedBrands((prev) => new Set([...prev, brandName]));
-          console.log(`Saved brand: ${brandName}`);
+          console.log(`Saved brand: ${BRANDS[brandName] || brandName}`);
 
           // Show popup only when saving (not unsaving)
           setShowSavedPopup(true);
@@ -1190,77 +909,42 @@ export default function HomeScreen() {
     }
   };
 
-  // --- Load Content Based on Type ---
-  const loadContent = async () => {
-    console.log(`Loading ${contentType} content`);
-    setLoading(true);
-
-    try {
-      let content: any[] = [];
-
-      switch (contentType) {
-        case "brands":
-          const recommended = recommendBrands(
-            sanitizedBrands,
-            brandScores,
-            sessionBrands,
-            session?.user?.id
-          );
-          const brandsContent = await fetchAllBrandsMedia(recommended);
-          content = brandsContent.map((b) => ({ ...b, type: "brand" }));
-          setSessionBrands(new Set(recommended));
-          break;
-
-        case "products":
-          const productsData = await fetchProductsFromDatabase();
-          const productsContent = await fetchAllProductsMedia(productsData);
-          content = productsContent;
-          break;
-
-        case "following":
-          const followingContent = await fetchFollowingMedia(session?.user?.id);
-          content = followingContent.map((b) => ({ ...b, type: "brand" }));
-          break;
-
-        case "featured":
-          console.log(`⭐ [LOAD DEBUG] Loading featured content`);
-          const featuredContent = await fetchFeaturedMedia();
-          content = featuredContent.map((b) => ({ ...b, type: "brand" }));
-          break;
-
-        default:
-          console.warn(`❌ [LOAD DEBUG] Unknown content type: ${contentType}`);
-          break;
+  // --- Replace shuffle logic in loadBrands and reshuffle ---
+  useEffect(() => {
+    const loadBrands = async () => {
+      // Get brands dynamically from bucket instead of hardcoded BRANDS
+      const bucketBrands = await getBrandsFromBucket();
+      if (bucketBrands.length === 0) {
+        console.warn(
+          "No brands found in bucket, falling back to hardcoded list"
+        );
+        bucketBrands.push(...sanitizedBrands);
       }
 
-      console.log(
-        `✅ [LOAD DEBUG] Successfully loaded ${content.length} items for ${contentType}`
+      const recommended = recommendBrands(
+        bucketBrands,
+        brandScores,
+        sessionBrands,
+        session?.user?.id // Pass userId for seeding
       );
-      setBrandsMedia(content);
-      setVerticalIndex(0);
-      setLoading(false);
-    } catch (error) {
-      console.error(
-        `💥 [LOAD DEBUG] Error loading ${contentType} content:`,
-        error
+      const all = await fetchAllBrandsMedia(recommended);
+      setBrandsMedia(
+        all.filter(
+          (
+            b
+          ): b is {
+            brand: string;
+            media: { type: "video" | "image"; url: string; name: string }[];
+            tagline: string | null;
+          } => !!b
+        )
       );
+      setSessionBrands(new Set(recommended));
       setLoading(false);
-    }
-  };
-
-  // Initial load
-  useEffect(() => {
-    loadContent();
+    };
+    loadBrands();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Load content when type changes
-  useEffect(() => {
-    if (contentType) {
-      loadContent();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contentType]);
 
   const handleVerticalScroll = React.useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -1270,12 +954,21 @@ export default function HomeScreen() {
       if (brandsMedia.length > 0 && newIndex >= brandsMedia.length - 1) {
         console.log(`Reached end of feed, reloading content...`);
 
-        // Only reshuffle for brands content type
-        if (contentType === "brands") {
-          // Reshuffle brands and reset to top
-          const startTime = Date.now();
+        // Reshuffle brands and reset to top
+        const startTime = Date.now();
+
+        // Get brands dynamically for reshuffle
+        (async () => {
+          const bucketBrands = await getBrandsFromBucket();
+          if (bucketBrands.length === 0) {
+            console.warn(
+              "No brands found in bucket during reshuffle, falling back to hardcoded list"
+            );
+            bucketBrands.push(...sanitizedBrands);
+          }
+
           const recommended = recommendBrands(
-            sanitizedBrands,
+            bucketBrands,
             brandScores,
             sessionBrands
           );
@@ -1286,59 +979,40 @@ export default function HomeScreen() {
           );
           console.log(`📋 [SCROLL DEBUG] New recommended brands:`, recommended);
 
-          (async () => {
-            const fetchStart = Date.now();
-            const all = await fetchAllBrandsMedia(recommended);
-            const fetchTime = Date.now() - fetchStart;
+          const fetchStart = Date.now();
+          const all = await fetchAllBrandsMedia(recommended);
+          const fetchTime = Date.now() - fetchStart;
 
-            console.log(
-              `📁 [SCROLL DEBUG] Reshuffle media fetch took ${fetchTime}ms`
-            );
-            console.log(
-              `✅ [SCROLL DEBUG] Loaded ${all.length} brands for reshuffle`
-            );
-
-            const finalContent = all.map((b) => ({
-              ...b,
-              type: "brand" as const,
-            }));
-
-            console.log(
-              `🎬 [SCROLL DEBUG] Final reshuffled content:`,
-              finalContent.map((b) => ({
-                brand: b.brand,
-                mediaCount: b.media.length,
-              }))
-            );
-
-            setBrandsMedia(finalContent);
-            setSessionBrands(new Set(recommended));
-            setVerticalIndex(0);
-
-            console.log(
-              `🏁 [SCROLL DEBUG] Reshuffle completed, reset to index 0`
-            );
-          })();
-        } else {
-          // For other content types, just reload the content
-          console.log(`🔄 [SCROLL DEBUG] Reloading ${contentType} content`);
-          loadContent();
-        }
-      } else {
-        if (newIndex !== verticalIndex) {
           console.log(
-            `📍 [SCROLL DEBUG] Index changed from ${verticalIndex} to ${newIndex}`
+            `📁 [SCROLL DEBUG] Reshuffle media fetch took ${fetchTime}ms`
           );
-          if (brandsMedia[newIndex]) {
-            console.log(
-              `🎯 [SCROLL DEBUG] Now viewing brand: ${brandsMedia[newIndex].brand}`
-            );
-          }
-        }
+          console.log(
+            `✅ [SCROLL DEBUG] Loaded ${all.length} brands for reshuffle`
+          );
+
+          setBrandsMedia(
+            all.filter(
+              (
+                b
+              ): b is {
+                brand: string;
+                media: { type: "video" | "image"; url: string; name: string }[];
+                tagline: string | null;
+              } => !!b
+            )
+          );
+          setSessionBrands(new Set(recommended));
+          setVerticalIndex(0);
+
+          console.log(
+            `🏁 [SCROLL DEBUG] Reshuffle completed, reset to index 0`
+          );
+        })();
+      } else {
         setVerticalIndex((prev) => (prev !== newIndex ? newIndex : prev));
       }
     },
-    [brandsMedia.length, brandScores, sessionBrands, verticalIndex]
+    [brandsMedia.length, brandScores, sessionBrands]
   );
 
   const [visibleVerticalIndex, setVisibleVerticalIndex] = useState(0);
@@ -1477,18 +1151,12 @@ export default function HomeScreen() {
 
   const renderBrandMedia = React.useCallback(
     ({
-      item,
+      item: { brand, media },
       index: vIndex,
     }: {
-      item: {
-        brand: string;
-        product?: string;
-        media: any[];
-        type?: "brand" | "product";
-      };
+      item: { brand: string; media: any[] };
       index: number;
     }) => {
-      const { brand, media } = item;
       const horizontalIndex = horizontalIndices[brand] || 0;
       return (
         <FlatList
@@ -1532,7 +1200,6 @@ export default function HomeScreen() {
                 lastTapRef.current[lastTapKey] &&
                 now - lastTapRef.current[lastTapKey] < 300
               ) {
-                // Always save the brand, even for products
                 handleSaveBrand(brand);
               }
               lastTapRef.current[lastTapKey] = now;
@@ -1622,18 +1289,8 @@ export default function HomeScreen() {
       : brandsMedia;
 
   if (loading || filteredBrandsMedia.length === 0) {
-    console.log(
-      `⏳ [APP DEBUG] Loading state: loading=${loading}, brandsMedia.length=${brandsMedia.length}, filteredBrandsMedia.length=${filteredBrandsMedia.length}`
-    );
     return <ActivityIndicator size="large" className="flex-1 self-center" />;
   }
-
-  console.log(
-    `🎬 [APP DEBUG] Rendering feed with ${filteredBrandsMedia.length} brands (filter: ${filter})`
-  );
-  console.log(
-    `📊 [APP DEBUG] Current state: verticalIndex=${verticalIndex}, visibleVerticalIndex=${visibleVerticalIndex}`
-  );
 
   if (filter === "liked" && filteredBrandsMedia.length === 0) {
     return (
@@ -1706,53 +1363,35 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Content overlay */}
+        {/* Brand name overlay */}
         {filteredBrandsMedia[verticalIndex] && (
           <View className="bg-black/30 px-4 py-3 rounded-full flex-row items-center justify-between">
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => {
-                const currentItem = filteredBrandsMedia[verticalIndex];
-                if (currentItem.type === "product") {
-                  // For products, navigate to brand page
-                  console.log(
-                    "Navigating to brand from product:",
-                    currentItem.brand
-                  );
-                  router.push({
-                    pathname: "/(tabs)/[brand]",
-                    params: { brand: currentItem.brand },
-                  });
-                } else {
-                  // For brands, navigate to brand detail
-                  console.log("Navigating to brand:", currentItem.brand);
-                  router.push({
-                    pathname: "/(tabs)/[brand]",
-                    params: { brand: currentItem.brand },
-                  });
-                }
+                // Navigate to brand detail component
+                console.log(
+                  "Navigating to brand:",
+                  BRANDS[filteredBrandsMedia[verticalIndex].brand] ||
+                    filteredBrandsMedia[verticalIndex].brand
+                );
+                router.push({
+                  pathname: "/(tabs)/[brand]",
+                  params: { brand: filteredBrandsMedia[verticalIndex].brand },
+                });
               }}
               className="flex-1 items-start justify-center pl-2"
             >
               <Text className="text-white text-sm font-semibold text-left">
-                {filteredBrandsMedia[verticalIndex].type === "product"
-                  ? `${filteredBrandsMedia[verticalIndex].brand} - ${filteredBrandsMedia[verticalIndex].product}`
-                  : BRANDS[
-                      filteredBrandsMedia[verticalIndex]
-                        .brand as keyof typeof BRANDS
-                    ] || filteredBrandsMedia[verticalIndex].brand}
+                {BRANDS[filteredBrandsMedia[verticalIndex].brand] ||
+                  filteredBrandsMedia[verticalIndex].brand}
               </Text>
-              {(filteredBrandsMedia[verticalIndex].type === "product" &&
-                filteredBrandsMedia[verticalIndex].price) ||
-              BRAND_AI_SUMMARIES[filteredBrandsMedia[verticalIndex].brand] ||
+              {BRAND_AI_SUMMARIES[filteredBrandsMedia[verticalIndex].brand] ||
               filteredBrandsMedia[verticalIndex].tagline ? (
                 <Text className="text-white text-xs opacity-80 text-left mt-1">
-                  {filteredBrandsMedia[verticalIndex].type === "product" &&
-                  filteredBrandsMedia[verticalIndex].price
-                    ? `$${filteredBrandsMedia[verticalIndex].price}`
-                    : BRAND_AI_SUMMARIES[
-                        filteredBrandsMedia[verticalIndex].brand
-                      ] || filteredBrandsMedia[verticalIndex].tagline}
+                  {BRAND_AI_SUMMARIES[
+                    filteredBrandsMedia[verticalIndex].brand
+                  ] || filteredBrandsMedia[verticalIndex].tagline}
                 </Text>
               ) : null}
             </TouchableOpacity>
@@ -1790,11 +1429,7 @@ export default function HomeScreen() {
       </View>
       <FlatList
         data={filteredBrandsMedia}
-        keyExtractor={(item, index) =>
-          item?.type === "product"
-            ? `${item.brand}::${item.product ?? item.media?.[0]?.name ?? index}`
-            : `brand::${item.brand}`
-        }
+        keyExtractor={(item, index) => `brand::${item.brand}`}
         pagingEnabled
         showsVerticalScrollIndicator={false}
         snapToAlignment="start"

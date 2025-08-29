@@ -31,20 +31,6 @@ const BUCKET_URL =
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
 const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 
-// Function to get display name for a sanitized brand name
-function getBrandDisplayName(sanitizedName: string): string {
-  // This mapping should ideally be imported from a shared file
-  // For now, converting sanitized names back to display format
-  return sanitizedName
-    .split("_")
-    .join(" ")
-    .replace("TM", "™")
-    .replace("FASHON", "[FÀSH•ON]")
-    .replace("97", "⁹⁷")
-    .replace("STONECOLD STUDIOS PRODUCTION", "STONECOLD STUDIOS PRODUCTION")
-    .replace("1FLAW", "1%FLAW");
-}
-
 const { width } = Dimensions.get("window");
 // Calculate width for 2 columns with proper spacing
 // Total gap between items: 1 gap * 16px = 16px
@@ -340,6 +326,7 @@ export default function BrandDetailScreen() {
 
   async function fetchFirstMedia(brandName: string) {
     try {
+      // Updated to use scrolling_brand_media folder structure
       const indexUrl = `${BUCKET_URL}/${brandName}/scrolling_brand_media/index.json`;
       const res = await fetch(indexUrl);
       if (!res.ok) return;
@@ -481,7 +468,7 @@ export default function BrandDetailScreen() {
           {/* Brand Name and Follow Button HStack */}
           <View className="flex-row justify-between items-start mb-2">
             <Text className="text-2xl font-bold uppercase flex-1">
-              {getBrandDisplayName(safeBrand)}
+              {safeBrand}
             </Text>
             <TouchableOpacity
               className={`px-3 py-1.5 rounded-full border ${

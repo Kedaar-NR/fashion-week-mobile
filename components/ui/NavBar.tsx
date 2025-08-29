@@ -182,28 +182,28 @@ export function NavBar({
           {
             label: "BRANDS",
             onPress: () => {
-              feedFilterEmitter.emit("contentType", "brands");
+              router.push("/(tabs)/(collections)");
               setMenuOpen(false);
             },
           },
           {
             label: "PRODUCTS",
             onPress: () => {
-              feedFilterEmitter.emit("contentType", "products");
+              router.push("/(tabs)/(drops)");
               setMenuOpen(false);
             },
           },
           {
             label: "FOLLOWING",
             onPress: () => {
-              feedFilterEmitter.emit("contentType", "following");
+              router.push("/(tabs)/(user)");
               setMenuOpen(false);
             },
           },
           {
             label: "FEATURED",
             onPress: () => {
-              feedFilterEmitter.emit("contentType", "featured");
+              router.push("/(tabs)/style-quiz");
               setMenuOpen(false);
             },
           },

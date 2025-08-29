@@ -44,6 +44,7 @@ SUPPORTED_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.mp4', '.mov'}
 processed_brands = 0
 processed_products = 0
 errors = []
+processed_brand_names = []  # Track all brand names that were processed
 
 def sanitize_key_component(component: str) -> str:
     """
@@ -148,7 +149,11 @@ def get_all_brand_folders(supabase: Client) -> List[str]:
     """
     try:
         # List items in the bucket root (brand folders are directly in bucket)
-        result = supabase.storage.from_(BUCKET_NAME).list('')
+        result = supabase.storage.from_(BUCKET_NAME).list('', {
+            'limit': 1000,
+            'offset': 0,
+            'sortBy': { 'column': 'name', 'order': 'asc' },
+        })
         
         if not result:
             return []
@@ -268,6 +273,15 @@ def generate_report() -> None:
     print(f"✅ Brands processed: {processed_brands}")
     print(f"✅ Products processed: {processed_products}")
     
+    if processed_brand_names:
+        total_brands_attempted = len(processed_brand_names)
+        print(f"\n📊 Brand Processing Summary:")
+        print(f"   • Total brands attempted: {total_brands_attempted}")
+        print(f"   • Successfully processed: {processed_brands}")
+        print(f"   • Failed to process: {total_brands_attempted - processed_brands}")
+        print(f"\n🏢 Brands processed:")
+        print(f"[{', '.join(f'"{brand_name}"' for brand_name in processed_brand_names)}]")
+    
     if errors:
         print(f"\n❌ Errors encountered: {len(errors)}")
         for error in errors[:10]:  # Show first 10 errors
@@ -376,10 +390,15 @@ def main():
             if brand_success:
                 processed_brands += 1
                 
+            # Track all brands that were attempted, regardless of success
+            processed_brand_names.append(brand_name)
+                
         except Exception as error:
             error_msg = f"Failed to process brand {brand_name}: {str(error)}"
             print(f"❌ {error_msg}")
             errors.append(error_msg)
+            # Still track failed brands
+            processed_brand_names.append(brand_name)
     
     # Generate final report
     generate_report()
