@@ -1,4 +1,10 @@
-import { router, useFocusEffect, usePathname, useSegments } from "expo-router";
+import {
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+  usePathname,
+  useSegments,
+} from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
@@ -32,6 +38,8 @@ export function NavBar({
   const colorScheme = useColorScheme();
   const pathname = usePathname();
   const segments = useSegments();
+  const { brand: brandParam } = useLocalSearchParams<{ brand?: string }>();
+  const [brandTitle, setBrandTitle] = useState<string | null>(null);
   // console.log("pathname", pathname);
   // console.log("segments", segments);
 
@@ -79,6 +87,17 @@ export function NavBar({
       if (segments && segments.includes("(user)")) return "ACCOUNT";
       return "fashion:week";
     }
+    // Brand detail page: show unsanitized brand name from DB when available
+    if (brandParam) {
+      if (brandTitle && brandTitle.trim().length > 0) return brandTitle;
+      // Fallback to route param if DB value not yet loaded
+      const rawParam = Array.isArray(brandParam)
+        ? brandParam[0]
+        : brandParam || "";
+      // Display the raw param (unsanitized), but trim slashes and extension artifacts
+      const safe = rawParam.replace(/^\/+|\/+$/g, "").replace(/\.[^/.]+$/, "");
+      return safe || "BRAND";
+    }
     if (path.includes("/collection")) return "LIBRARY";
     if (path.includes("/drops")) return "DROP TRACKER";
     if (path.includes("/user")) return "ACCOUNT";
@@ -94,6 +113,48 @@ export function NavBar({
   };
 
   const pageDisplayName = getPageDisplayName(pathname, segments);
+
+  // Fetch original brand name for brand page
+  useEffect(() => {
+    const isBrandPage =
+      !!brandParam || (pathname || "").includes("/(tabs)/[brand]");
+    if (!isBrandPage) {
+      if (brandTitle !== null) setBrandTitle(null);
+      return;
+    }
+
+    const rawParam = Array.isArray(brandParam)
+      ? brandParam[0]
+      : brandParam || "";
+    const mediaFilepath = rawParam
+      .replace(/^\/+|\/+$/g, "")
+      .replace(/\.[^/.]+$/, "");
+    if (!mediaFilepath) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("brand")
+          .select("brand_name")
+          .eq("media_filepath", mediaFilepath)
+          .single();
+        if (!cancelled) {
+          if (!error && data?.brand_name) {
+            setBrandTitle(data.brand_name);
+          } else {
+            setBrandTitle(null);
+          }
+        }
+      } catch (_e) {
+        if (!cancelled) setBrandTitle(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [segments, brandParam]);
 
   // Determine if we should show back button based on current page
   const shouldShowBack =
@@ -478,7 +539,7 @@ export function NavBar({
         <Text
           className={`text-lg font-semibold tracking-wider ${pageDisplayName === "fashion:week" ? "text-white" : "text-black"}`}
         >
-          {pageDisplayName}
+          {customTitle || pageDisplayName}
         </Text>
 
         <TouchableOpacity

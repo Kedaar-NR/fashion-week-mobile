@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { IconSymbol } from "../../components/ui/IconSymbol";
 import { supabase } from "../../lib/supabase";
 
 interface CollectionPiece {
@@ -67,6 +68,7 @@ export default function BrandDetailScreen() {
   const [productThumbs, setProductThumbs] = useState<{
     [id: number]: string | null;
   }>({});
+  const [likedProducts, setLikedProducts] = useState<Set<number>>(new Set());
 
   // --- Authentication Setup ---
   useEffect(() => {
@@ -176,6 +178,79 @@ export default function BrandDetailScreen() {
     }
   }
 
+  // Function to check if a product is liked by the current user
+  async function isProductLiked(
+    productId: number,
+    userId: string
+  ): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from("liked_products")
+        .select("id")
+        .eq("product_id", productId)
+        .eq("user_id", userId)
+        .single();
+
+      if (error && error.code !== "PGRST116") {
+        // PGRST116 is "not found" error
+        console.log("Error checking if product is liked:", error);
+        return false;
+      }
+
+      return !!data;
+    } catch (error) {
+      console.log("Error checking if product is liked:", error);
+      return false;
+    }
+  }
+
+  // Function to like a product
+  async function likeProduct(
+    productId: number,
+    userId: string
+  ): Promise<boolean> {
+    try {
+      const { error } = await supabase.from("liked_products").insert({
+        product_id: productId,
+        user_id: userId,
+      });
+
+      if (error) {
+        console.log("Error liking product:", error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.log("Error liking product:", error);
+      return false;
+    }
+  }
+
+  // Function to unlike a product
+  async function unlikeProduct(
+    productId: number,
+    userId: string
+  ): Promise<boolean> {
+    try {
+      const { error } = await supabase
+        .from("liked_products")
+        .delete()
+        .eq("product_id", productId)
+        .eq("user_id", userId);
+
+      if (error) {
+        console.log("Error unliking product:", error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.log("Error unliking product:", error);
+      return false;
+    }
+  }
+
   // Function to handle archive toggle
   const handleArchiveToggle = async () => {
     if (!session?.user) {
@@ -210,6 +285,40 @@ export default function BrandDetailScreen() {
     }
   };
 
+  // Function to handle product like toggle
+  const handleProductLikeToggle = async (productId: number) => {
+    if (!session?.user) {
+      console.log("User not authenticated");
+      return;
+    }
+
+    try {
+      const isCurrentlyLiked = likedProducts.has(productId);
+
+      if (isCurrentlyLiked) {
+        // Unlike the product
+        const success = await unlikeProduct(productId, session.user.id);
+        if (success) {
+          setLikedProducts((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(productId);
+            return newSet;
+          });
+          console.log(`Unliked product: ${productId}`);
+        }
+      } else {
+        // Like the product
+        const success = await likeProduct(productId, session.user.id);
+        if (success) {
+          setLikedProducts((prev) => new Set([...prev, productId]));
+          console.log(`Liked product: ${productId}`);
+        }
+      }
+    } catch (error) {
+      console.log("Error handling product like toggle:", error);
+    }
+  };
+
   // Function to check initial archive status
   const checkArchiveStatus = async () => {
     if (!session?.user || !safeBrand) return;
@@ -225,6 +334,28 @@ export default function BrandDetailScreen() {
     }
   };
 
+  // Function to check initial liked products status
+  const checkLikedProductsStatus = async () => {
+    if (!session?.user || !pieces || pieces.length === 0) return;
+
+    try {
+      const likedStatuses = await Promise.all(
+        pieces.map(async (piece) => {
+          const isLiked = await isProductLiked(piece.id, session.user.id);
+          return { productId: piece.id, isLiked };
+        })
+      );
+
+      const likedProductIds = likedStatuses
+        .filter((status) => status.isLiked)
+        .map((status) => status.productId);
+
+      setLikedProducts(new Set(likedProductIds));
+    } catch (error) {
+      console.log("Error checking liked products status:", error);
+    }
+  };
+
   // Check archive status when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
@@ -232,6 +363,15 @@ export default function BrandDetailScreen() {
         checkArchiveStatus();
       }
     }, [session, safeBrand])
+  );
+
+  // Check liked products status when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      if (session?.user && pieces && pieces.length > 0) {
+        checkLikedProductsStatus();
+      }
+    }, [session, pieces])
   );
 
   const fetchBrandPieces = async () => {
@@ -435,40 +575,56 @@ export default function BrandDetailScreen() {
   );
 
   const renderGridItem = ({ item }: { item: CollectionPiece }) => {
+    const isLiked = likedProducts.has(item.id);
+
     return (
-      <TouchableOpacity
-        className="items-center"
-        style={{ width: gridItemWidth }}
-        onPress={() => console.log("Selected piece:", item.id)}
-      >
-        <View
-          className="rounded-xl justify-center items-center mb-2 overflow-hidden bg-gray-200"
-          style={{ width: gridItemWidth, height: gridItemWidth }}
+      <View className="items-center" style={{ width: gridItemWidth }}>
+        <TouchableOpacity
+          className="items-center"
+          style={{ width: gridItemWidth }}
+          onPress={() => console.log("Selected piece:", item.id)}
         >
-          {productThumbs[item.id] ? (
-            <Image
-              source={{ uri: productThumbs[item.id] as string }}
-              className="w-full h-full"
-              resizeMode="cover"
-            />
-          ) : (
-            <Text className="text-xs opacity-50">No Image</Text>
-          )}
-        </View>
-        <View className="flex-row justify-between items-start w-full">
-          <View className="flex-1 mr-2">
-            <Text className="text-xs font-medium" numberOfLines={1}>
-              {item.product_name}
-            </Text>
-            <Text className="text-xs text-gray-600" numberOfLines={1}>
-              {item.brand_name}
+          <View
+            className="rounded-xl justify-center items-center mb-2 overflow-hidden bg-gray-200"
+            style={{ width: gridItemWidth, height: gridItemWidth }}
+          >
+            {productThumbs[item.id] ? (
+              <Image
+                source={{ uri: productThumbs[item.id] as string }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            ) : (
+              <Text className="text-xs opacity-50">No Image</Text>
+            )}
+          </View>
+          <View className="flex-row justify-between items-start w-full">
+            <View className="flex-1 mr-2">
+              <Text className="text-xs font-medium" numberOfLines={1}>
+                {item.product_name}
+              </Text>
+              <Text className="text-xs text-gray-600" numberOfLines={1}>
+                {item.brand_name}
+              </Text>
+            </View>
+            <Text className="text-xs font-bold" numberOfLines={1}>
+              ${item.price}
             </Text>
           </View>
-          <Text className="text-xs font-bold" numberOfLines={1}>
-            ${item.price}
-          </Text>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+
+        {/* Like Button */}
+        <TouchableOpacity
+          className="absolute top-2 right-2 w-8 h-8 bg-white/80 rounded-full justify-center items-center"
+          onPress={() => handleProductLikeToggle(item.id)}
+        >
+          <IconSymbol
+            name={isLiked ? "heart.fill" : "heart"}
+            size={16}
+            color={isLiked ? "#ef4444" : "#6b7280"}
+          />
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -556,10 +712,12 @@ export default function BrandDetailScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Tagline below */}
-          <Text className="text-sm text-gray-600">
-            {pieces[0]?.brand_tagline || "No tagline available"}
-          </Text>
+          {/* Tagline below - only show if available */}
+          {pieces[0]?.brand_tagline && (
+            <Text className="text-sm text-gray-600">
+              {pieces[0].brand_tagline}
+            </Text>
+          )}
         </View>
       </View>
 
@@ -631,13 +789,21 @@ export default function BrandDetailScreen() {
 
               // If only content is active, show only brand media
               if (contentActive && !catalogActive) {
-                return brandContentMedia.map((media, index) => (
-                  <View key={`media-only-${index}`} className="mb-6">
-                    <View className="w-full h-48 bg-gray-200 rounded-2xl justify-center items-center">
-                      <Text className="text-gray-400 text-sm">No Image</Text>
-                    </View>
+                // TODO: Implement brand content when available
+                // return brandContentMedia.map((media, index) => (
+                //   <View key={`media-only-${index}`} className="mb-6">
+                //     <View className="w-full h-48 bg-gray-200 rounded-2xl justify-center items-center">
+                //       <Text className="text-gray-400 text-sm">No Image</Text>
+                //     </View>
+                //   </View>
+                // ));
+                return (
+                  <View className="flex-1 justify-center items-center py-8">
+                    <Text className="text-gray-600 text-center">
+                      Brand content coming soon
+                    </Text>
                   </View>
-                ));
+                );
               }
 
               // If only catalog is active, show only products
@@ -681,28 +847,29 @@ export default function BrandDetailScreen() {
               }
 
               // Then intersperse brand content media every 4 products
-              while (
-                productIndex < pieces.length &&
-                mediaIndex < brandContentMedia.length
-              ) {
-                // Add brand content media
-                items.push({
-                  type: "media",
-                  data: brandContentMedia[mediaIndex],
-                  index: mediaIndex,
-                });
-                mediaIndex++;
+              // TODO: Implement brand content when available
+              // while (
+              //   productIndex < pieces.length &&
+              //   mediaIndex < brandContentMedia.length
+              // ) {
+              //   // Add brand content media
+              //   items.push({
+              //     type: "media",
+              //     data: brandContentMedia[mediaIndex],
+              //     index: mediaIndex,
+              //   });
+              //   mediaIndex++;
 
-                // Add next 4 products
-                for (let i = 0; i < 4 && productIndex < pieces.length; i++) {
-                  items.push({
-                    type: "product",
-                    data: pieces[productIndex],
-                    index: productIndex,
-                  });
-                  productIndex++;
-                }
-              }
+              //   // Add next 4 products
+              //   for (let i = 0; i < 4 && productIndex < pieces.length; i++) {
+              //     items.push({
+              //       type: "product",
+              //       data: pieces[productIndex],
+              //       index: productIndex,
+              //     });
+              //     productIndex++;
+              //   }
+              // }
 
               // Add remaining products
               while (productIndex < pieces.length) {
@@ -719,53 +886,56 @@ export default function BrandDetailScreen() {
               const rows: any[] = [];
 
               items.forEach((item) => {
-                if (item.type === "media") {
-                  // If we have products in current row, add the row first
-                  if (currentRow.length > 0) {
-                    rows.push(
-                      <View
-                        key={`row-${rows.length}`}
-                        className="flex-row gap-4 mb-4"
-                      >
-                        {currentRow.map((product, colIndex) => (
-                          <View key={colIndex} style={{ width: gridItemWidth }}>
-                            {renderGridItem({ item: product })}
-                          </View>
-                        ))}
-                      </View>
-                    );
-                    currentRow = [];
-                  }
+                // TODO: Implement brand content when available
+                // Since we're not adding media items, all items are products
+                // if (item.type === "media") {
+                //   // If we have products in current row, add the row first
+                //   if (currentRow.length > 0) {
+                //     rows.push(
+                //       <View
+                //         key={`row-${rows.length}`}
+                //         className="flex-row gap-4 mb-4"
+                //       >
+                //         {currentRow.map((product, colIndex) => (
+                //           <View key={colIndex} style={{ width: gridItemWidth }}>
+                //             {renderGridItem({ item: product })}
+                //           </View>
+                //         ))}
+                //       </View>
+                //     );
+                //     currentRow = [];
+                //   }
 
-                  // Add media item
+                //   // Add media item
+                //   rows.push(
+                //     <View key={`media-${item.index}`} className="mb-6">
+                //       <View className="w-full h-48 bg-gray-200 rounded-2xl justify-center items-center">
+                //         <Text className="text-gray-400 text-sm">No Image</Text>
+                //       </View>
+                //     </View>
+                //   );
+                // } else {
+
+                // Add product to current row
+                currentRow.push(item.data);
+
+                // If we have 2 products, create a row
+                if (currentRow.length === 2) {
                   rows.push(
-                    <View key={`media-${item.index}`} className="mb-6">
-                      <View className="w-full h-48 bg-gray-200 rounded-2xl justify-center items-center">
-                        <Text className="text-gray-400 text-sm">No Image</Text>
-                      </View>
+                    <View
+                      key={`row-${rows.length}`}
+                      className="flex-row gap-4 mb-4"
+                    >
+                      {currentRow.map((product, colIndex) => (
+                        <View key={colIndex} style={{ width: gridItemWidth }}>
+                          {renderGridItem({ item: product })}
+                        </View>
+                      ))}
                     </View>
                   );
-                } else {
-                  // Add product to current row
-                  currentRow.push(item.data);
-
-                  // If we have 2 products, create a row
-                  if (currentRow.length === 2) {
-                    rows.push(
-                      <View
-                        key={`row-${rows.length}`}
-                        className="flex-row gap-4 mb-4"
-                      >
-                        {currentRow.map((product, colIndex) => (
-                          <View key={colIndex} style={{ width: gridItemWidth }}>
-                            {renderGridItem({ item: product })}
-                          </View>
-                        ))}
-                      </View>
-                    );
-                    currentRow = [];
-                  }
+                  currentRow = [];
                 }
+                // }
               });
 
               // Add any remaining products in the last row

@@ -19,12 +19,13 @@ import {
 import { supabase } from "../../../lib/supabase";
 
 interface FashionPiece {
-  id: string;
-  name: string;
+  id: number;
+  product_name: string;
   type: string;
-  designer: string;
-  image: string;
-  likedAt: Date;
+  brand_name: string;
+  media_filepath: string;
+  price: number;
+  likedAt: string;
 }
 
 interface Collection {
@@ -41,44 +42,49 @@ interface Collection {
 
 const mockFashionPieces: FashionPiece[] = [
   {
-    id: "1",
-    name: "Aviator Sunglasses",
+    id: 1,
+    product_name: "Aviator Sunglasses",
     type: "Accessories",
-    designer: "Ray-Ban",
-    image: "placeholder",
-    likedAt: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
+    brand_name: "Ray-Ban",
+    media_filepath: "placeholder",
+    price: 150,
+    likedAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(), // 15 minutes ago
   },
   {
-    id: "2",
-    name: "Denim Jacket",
+    id: 2,
+    product_name: "Denim Jacket",
     type: "Outerwear",
-    designer: "Levi's",
-    image: "placeholder",
-    likedAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
+    brand_name: "Levi's",
+    media_filepath: "placeholder",
+    price: 89,
+    likedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
   },
   {
-    id: "3",
-    name: "White Sneakers",
+    id: 3,
+    product_name: "White Sneakers",
     type: "Footwear",
-    designer: "Nike",
-    image: "placeholder",
-    likedAt: new Date(Date.now() - 1000 * 60 * 45), // 45 minutes ago
+    brand_name: "Nike",
+    media_filepath: "placeholder",
+    price: 120,
+    likedAt: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45 minutes ago
   },
   {
-    id: "4",
-    name: "Silk Scarf",
+    id: 4,
+    product_name: "Silk Scarf",
     type: "Accessories",
-    designer: "Hermès",
-    image: "placeholder",
-    likedAt: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
+    brand_name: "Hermès",
+    media_filepath: "placeholder",
+    price: 350,
+    likedAt: new Date(Date.now() - 1000 * 60 * 60).toISOString(), // 1 hour ago
   },
   {
-    id: "5",
-    name: "Leather Bag",
+    id: 5,
+    product_name: "Leather Bag",
     type: "Accessories",
-    designer: "Coach",
-    image: "placeholder",
-    likedAt: new Date(Date.now() - 1000 * 60 * 90), // 1.5 hours ago
+    brand_name: "Coach",
+    media_filepath: "placeholder",
+    price: 295,
+    likedAt: new Date(Date.now() - 1000 * 60 * 90).toISOString(), // 1.5 hours ago
   },
 ];
 
@@ -86,10 +92,11 @@ const { width } = Dimensions.get("window");
 const gridItemWidth = (width - 64) / 3; // 3 columns with padding
 
 export default function CollectionScreen() {
-  const [fashionPieces] = useState<FashionPiece[]>(mockFashionPieces);
+  const [fashionPieces, setFashionPieces] = useState<FashionPiece[]>([]);
   const [session, setSession] = useState<Session | null>(null);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [likedProductsLoading, setLikedProductsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
   const [newCollectionDescription, setNewCollectionDescription] = useState("");
@@ -142,6 +149,57 @@ export default function CollectionScreen() {
             setCollections(data || []);
           }
           setLoading(false);
+        });
+    }, [session])
+  );
+
+  // Fetch liked products when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!session) return;
+
+      setLikedProductsLoading(true);
+      supabase
+        .from("liked_products")
+        .select(
+          `
+          id,
+          created_at,
+          product:product_id (
+            id,
+            product_name,
+            type,
+            price,
+            media_filepath,
+            brand:brand_id (
+              brand_name
+            )
+          )
+        `
+        )
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false })
+        .then(({ data, error }) => {
+          if (error) {
+            console.log("Error fetching liked products:", error);
+            setFashionPieces([]);
+          } else {
+            // Transform the data to match our interface
+            const transformedProducts: FashionPiece[] = (data || [])
+              .map((item: any) => ({
+                id: item.product.id,
+                product_name: item.product.product_name || "",
+                type: item.product.type || "",
+                brand_name: item.product.brand?.brand_name || "",
+                media_filepath: item.product.media_filepath || "",
+                price: item.product.price || 0,
+                likedAt: item.created_at,
+              }))
+              .filter((product) => product.product_name && product.brand_name); // Filter out incomplete data
+
+            setFashionPieces(transformedProducts);
+          }
+          setLikedProductsLoading(false);
         });
     }, [session])
   );
@@ -473,21 +531,34 @@ export default function CollectionScreen() {
 
   // Get the 3 most recently liked pieces
   const recentlyLiked = fashionPieces
-    .sort((a, b) => b.likedAt.getTime() - a.likedAt.getTime())
+    .sort(
+      (a, b) => new Date(b.likedAt).getTime() - new Date(a.likedAt).getTime()
+    )
     .slice(0, 3);
 
   const renderRecentlyLikedItem = ({ item }: { item: FashionPiece }) => (
-    <View className="items-center" style={{ width: gridItemWidth }}>
-      <View
-        className="bg-gray-200 rounded-xl justify-center items-center mb-2"
-        style={{ width: gridItemWidth, height: gridItemWidth }}
-      >
-        <Text className="text-xs opacity-50">Image</Text>
+    <TouchableOpacity
+      className="w-32 h-40 bg-gray-200 rounded-lg overflow-hidden"
+      onPress={() =>
+        router.push({
+          pathname: "/(tabs)/(collections)/[collection]",
+          params: { collection: "all-liked" },
+        })
+      }
+    >
+      <View className="w-full h-24 bg-gradient-to-br from-gray-300 to-gray-400" />
+      <View className="p-2">
+        <Text className="text-xs font-semibold" numberOfLines={1}>
+          {item.product_name}
+        </Text>
+        <Text className="text-xs text-gray-600" numberOfLines={1}>
+          {item.brand_name}
+        </Text>
+        <Text className="text-xs text-gray-600" numberOfLines={1}>
+          ${item.price}
+        </Text>
       </View>
-      <Text className="text-xs font-medium text-center" numberOfLines={1}>
-        {item.name}
-      </Text>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderGridItem = ({ item }: { item: Collection }) => (
@@ -542,7 +613,7 @@ export default function CollectionScreen() {
           </View>
           <FlatList
             data={recentlyLiked}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.id.toString()}
             renderItem={renderRecentlyLikedItem}
             horizontal
             showsHorizontalScrollIndicator={false}

@@ -45,9 +45,84 @@ export default function CollectionDetailScreen() {
     useState(false);
 
   const fetchCollectionPieces = async () => {
-    if (!collection || collection === "all-liked") {
+    if (!collection) {
       setLoading(false);
       return;
+    }
+
+    // Handle "all-liked" collection
+    if (collection === "all-liked") {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Get the current user session
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (!session?.user) {
+          setError("User not authenticated");
+          setLoading(false);
+          return;
+        }
+
+        // Fetch liked products
+        const { data: likedProductsData, error: likedProductsError } =
+          await supabase
+            .from("liked_products")
+            .select(
+              `
+            id,
+            created_at,
+            product:product_id (
+              id,
+              product_name,
+              product_desc,
+              media_filepath,
+              price,
+              type,
+              color,
+              brand:brand_id (
+                id,
+                brand_name,
+                brand_tagline
+              )
+            )
+          `
+            )
+            .eq("user_id", session.user.id)
+            .order("created_at", { ascending: false });
+
+        if (likedProductsError) {
+          console.error("Error fetching liked products:", likedProductsError);
+          setError("Failed to load liked products");
+          setLoading(false);
+          return;
+        }
+
+        // Transform the data to match our interface
+        const transformedPieces: CollectionPiece[] =
+          likedProductsData?.map((item: any) => ({
+            id: item.product.id,
+            product_name: item.product.product_name || "",
+            product_desc: item.product.product_desc || "",
+            media_filepath: item.product.media_filepath || "",
+            price: item.product.price || 0,
+            type: item.product.type || "",
+            color: item.product.color || "",
+            brand_name: item.product.brand?.brand_name || "",
+            brand_tagline: item.product.brand?.brand_tagline || "",
+          })) || [];
+
+        setPieces(transformedPieces);
+        setLoading(false);
+        return;
+      } catch (err) {
+        console.error("Error in fetchLikedProducts:", err);
+        setError("An unexpected error occurred");
+        setLoading(false);
+        return;
+      }
     }
 
     try {
@@ -417,23 +492,23 @@ export default function CollectionDetailScreen() {
       label: "UNDER $50",
       onPress: async () => {
         await fetchCollectionPieces();
-        setPieces((prev) => prev.filter(piece => piece.price < 50));
+        setPieces((prev) => prev.filter((piece) => piece.price < 50));
         setPriceRangeSubDropdownOpen(false);
       },
     },
     {
       label: "UNDER $100",
       onPress: async () => {
-        await fetchCollectionPieces(); 
-        setPieces((prev) => prev.filter(piece => piece.price < 100));
+        await fetchCollectionPieces();
+        setPieces((prev) => prev.filter((piece) => piece.price < 100));
         setPriceRangeSubDropdownOpen(false);
       },
     },
     {
-      label: "UNDER $200", 
+      label: "UNDER $200",
       onPress: async () => {
         await fetchCollectionPieces();
-        setPieces((prev) => prev.filter(piece => piece.price < 200));
+        setPieces((prev) => prev.filter((piece) => piece.price < 200));
         setPriceRangeSubDropdownOpen(false);
       },
     },
@@ -441,7 +516,7 @@ export default function CollectionDetailScreen() {
       label: "UNDER $500",
       onPress: async () => {
         await fetchCollectionPieces();
-        setPieces((prev) => prev.filter(piece => piece.price < 500));
+        setPieces((prev) => prev.filter((piece) => piece.price < 500));
         setPriceRangeSubDropdownOpen(false);
       },
     },
@@ -531,6 +606,13 @@ export default function CollectionDetailScreen() {
 
   return (
     <ScrollView className="flex-1 px-4">
+      {/* Title Section */}
+      <View className="mb-6 pt-4">
+        <Text className="text-2xl font-bold">
+          {collection === "all-liked" ? "LIKED PRODUCTS" : collection}
+        </Text>
+      </View>
+
       {/* Header Section */}
       <View
         className={`flex-row items-center justify-between ${filterDropdownOpen || sortDropdownOpen ? "mb-2" : "mb-4"}`}
@@ -659,7 +741,9 @@ export default function CollectionDetailScreen() {
         {pieces.length === 0 ? (
           <View className="flex-1 justify-center items-center py-8">
             <Text className="text-gray-600 text-center">
-              No pieces found in this collection
+              {collection === "all-liked"
+                ? "No liked products yet. Like some products to see them here!"
+                : "No pieces found in this collection"}
             </Text>
           </View>
         ) : (

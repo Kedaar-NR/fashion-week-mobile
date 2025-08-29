@@ -320,10 +320,66 @@ async function unsaveBrand(brandId: number, userId: string): Promise<boolean> {
       console.log("Error unsaving brand:", error);
       return false;
     }
-
     return true;
   } catch (error) {
     console.log("Error unsaving brand:", error);
+    return false;
+  }
+}
+
+// Function to like a product
+async function likeProduct(
+  productId: number,
+  userId: string
+): Promise<boolean> {
+  console.log("🔍 likeProduct called with:", { productId, userId });
+
+  try {
+    const { data, error } = await supabase.from("liked_products").insert({
+      product_id: productId,
+      user_id: userId,
+    });
+
+    console.log("🔍 Supabase insert result:", { data, error });
+
+    if (error) {
+      console.log("❌ Error liking product:", error);
+      return false;
+    }
+
+    console.log("✅ Product liked successfully");
+    return true;
+  } catch (error) {
+    console.log("❌ Exception in likeProduct:", error);
+    return false;
+  }
+}
+
+// Function to unlike a product
+async function unlikeProduct(
+  productId: number,
+  userId: string
+): Promise<boolean> {
+  console.log("🔍 unlikeProduct called with:", { productId, userId });
+
+  try {
+    const { data, error } = await supabase
+      .from("liked_products")
+      .delete()
+      .eq("product_id", productId)
+      .eq("user_id", userId);
+
+    console.log("🔍 Supabase delete result:", { data, error });
+
+    if (error) {
+      console.log("❌ Error unliking product:", error);
+      return false;
+    }
+
+    console.log("✅ Product unliked successfully");
+    return true;
+  } catch (error) {
+    console.log("❌ Exception in unlikeProduct:", error);
     return false;
   }
 }
@@ -715,6 +771,7 @@ export default function HomeScreen() {
   const [muted, setMuted] = useState(false);
   const [isScreenFocused, setIsScreenFocused] = useState(true);
   const [savedBrands, setSavedBrands] = useState<Set<string>>(new Set());
+  const [likedProducts, setLikedProducts] = useState<Set<number>>(new Set());
   const [session, setSession] = useState<any>(null);
   const [showSavedPopup, setShowSavedPopup] = useState(false);
   const router = useRouter();
@@ -792,6 +849,52 @@ export default function HomeScreen() {
       fetchSavedBrands();
     }
   }, [session]);
+
+  // Function to fetch user's liked products from database
+  const fetchLikedProducts = async () => {
+    console.log("🔍 fetchLikedProducts called");
+    console.log("🔍 Session user:", session?.user?.id);
+    
+    if (!session?.user) {
+      console.log("❌ No session user, returning");
+      return;
+    }
+
+    try {
+      console.log("🔍 Querying liked_products table...");
+      const { data, error } = await supabase
+        .from("liked_products")
+        .select("product_id")
+        .eq("user_id", session.user.id);
+
+      console.log("🔍 Supabase query result:", { data, error });
+
+      if (error) {
+        console.log("❌ Error fetching liked products:", error);
+        return;
+      }
+
+      const likedProductIds = (data || []).map((item: any) => item.product_id);
+      console.log("🔍 Extracted product IDs:", likedProductIds);
+      
+      setLikedProducts(new Set(likedProductIds));
+      console.log("🔍 Updated likedProducts state with:", Array.from(new Set(likedProductIds)));
+    } catch (error) {
+      console.log("❌ Exception in fetchLikedProducts:", error);
+    }
+  };
+
+  // Fetch liked products when session changes
+  useEffect(() => {
+    if (session?.user) {
+      fetchLikedProducts();
+    }
+  }, [session]);
+
+  // Debug logging for popup state changes
+  useEffect(() => {
+    console.log("🔍 [STATE] showSavedPopup changed to:", showSavedPopup);
+  }, [showSavedPopup]);
 
   // Refresh saved brands when screen comes into focus
   useFocusEffect(
@@ -918,6 +1021,70 @@ export default function HomeScreen() {
     }
   };
 
+  // --- Product Like Functions ---
+  const handleProductLike = async (productId: number) => {
+    console.log("🔍 handleProductLike called with productId:", productId);
+    console.log("🔍 Current session user:", session?.user?.id);
+    console.log("🔍 Current likedProducts state:", Array.from(likedProducts));
+
+    if (!session?.user) {
+      console.log("❌ User not authenticated");
+      return;
+    }
+
+    try {
+      const isCurrentlyLiked = likedProducts.has(productId);
+      console.log("🔍 Product is currently liked:", isCurrentlyLiked);
+
+      if (isCurrentlyLiked) {
+        // Unlike the product
+        console.log("🔄 Attempting to unlike product:", productId);
+        const success = await unlikeProduct(productId, session.user.id);
+        console.log("🔄 unlikeProduct result:", success);
+
+        if (success) {
+          setLikedProducts((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(productId);
+            console.log(
+              "🔄 Updated likedProducts after unlike:",
+              Array.from(newSet)
+            );
+            return newSet;
+          });
+          console.log(`✅ Unliked product: ${productId}`);
+        }
+      } else {
+        // Like the product
+        console.log("🔄 Attempting to like product:", productId);
+        const success = await likeProduct(productId, session.user.id);
+        console.log("🔄 likeProduct result:", success);
+
+        if (success) {
+          setLikedProducts((prev) => {
+            const newSet = new Set([...prev, productId]);
+            console.log(
+              "🔄 Updated likedProducts after like:",
+              Array.from(newSet)
+            );
+            return newSet;
+          });
+          console.log(`✅ Liked product: ${productId}`);
+
+          // Show popup only when liking (not unliking)
+          console.log("🔄 Setting showSavedPopup to true");
+          setShowSavedPopup(true);
+          setTimeout(() => {
+            console.log("🔄 Setting showSavedPopup to false");
+            setShowSavedPopup(false);
+          }, 1000); // Hide after 1 second
+        }
+      }
+    } catch (error) {
+      console.log("❌ Error handling product like:", error);
+    }
+  };
+
   // --- Replace shuffle logic in loadBrands and reshuffle ---
   useEffect(() => {
     const loadBrands = async () => {
@@ -950,6 +1117,8 @@ export default function HomeScreen() {
       );
       setSessionBrands(new Set(recommended));
       setLoading(false);
+      
+      console.log("🔍 [BRANDS] Loaded brands:", all.length);
     };
     loadBrands();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -959,6 +1128,7 @@ export default function HomeScreen() {
   type ProductMedia = {
     brand: string;
     product: string;
+    product_id: number; // Add product ID for liking functionality
     media: { type: "video" | "image"; url: string; name: string }[];
   };
   const [productsMedia, setProductsMedia] = useState<ProductMedia[]>([]);
@@ -1063,7 +1233,64 @@ export default function HomeScreen() {
         const [video] = (files as any[]).splice(firstVideoIdx, 1);
         reorderedFiles = [video, ...(files as any[])];
       }
-      return { brand, product, media: reorderedFiles } as ProductMedia;
+
+      // Get product ID from database using brand and product name
+      let productId: number | null = null;
+      try {
+        console.log(
+          `🔍 [PRODUCTS] Attempting to get product ID for ${brand}/${product}`
+        );
+
+        // First get the brand ID using the brand name (media_filepath)
+        const { data: brandData, error: brandError } = await supabase
+          .from("brand")
+          .select("id")
+          .eq("media_filepath", brand)
+          .single();
+
+        console.log(`🔍 [PRODUCTS] Brand query result:`, {
+          brandData,
+          brandError,
+        });
+
+        if (!brandError && brandData) {
+          console.log(`🔍 [PRODUCTS] Found brand ID: ${brandData.id}`);
+
+          // Then get the product ID using the brand ID and product name
+          const { data: productData, error: productError } = await supabase
+            .from("product")
+            .select("id")
+            .eq("brand_id", brandData.id)
+            .eq("product_name", product)
+            .single();
+
+          console.log(`🔍 [PRODUCTS] Product query result:`, {
+            productData,
+            productError,
+          });
+
+          if (!productError && productData) {
+            productId = productData.id;
+            console.log(`🔍 [PRODUCTS] Found product ID: ${productId}`);
+          } else {
+            console.log(`❌ [PRODUCTS] Product not found:`, productError);
+          }
+        } else {
+          console.log(`❌ [PRODUCTS] Brand not found:`, brandError);
+        }
+      } catch (error) {
+        console.log(
+          `❌ [PRODUCTS] Exception getting product ID for ${brand}/${product}:`,
+          error
+        );
+      }
+
+      return {
+        brand,
+        product,
+        product_id: productId || 0, // Use 0 if product ID not found
+        media: reorderedFiles,
+      } as ProductMedia;
     } catch {
       console.warn(`[PRODUCTS] Exception parsing index.json`, {
         brand,
@@ -1196,11 +1423,22 @@ export default function HomeScreen() {
         });
       }
       setProductsCursor(cursor + nextSlice.length);
-      console.log(`[PRODUCTS] Batch loaded`, {
+      
+      // Debug logging for products with IDs
+      const productsWithIds = batchResults.filter(item => item.product_id && item.product_id > 0);
+      console.log(`🔍 [PRODUCTS] Batch loaded`, {
         added: batchResults.length,
         total: productsMedia.length + batchResults.length,
+        productsWithValidIds: productsWithIds.length,
         ms: Date.now() - t0,
       });
+      
+      if (productsWithIds.length > 0) {
+        console.log(`🔍 [PRODUCTS] Products with valid IDs in this batch:`);
+        productsWithIds.forEach(item => {
+          console.log(`  - ${item.brand}/${item.product} (ID: ${item.product_id})`);
+        });
+      }
     } finally {
       setLoadingMoreProducts(false);
     }
@@ -1209,7 +1447,7 @@ export default function HomeScreen() {
   // Load products when switching to products mode the first time
   useEffect(() => {
     if (feedMode === "products" && productsMedia.length === 0) {
-      console.log(`[PRODUCTS] First-time switch to products mode → fetching…`);
+      console.log(`🔍 [PRODUCTS] First-time switch to products mode → fetching…`);
       loadProductsFeed();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1580,6 +1818,27 @@ export default function HomeScreen() {
     ? savedBrands.has(currentBrand)
     : false;
 
+    const currentProductId = 
+    feedMode === "products" && productsMedia[verticalIndex]?.product_id
+      ? productsMedia[verticalIndex].product_id
+      : null;
+  const isCurrentProductLiked = currentProductId
+    ? likedProducts.has(currentProductId)
+    : false;
+    
+  // Debug logging for product like state
+  if (feedMode === "products" && productsMedia[verticalIndex]) {
+    console.log("🔍 [UI] Current product debug info:", {
+      brand: productsMedia[verticalIndex].brand,
+      product: productsMedia[verticalIndex].product,
+      product_id: productsMedia[verticalIndex].product_id,
+      currentProductId,
+      isCurrentProductLiked,
+      likedProductsSize: likedProducts.size,
+      likedProductsArray: Array.from(likedProducts)
+    });
+  }
+
   return (
     <View style={{ flex: 1 }}>
       {/* Mute button: bright white icon, moved further down from the NavBar */}
@@ -1627,16 +1886,18 @@ export default function HomeScreen() {
 
       {/* Overlay container at bottom */}
       <View className="absolute bottom-24 left-5 right-5 z-50">
-        {/* Saved Brand Popup */}
+        {/* Saved Brand/Product Popup */}
         {showSavedPopup && (
           <View className="mb-2">
             <View className="bg-black/30 px-4 py-2 rounded-full flex-row items-center justify-center">
               <Text className="text-white text-sm font-semibold text-center">
-                Brand Archived
+                {feedMode === "brands" ? "Brand Archived" : "Product Liked"}
               </Text>
             </View>
           </View>
         )}
+        
+
 
         {/* Name overlay */}
         {(feedMode === "brands" && filteredBrandsMedia[verticalIndex]) ||
@@ -1674,17 +1935,48 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() =>
-                handleSaveBrand(
-                  feedMode === "brands"
-                    ? filteredBrandsMedia[verticalIndex].brand
-                    : productsMedia[verticalIndex].brand
-                )
-              }
+              onPress={() => {
+                console.log("🔍 Like button pressed");
+                console.log("🔍 Current feedMode:", feedMode);
+                console.log("🔍 Current verticalIndex:", verticalIndex);
+
+                if (feedMode === "brands") {
+                  console.log("🔍 Brand mode - calling handleSaveBrand");
+                  handleSaveBrand(filteredBrandsMedia[verticalIndex].brand);
+                } else if (feedMode === "products") {
+                  console.log("🔍 Product mode detected");
+                  console.log(
+                    "🔍 productsMedia[verticalIndex]:",
+                    productsMedia[verticalIndex]
+                  );
+                  console.log(
+                    "🔍 product_id:",
+                    productsMedia[verticalIndex]?.product_id
+                  );
+
+                  if (productsMedia[verticalIndex]?.product_id) {
+                    console.log(
+                      "🔍 Calling handleProductLike with product_id:",
+                      productsMedia[verticalIndex].product_id
+                    );
+                    handleProductLike(productsMedia[verticalIndex].product_id);
+                  } else {
+                    console.log("❌ No product_id found for current product");
+                  }
+                }
+              }}
               className="ml-3 items-center justify-center"
             >
               <Ionicons
-                name={isCurrentBrandSaved ? "bookmark" : "bookmark-outline"}
+                name={
+                  feedMode === "brands"
+                    ? isCurrentBrandSaved
+                      ? "bookmark"
+                      : "bookmark-outline"
+                    : isCurrentProductLiked
+                      ? "heart"
+                      : "heart-outline"
+                }
                 size={20}
                 color="#fff"
               />
