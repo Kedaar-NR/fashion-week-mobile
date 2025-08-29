@@ -182,21 +182,26 @@ export function NavBar({
           {
             label: "BRANDS",
             onPress: () => {
-              router.push("/(tabs)/(collections)");
+              // Switch home feed to Brands mode
+              feedFilterEmitter.emit("mode", "brands");
+              feedFilterEmitter.emit("filter", "all");
               setMenuOpen(false);
             },
           },
           {
             label: "PRODUCTS",
             onPress: () => {
-              router.push("/(tabs)/(drops)");
+              // Switch home feed to Products mode
+              feedFilterEmitter.emit("mode", "products");
               setMenuOpen(false);
             },
           },
           {
             label: "FOLLOWING",
             onPress: () => {
-              router.push("/(tabs)/(user)");
+              // Show only followed brands content on home feed
+              feedFilterEmitter.emit("mode", "brands");
+              feedFilterEmitter.emit("filter", "liked");
               setMenuOpen(false);
             },
           },

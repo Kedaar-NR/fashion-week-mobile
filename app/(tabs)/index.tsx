@@ -685,6 +685,8 @@ const BRAND_AI_SUMMARIES: { [brand: string]: string } = {
 };
 
 export default function HomeScreen() {
+  type FeedMode = "brands" | "products";
+  const [feedMode, setFeedMode] = useState<FeedMode>("brands");
   // --- Adaptive Recommendation State ---
   const [brandScores, setBrandScores] = useState<{
     [brand: string]: {
@@ -705,6 +707,7 @@ export default function HomeScreen() {
     }[]
   >([]);
   const [loading, setLoading] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(false);
   const [verticalIndex, setVerticalIndex] = useState(0); // Which brand
   const [horizontalIndices, setHorizontalIndices] = useState<{
     [brand: string]: number;
@@ -811,10 +814,16 @@ export default function HomeScreen() {
   }, [isFocused]);
 
   useEffect(() => {
-    const handler = (newFilter: "all" | "liked") => setFilter(newFilter);
-    feedFilterEmitter.on("filter", handler);
+    const filterHandler = (newFilter: "all" | "liked") => setFilter(newFilter);
+    const modeHandler = (mode: FeedMode) => {
+      console.log(`[FEED] Mode change requested →`, mode);
+      setFeedMode(mode);
+    };
+    feedFilterEmitter.on("filter", filterHandler);
+    feedFilterEmitter.on("mode", modeHandler);
     return () => {
-      feedFilterEmitter.off("filter", handler);
+      feedFilterEmitter.off("filter", filterHandler);
+      feedFilterEmitter.off("mode", modeHandler);
     };
   }, []);
 
@@ -945,6 +954,266 @@ export default function HomeScreen() {
     loadBrands();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // --- Products Feed ---
+  type ProductMedia = {
+    brand: string;
+    product: string;
+    media: { type: "video" | "image"; url: string; name: string }[];
+  };
+  const [productsMedia, setProductsMedia] = useState<ProductMedia[]>([]);
+  const [orderedBrandsForProducts, setOrderedBrandsForProducts] = useState<
+    string[]
+  >([]);
+  const [productsCursor, setProductsCursor] = useState(0);
+  const [loadingMoreProducts, setLoadingMoreProducts] = useState(false);
+  const productsSessionSeed = useRef<number>(
+    Math.floor(Date.now() % 1000000000)
+  );
+
+  async function getProductFoldersForBrand(brand: string): Promise<string[]> {
+    try {
+      const { data, error } = await supabase.storage
+        .from("brand-content")
+        .list(`${brand}/scrolling_product_media`);
+      console.log("data", data);
+      if (error || !data) {
+        console.warn(
+          `[PRODUCTS] No product folders or error for brand`,
+          brand,
+          error
+        );
+        return [];
+      }
+      console.log(`[PRODUCTS] Product folders for`, brand, data);
+      const folders = data
+        .filter((item: any) => item && item.name && !item.name.includes("."))
+        .map((item: any) => item.name);
+      console.log(
+        `[PRODUCTS] Brand`,
+        brand,
+        `→`,
+        folders.length,
+        `product folders`
+      );
+      return folders;
+    } catch (e) {
+      console.warn(
+        `[PRODUCTS] Exception listing product folders for`,
+        brand,
+        e
+      );
+      return [];
+    }
+  }
+
+  async function fetchProductMediaFromIndex(brand: string, product: string) {
+    const indexUrl = `${BUCKET_URL}/${brand}/scrolling_product_media/${product}/index.json`;
+    try {
+      const res = await fetch(indexUrl);
+      if (!res.ok) {
+        console.warn(`[PRODUCTS] index.json fetch failed`, {
+          brand,
+          product,
+          status: res.status,
+        });
+        return null;
+      }
+      const data = await res.json();
+      if (!Array.isArray(data.files)) {
+        console.warn(`[PRODUCTS] Invalid index.json structure`, {
+          brand,
+          product,
+        });
+        return null;
+      }
+      const files = data.files
+        .map((f: any) => (typeof f === "string" ? f : f?.name))
+        .filter(Boolean)
+        .map((name: string) => {
+          const type = getMediaType(name);
+          return type
+            ? {
+                type,
+                url: `${BUCKET_URL}/${brand}/scrolling_product_media/${product}/${name}`,
+                name,
+              }
+            : null;
+        })
+        .filter(Boolean);
+      const videoCount = (files as any[]).filter(
+        (f: any) => f.type === "video"
+      ).length;
+      const imageCount = (files as any[]).filter(
+        (f: any) => f.type === "image"
+      ).length;
+      console.log(`[PRODUCTS] Parsed media`, {
+        brand,
+        product,
+        total: (files as any[]).length,
+        videoCount,
+        imageCount,
+      });
+      // Move first video to the front if not first
+      let reorderedFiles = files as any[];
+      const firstVideoIdx = (files as any[]).findIndex(
+        (f: any) => f.type === "video"
+      );
+      if (firstVideoIdx > 0) {
+        const [video] = (files as any[]).splice(firstVideoIdx, 1);
+        reorderedFiles = [video, ...(files as any[])];
+      }
+      return { brand, product, media: reorderedFiles } as ProductMedia;
+    } catch {
+      console.warn(`[PRODUCTS] Exception parsing index.json`, {
+        brand,
+        product,
+        indexUrl,
+      });
+      return null;
+    }
+  }
+
+  async function loadProductsFeed() {
+    if (loadingProducts) return;
+    const t0 = Date.now();
+    console.log(`[PRODUCTS] Loading products feed…`);
+    setLoadingProducts(true);
+    try {
+      // Order brands algorithmically first
+      let bucketBrands = await getBrandsFromBucket();
+      if (bucketBrands.length === 0) bucketBrands = [...sanitizedBrands];
+      const orderedBrands = recommendBrands(
+        bucketBrands,
+        brandScores,
+        sessionBrands,
+        session?.user?.id
+      );
+      console.log(
+        `[PRODUCTS] Ordered brands count:`,
+        orderedBrands.length,
+        `sample:`,
+        orderedBrands.slice(0, 10)
+      );
+      // Add extra session-level randomness for products feed ordering
+      const randomizedBrands = shuffleArraySeeded(
+        orderedBrands,
+        productsSessionSeed.current
+      );
+      // Save order and reset cursor, then load first batch
+      setOrderedBrandsForProducts(randomizedBrands);
+      setProductsCursor(0);
+      setProductsMedia([]);
+      await loadMoreProducts(randomizedBrands, 0);
+      console.log(`[PRODUCTS] Initial batch loaded`, {
+        items: productsMedia.length,
+        ms: Date.now() - t0,
+      });
+    } finally {
+      setLoadingProducts(false);
+    }
+  }
+
+  async function loadMoreProducts(order?: string[], startIndex?: number) {
+    if (loadingMoreProducts) return;
+    const t0 = Date.now();
+    setLoadingMoreProducts(true);
+    try {
+      const list = order || orderedBrandsForProducts;
+      let cursor = startIndex !== undefined ? startIndex : productsCursor;
+      if (!list || list.length === 0) return;
+
+      const BATCH_BRANDS = 6; // number of brands per batch
+      const PER_BRAND_LIMIT = 2; // products per brand per batch
+      let nextSlice = list.slice(cursor, cursor + BATCH_BRANDS);
+      // Shuffle the slice to avoid predictable brand presentation in a batch
+      nextSlice = shuffleArraySeeded(nextSlice, productsSessionSeed.current);
+
+      const batchResults: ProductMedia[] = [];
+      for (const brand of nextSlice) {
+        const productFolders = await getProductFoldersForBrand(brand);
+        if (productFolders.length === 0) continue;
+        const seed = session?.user?.id
+          ? Array.from(session.user.id as string).reduce(
+              (acc: number, c: string) => acc + c.charCodeAt(0),
+              0
+            )
+          : Date.now();
+        const chosen = shuffleArraySeeded(productFolders, seed).slice(
+          0,
+          PER_BRAND_LIMIT
+        );
+        console.log(`[PRODUCTS] Batch brand`, brand, `chosen:`, chosen);
+        for (const product of chosen) {
+          const item = await fetchProductMediaFromIndex(brand, product);
+          if (item && item.media.length > 0) batchResults.push(item);
+        }
+      }
+
+      if (batchResults.length > 0) {
+        // Interleave/shuffle to avoid long runs of the same brand back-to-back
+        function interleaveAvoidAdjacency(
+          items: ProductMedia[],
+          seedNum: number
+        ): ProductMedia[] {
+          let arr = shuffleArraySeeded(items, seedNum);
+          for (let i = 1; i < arr.length; i++) {
+            if (arr[i].brand === arr[i - 1].brand) {
+              // find next with different brand and swap
+              let swapIndex = -1;
+              for (let j = i + 1; j < arr.length; j++) {
+                if (arr[j].brand !== arr[i - 1].brand) {
+                  swapIndex = j;
+                  break;
+                }
+              }
+              if (swapIndex !== -1) {
+                const tmp = arr[i];
+                arr[i] = arr[swapIndex];
+                arr[swapIndex] = tmp;
+              }
+            }
+          }
+          return arr;
+        }
+
+        const interleavedBatch = interleaveAvoidAdjacency(
+          batchResults,
+          productsSessionSeed.current
+        );
+
+        setProductsMedia((prev) => {
+          if (!prev || prev.length === 0) return [...interleavedBatch];
+          // If boundary brands match, rotate the new batch to reduce adjacency
+          let rotated = [...interleavedBatch];
+          if (prev[prev.length - 1].brand === rotated[0].brand) {
+            const idx = rotated.findIndex((p) => p.brand !== rotated[0].brand);
+            if (idx > 0) {
+              rotated = [...rotated.slice(idx), ...rotated.slice(0, idx)];
+            }
+          }
+          return [...prev, ...rotated];
+        });
+      }
+      setProductsCursor(cursor + nextSlice.length);
+      console.log(`[PRODUCTS] Batch loaded`, {
+        added: batchResults.length,
+        total: productsMedia.length + batchResults.length,
+        ms: Date.now() - t0,
+      });
+    } finally {
+      setLoadingMoreProducts(false);
+    }
+  }
+
+  // Load products when switching to products mode the first time
+  useEffect(() => {
+    if (feedMode === "products" && productsMedia.length === 0) {
+      console.log(`[PRODUCTS] First-time switch to products mode → fetching…`);
+      loadProductsFeed();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [feedMode]);
 
   const handleVerticalScroll = React.useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -1288,7 +1557,10 @@ export default function HomeScreen() {
       ? brandsMedia.filter((b) => savedBrands.has(b.brand))
       : brandsMedia;
 
-  if (loading || filteredBrandsMedia.length === 0) {
+  if (
+    (feedMode === "brands" && (loading || filteredBrandsMedia.length === 0)) ||
+    (feedMode === "products" && (loadingProducts || productsMedia.length === 0))
+  ) {
     return <ActivityIndicator size="large" className="flex-1 self-center" />;
   }
 
@@ -1300,7 +1572,10 @@ export default function HomeScreen() {
     );
   }
 
-  const currentBrand = filteredBrandsMedia[verticalIndex]?.brand;
+  const currentBrand =
+    feedMode === "brands"
+      ? filteredBrandsMedia[verticalIndex]?.brand
+      : productsMedia[verticalIndex]?.brand;
   const isCurrentBrandSaved = currentBrand
     ? savedBrands.has(currentBrand)
     : false;
@@ -1350,7 +1625,7 @@ export default function HomeScreen() {
         />
       </View>
 
-      {/* Brand overlay container at bottom */}
+      {/* Overlay container at bottom */}
       <View className="absolute bottom-24 left-5 right-5 z-50">
         {/* Saved Brand Popup */}
         {showSavedPopup && (
@@ -1363,31 +1638,33 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* Brand name overlay */}
-        {filteredBrandsMedia[verticalIndex] && (
+        {/* Name overlay */}
+        {(feedMode === "brands" && filteredBrandsMedia[verticalIndex]) ||
+        (feedMode === "products" && productsMedia[verticalIndex]) ? (
           <View className="bg-black/30 px-4 py-3 rounded-full flex-row items-center justify-between">
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => {
-                // Navigate to brand detail component
-                console.log(
-                  "Navigating to brand:",
-                  BRANDS[filteredBrandsMedia[verticalIndex].brand] ||
-                    filteredBrandsMedia[verticalIndex].brand
-                );
+                const brandKey =
+                  feedMode === "brands"
+                    ? filteredBrandsMedia[verticalIndex].brand
+                    : productsMedia[verticalIndex].brand;
                 router.push({
                   pathname: "/(tabs)/[brand]",
-                  params: { brand: filteredBrandsMedia[verticalIndex].brand },
+                  params: { brand: brandKey },
                 });
               }}
               className="flex-1 items-start justify-center pl-2"
             >
               <Text className="text-white text-sm font-semibold text-left">
-                {BRANDS[filteredBrandsMedia[verticalIndex].brand] ||
-                  filteredBrandsMedia[verticalIndex].brand}
+                {feedMode === "brands"
+                  ? BRANDS[filteredBrandsMedia[verticalIndex].brand] ||
+                    filteredBrandsMedia[verticalIndex].brand
+                  : `${BRANDS[productsMedia[verticalIndex].brand] || productsMedia[verticalIndex].brand} · ${productsMedia[verticalIndex].product}`}
               </Text>
-              {BRAND_AI_SUMMARIES[filteredBrandsMedia[verticalIndex].brand] ||
-              filteredBrandsMedia[verticalIndex].tagline ? (
+              {feedMode === "brands" &&
+              (BRAND_AI_SUMMARIES[filteredBrandsMedia[verticalIndex].brand] ||
+                filteredBrandsMedia[verticalIndex].tagline) ? (
                 <Text className="text-white text-xs opacity-80 text-left mt-1">
                   {BRAND_AI_SUMMARIES[
                     filteredBrandsMedia[verticalIndex].brand
@@ -1398,7 +1675,11 @@ export default function HomeScreen() {
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() =>
-                handleSaveBrand(filteredBrandsMedia[verticalIndex].brand)
+                handleSaveBrand(
+                  feedMode === "brands"
+                    ? filteredBrandsMedia[verticalIndex].brand
+                    : productsMedia[verticalIndex].brand
+                )
               }
               className="ml-3 items-center justify-center"
             >
@@ -1409,44 +1690,94 @@ export default function HomeScreen() {
               />
             </TouchableOpacity>
           </View>
-        )}
+        ) : null}
 
         {/* Pagination Dots */}
-        {filteredBrandsMedia[verticalIndex] && (
+        {(feedMode === "brands" && filteredBrandsMedia[verticalIndex]) ||
+        (feedMode === "products" && productsMedia[verticalIndex]) ? (
           <View className="mt-3">
             <PaginationDots
-              totalItems={filteredBrandsMedia[verticalIndex].media.length}
-              currentIndex={
-                horizontalIndices[filteredBrandsMedia[verticalIndex].brand] || 0
+              totalItems={
+                feedMode === "brands"
+                  ? filteredBrandsMedia[verticalIndex].media.length
+                  : productsMedia[verticalIndex].media.length
               }
+              currentIndex={(() => {
+                const key =
+                  feedMode === "brands"
+                    ? filteredBrandsMedia[verticalIndex].brand
+                    : productsMedia[verticalIndex].brand;
+                return horizontalIndices[key] || 0;
+              })()}
               dotSize={6}
               dotSpacing={4}
               activeColor="#FFFFFF"
               inactiveColor="rgba(255, 255, 255, 0.4)"
             />
           </View>
-        )}
+        ) : null}
       </View>
-      <FlatList
-        data={filteredBrandsMedia}
-        keyExtractor={(item, index) => `brand::${item.brand}`}
-        pagingEnabled
-        showsVerticalScrollIndicator={false}
-        snapToAlignment="start"
-        snapToInterval={screenHeight}
-        decelerationRate="fast"
-        getItemLayout={(_, index) => ({
-          length: screenHeight,
-          offset: screenHeight * index,
-          index,
-        })}
-        onScroll={handleVerticalScroll}
-        scrollEventThrottle={16}
-        renderItem={renderBrandMedia}
-        initialScrollIndex={verticalIndex}
-        viewabilityConfig={viewabilityConfig}
-        onViewableItemsChanged={onVerticalViewableItemsChanged.current}
-      />
+      {feedMode === "brands" ? (
+        <FlatList
+          data={filteredBrandsMedia}
+          keyExtractor={(item) => `brand::${item.brand}`}
+          pagingEnabled
+          showsVerticalScrollIndicator={false}
+          snapToAlignment="start"
+          snapToInterval={screenHeight}
+          decelerationRate="fast"
+          getItemLayout={(_, index) => ({
+            length: screenHeight,
+            offset: screenHeight * index,
+            index,
+          })}
+          onScroll={handleVerticalScroll}
+          scrollEventThrottle={16}
+          renderItem={renderBrandMedia}
+          initialScrollIndex={verticalIndex}
+          viewabilityConfig={viewabilityConfig}
+          onViewableItemsChanged={onVerticalViewableItemsChanged.current}
+        />
+      ) : (
+        <FlatList
+          data={productsMedia}
+          keyExtractor={(item) => `product::${item.brand}/${item.product}`}
+          pagingEnabled
+          showsVerticalScrollIndicator={false}
+          snapToAlignment="start"
+          snapToInterval={screenHeight}
+          decelerationRate="fast"
+          getItemLayout={(_, index) => ({
+            length: screenHeight,
+            offset: screenHeight * index,
+            index,
+          })}
+          onScroll={(e) => {
+            handleVerticalScroll(e);
+            const y = e.nativeEvent.contentOffset.y;
+            const idx = Math.round(y / screenHeight);
+            // Prefetch when 2 from bottom of currently loaded products
+            if (
+              !loadingMoreProducts &&
+              idx >= productsMedia.length - 3 &&
+              productsCursor < orderedBrandsForProducts.length
+            ) {
+              console.log(`[PRODUCTS] Near end → loading next batch`, {
+                idx,
+                total: productsMedia.length,
+              });
+              loadMoreProducts();
+            }
+          }}
+          scrollEventThrottle={16}
+          renderItem={({ item: { brand, media }, index }) =>
+            renderBrandMedia({ item: { brand, media }, index })
+          }
+          initialScrollIndex={verticalIndex}
+          viewabilityConfig={viewabilityConfig}
+          onViewableItemsChanged={onVerticalViewableItemsChanged.current}
+        />
+      )}
     </View>
   );
 }
