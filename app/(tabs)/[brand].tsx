@@ -1,7 +1,7 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { Session } from "@supabase/supabase-js";
 import { Video } from "expo-av";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -47,6 +47,7 @@ function getMediaType(filename: string): "video" | "image" | null {
 
 export default function BrandDetailScreen() {
   const { brand } = useLocalSearchParams<{ brand: string }>();
+  const router = useRouter();
   const safeBrand = brand?.replace(/^\/+|\/+$/g, "").replace(/\.[^/.]+$/, "");
   const [pieces, setPieces] = useState<CollectionPiece[]>([]);
   const [loading, setLoading] = useState(true);
@@ -582,7 +583,13 @@ export default function BrandDetailScreen() {
         <TouchableOpacity
           className="items-center"
           style={{ width: gridItemWidth }}
-          onPress={() => console.log("Selected piece:", item.id)}
+          onPress={() => {
+            router.push({
+              pathname: "/(tabs)/product/[id]",
+              params: { id: item.id.toString() },
+            });
+          }}
+          activeOpacity={0.7}
         >
           <View
             className="rounded-xl justify-center items-center mb-2 overflow-hidden bg-gray-200"

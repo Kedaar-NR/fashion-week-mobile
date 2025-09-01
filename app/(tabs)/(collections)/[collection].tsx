@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { router, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -30,6 +30,7 @@ const gridItemWidth = (width - 64) / 3; // 3 columns with padding
 
 export default function CollectionDetailScreen() {
   const { collection } = useLocalSearchParams<{ collection: string }>();
+  const router = useRouter();
   const [pieces, setPieces] = useState<CollectionPiece[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -396,8 +397,11 @@ export default function CollectionDetailScreen() {
 
   const handlePieceSelection = (pieceId: number) => {
     if (!isSelectionMode) {
-      // Normal mode - would navigate to product page
-      console.log("Selected piece:", pieceId);
+      // Normal mode - navigate to product page
+      router.push({
+        pathname: "/(tabs)/product/[id]",
+        params: { id: pieceId.toString() },
+      });
       return;
     }
 

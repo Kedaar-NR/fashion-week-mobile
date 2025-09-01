@@ -22,6 +22,7 @@ interface PurchasedItem {
   color: string;
   purchase_date: string;
   is_showing: boolean;
+  product_id?: number;
 }
 
 const { width } = Dimensions.get("window");
@@ -99,6 +100,7 @@ export default function RecentlyPurchasedScreen() {
               color: item.product?.color || "Unknown Color",
               purchase_date: new Date(item.created_at).toLocaleDateString(),
               is_showing: item.is_showing,
+              product_id: item.product?.id,
             })
           );
           setPurchasedItems(transformedData);
@@ -183,7 +185,17 @@ export default function RecentlyPurchasedScreen() {
     <TouchableOpacity
       className="items-center"
       style={{ width: gridItemWidth }}
-      onPress={() => toggleShowing(item.id)}
+      onPress={() => {
+        if (item.product_id) {
+          router.push({
+            pathname: "/(tabs)/product/[id]",
+            params: { id: item.product_id.toString() },
+          });
+        } else {
+          toggleShowing(item.id);
+        }
+      }}
+      activeOpacity={0.7}
     >
       <View
         className={`rounded-xl justify-center items-center mb-2 ${
