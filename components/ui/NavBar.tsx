@@ -213,14 +213,37 @@ export function NavBar({
     },
   ];
 
-  // Dummy data for recent searches
-  const recentSearches = [
-    "sneakers",
-    "running shoes",
-    "casual wear",
-    "winter jackets",
-    "accessories",
-  ];
+  // State for recent searches
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  // Fetch recent searches on component mount
+  useEffect(() => {
+    const fetchRecentSearches = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session?.user) {
+          const { data, error } = await supabase
+            .from("recent_search_queries")
+            .select("search_query")
+            .eq("user_id", session.user.id)
+            .order("created_at", { ascending: false })
+            .limit(5);
+
+          if (error) {
+            console.error("Error fetching recent searches:", error.message);
+          } else if (data && data.length > 0) {
+            setRecentSearches(data.map((item: any) => item.search_query));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching recent searches:", error);
+      }
+    };
+    fetchRecentSearches();
+    console.log("recentSearches", recentSearches);
+  }, []);
 
   // Dummy data for recent brands
   const recentBrands = [
@@ -462,6 +485,32 @@ export function NavBar({
     Keyboard.dismiss();
   };
 
+  const saveRecentSearch = async (searchTerm: string) => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { error } = await supabase.from("recent_search_queries").insert({
+          user_id: session.user.id,
+          search_query: searchTerm,
+          created_at: new Date().toISOString(),
+        });
+
+        if (error) {
+          console.error("Error saving recent search:", error.message);
+        } else {
+          // Update local state to include the new search
+          setRecentSearches((prev) =>
+            [searchTerm, ...prev.filter((s) => s !== searchTerm)].slice(0, 5)
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error saving recent search:", error);
+    }
+  };
+
   const handleSearchSubmit = () => {
     if (searchText.trim()) {
       router.push({
@@ -469,6 +518,7 @@ export function NavBar({
         params: { query: searchText.trim() },
       });
       setSearchMenuOpen(false);
+      saveRecentSearch(searchText.trim());
       setSearchText("");
       Keyboard.dismiss();
     }

@@ -607,11 +607,11 @@ export default function CollectionDetailScreen() {
   return (
     <ScrollView className="flex-1 px-4">
       {/* Title Section */}
-      <View className="mb-6 pt-4">
+      {/* <View className="mb-6 pt-4">
         <Text className="text-2xl font-bold">
           {collection === "all-liked" ? "LIKED PRODUCTS" : collection}
         </Text>
-      </View>
+      </View> */}
 
       {/* Header Section */}
       <View

@@ -109,6 +109,14 @@ export default function TabLayout() {
               headerShown: false,
             }}
           />
+          <Tabs.Screen
+            name="product/[id]"
+            options={{
+              href: null,
+              title: "Product",
+              headerShown: false,
+            }}
+          />
         </Tabs>
       </View>
     </View>
