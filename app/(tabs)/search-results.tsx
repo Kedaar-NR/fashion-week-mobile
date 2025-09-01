@@ -1,5 +1,5 @@
 import { useFocusEffect } from "@react-navigation/native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -24,6 +24,7 @@ interface SearchResult {
 
 export default function SearchResultsScreen() {
   const { query } = useLocalSearchParams<{ query: string }>();
+  const router = useRouter();
   const scrollViewRef = React.useRef<ScrollView>(null);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [originalResults, setOriginalResults] = useState<SearchResult[]>([]);
@@ -406,7 +407,17 @@ export default function SearchResultsScreen() {
         ) : query && searchResults.length > 0 ? (
           <View className="flex-row flex-wrap justify-between">
             {searchResults.map((item) => (
-              <View key={item.id} className="w-[48%] mb-4">
+              <TouchableOpacity
+                key={item.id}
+                className="w-[48%] mb-4"
+                onPress={() => {
+                  router.push({
+                    pathname: "/(tabs)/product/[id]",
+                    params: { id: item.id.toString() },
+                  });
+                }}
+                activeOpacity={0.7}
+              >
                 {/* Product Image Placeholder */}
                 <View className="w-full h-64 bg-gray-200 rounded-2xl mb-3 overflow-hidden">
                   <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl justify-center items-center">
@@ -441,7 +452,7 @@ export default function SearchResultsScreen() {
                     ${item.price}
                   </Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         ) : (
