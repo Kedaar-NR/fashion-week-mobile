@@ -6,6 +6,7 @@ import {
   InterruptionModeIOS,
   Video,
 } from "expo-av";
+import Constants from "expo-constants";
 import { Image as ExpoImage } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
@@ -21,7 +22,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Constants from 'expo-constants';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PaginationDots from "../../components/PaginationDots";
 import { feedFilterEmitter } from "../../components/ui/NavBar";
