@@ -3,12 +3,16 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { supabase } from "../../lib/supabase";
+
+const BUCKET_URL =
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/brand-content";
 
 interface SearchResult {
   id: number;
@@ -36,6 +40,9 @@ export default function SearchResultsScreen() {
     useState(false);
   const [priceRangeSubDropdownOpen, setPriceRangeSubDropdownOpen] =
     useState(false);
+  const [productThumbs, setProductThumbs] = useState<Record<number, string>>(
+    {}
+  );
 
   useFocusEffect(
     React.useCallback(() => {
@@ -51,6 +58,35 @@ export default function SearchResultsScreen() {
       }
     }, [query])
   );
+
+  // Fetch product thumbnails when search results change
+  React.useEffect(() => {
+    if (searchResults.length === 0) return;
+
+    const fetchThumbnails = async () => {
+      try {
+        const entries = await Promise.all(
+          searchResults.map(async (p) => {
+            const url =
+              p.media_filepath && p.media_filepath !== "placeholder"
+                ? await getProductThumbnailUrl(p.media_filepath)
+                : null;
+            return [p.id, url] as const;
+          })
+        );
+        setProductThumbs(
+          Object.fromEntries(entries.filter(([, url]) => url)) as Record<
+            number,
+            string
+          >
+        );
+      } catch (_e) {
+        // ignore errors
+      }
+    };
+
+    fetchThumbnails();
+  }, [searchResults]);
 
   const performSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
@@ -119,6 +155,26 @@ export default function SearchResultsScreen() {
       setLoading(false);
     }
   };
+
+  // Function to get product thumbnail URL
+  async function getProductThumbnailUrl(
+    mediaPath: string
+  ): Promise<string | null> {
+    try {
+      const indexUrl = `${BUCKET_URL}/${mediaPath}/index.json`;
+      const res = await fetch(indexUrl);
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!Array.isArray(data?.files)) return null;
+      const files: string[] = data.files
+        .map((f: any) => (typeof f === "string" ? f : f?.name))
+        .filter(Boolean);
+      const imageFile = files.find((f) => /\.(jpg|jpeg|png|webp)$/i.test(f));
+      return imageFile ? `${BUCKET_URL}/${mediaPath}/${imageFile}` : null;
+    } catch {
+      return null;
+    }
+  }
 
   const productTypeOptions = [
     {
@@ -250,13 +306,21 @@ export default function SearchResultsScreen() {
 
   const renderSearchResult = ({ item }: { item: SearchResult }) => (
     <View className="w-[48%] mb-4">
-      {/* Product Image Placeholder */}
+      {/* Product Image */}
       <View className="w-full h-64 bg-gray-200 rounded-2xl mb-3 overflow-hidden">
-        <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl justify-center items-center">
-          <Text className="text-gray-500 text-xs text-center px-2">
-            {item.media_filepath ? "Image" : "No Image"}
-          </Text>
-        </View>
+        {productThumbs[item.id] ? (
+          <Image
+            source={{ uri: productThumbs[item.id] }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
+        ) : (
+          <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl justify-center items-center">
+            <Text className="text-gray-500 text-xs text-center px-2">
+              No Image
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Product Info */}
@@ -418,13 +482,21 @@ export default function SearchResultsScreen() {
                 }}
                 activeOpacity={0.7}
               >
-                {/* Product Image Placeholder */}
+                {/* Product Image */}
                 <View className="w-full h-64 bg-gray-200 rounded-2xl mb-3 overflow-hidden">
-                  <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl justify-center items-center">
-                    <Text className="text-gray-500 text-xs text-center px-2">
-                      {item.media_filepath ? "Image" : "No Image"}
-                    </Text>
-                  </View>
+                  {productThumbs[item.id] ? (
+                    <Image
+                      source={{ uri: productThumbs[item.id] }}
+                      className="w-full h-full"
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl justify-center items-center">
+                      <Text className="text-gray-500 text-xs text-center px-2">
+                        No Image
+                      </Text>
+                    </View>
+                  )}
                 </View>
 
                 {/* Product Info */}
