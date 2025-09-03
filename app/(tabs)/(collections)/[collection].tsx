@@ -6,12 +6,16 @@ import {
   Alert,
   Dimensions,
   FlatList,
+  Image,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import { supabase } from "../../../lib/supabase";
+
+const BUCKET_URL =
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/brand-content";
 
 interface CollectionPiece {
   id: number;
@@ -44,6 +48,9 @@ export default function CollectionDetailScreen() {
     useState(false);
   const [priceRangeSubDropdownOpen, setPriceRangeSubDropdownOpen] =
     useState(false);
+  const [productThumbs, setProductThumbs] = useState<Record<number, string>>(
+    {}
+  );
 
   const fetchCollectionPieces = async () => {
     if (!collection) {
@@ -212,12 +219,61 @@ export default function CollectionDetailScreen() {
     fetchCollectionPieces();
   }, [collection]);
 
+  // Fetch product thumbnails when pieces change
+  useEffect(() => {
+    if (pieces.length === 0) return;
+
+    const fetchThumbnails = async () => {
+      try {
+        const entries = await Promise.all(
+          pieces.map(async (p) => {
+            const url =
+              p.media_filepath && p.media_filepath !== "placeholder"
+                ? await getProductThumbnailUrl(p.media_filepath)
+                : null;
+            return [p.id, url] as const;
+          })
+        );
+        setProductThumbs(
+          Object.fromEntries(entries.filter(([, url]) => url)) as Record<
+            number,
+            string
+          >
+        );
+      } catch (_e) {
+        // ignore errors
+      }
+    };
+
+    fetchThumbnails();
+  }, [pieces]);
+
   useFocusEffect(
     React.useCallback(() => {
       console.log(`📍 Current path: /(tabs)/(collections)/[collection]`);
       console.log(`📍 Collection parameter: ${collection}`);
     }, [collection])
   );
+
+  // Function to get product thumbnail URL
+  async function getProductThumbnailUrl(
+    mediaPath: string
+  ): Promise<string | null> {
+    try {
+      const indexUrl = `${BUCKET_URL}/${mediaPath}/index.json`;
+      const res = await fetch(indexUrl);
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!Array.isArray(data?.files)) return null;
+      const files: string[] = data.files
+        .map((f: any) => (typeof f === "string" ? f : f?.name))
+        .filter(Boolean);
+      const imageFile = files.find((f) => /\.(jpg|jpeg|png|webp)$/i.test(f));
+      return imageFile ? `${BUCKET_URL}/${mediaPath}/${imageFile}` : null;
+    } catch {
+      return null;
+    }
+  }
 
   const handleDeleteCollection = async () => {
     if (!collection || collection === "all-liked") return;
@@ -437,8 +493,12 @@ export default function CollectionDetailScreen() {
           }`}
           style={{ width: gridItemWidth, height: gridItemWidth }}
         >
-          {item.media_filepath ? (
-            <Text className="text-xs opacity-50">Image</Text>
+          {productThumbs[item.id] ? (
+            <Image
+              source={{ uri: productThumbs[item.id] }}
+              className="w-full h-full"
+              resizeMode="cover"
+            />
           ) : (
             <Text className="text-xs opacity-50">No Image</Text>
           )}
@@ -600,7 +660,6 @@ export default function CollectionDetailScreen() {
 
   return (
     <ScrollView className="flex-1 px-4">
-
       {/* Header Section */}
       <View
         className={`flex-row items-center justify-between ${filterDropdownOpen || sortDropdownOpen ? "mb-2" : "mb-4"}`}
@@ -618,31 +677,35 @@ export default function CollectionDetailScreen() {
           </TouchableOpacity>
         </View>
         <View className="flex-row items-center gap-4">
-          {isSelectionMode && (
+          {isSelectionMode && collection !== "all-liked" && (
             <TouchableOpacity onPress={handleCancelSelection}>
               <Text className="text-sm font-bold text-gray-500">CANCEL</Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity
-            onPress={handleDeleteCollection}
-            disabled={deleting || collection === "all-liked"}
-          >
-            <Text
-              className={`text-sm font-bold ${deleting || collection === "all-liked" ? "text-gray-400" : "text-red-500"}`}
+          {collection !== "all-liked" && (
+            <TouchableOpacity
+              onPress={handleDeleteCollection}
+              disabled={deleting}
             >
-              {deleting ? "DELETING..." : "DELETE"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleRemoveCollection}
-            disabled={removing || collection === "all-liked"}
-          >
-            <Text
-              className={`text-sm font-bold ${removing || collection === "all-liked" ? "text-gray-400" : "text-black"}`}
+              <Text
+                className={`text-sm font-bold ${deleting ? "text-gray-400" : "text-red-500"}`}
+              >
+                {deleting ? "DELETING..." : "DELETE"}
+              </Text>
+            </TouchableOpacity>
+          )}
+          {collection !== "all-liked" && (
+            <TouchableOpacity
+              onPress={handleRemoveCollection}
+              disabled={removing}
             >
-              {isSelectionMode ? "CONFIRM" : "REMOVE"}
-            </Text>
-          </TouchableOpacity>
+              <Text
+                className={`text-sm font-bold ${removing ? "text-gray-400" : "text-black"}`}
+              >
+                {isSelectionMode ? "CONFIRM" : "REMOVE"}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
