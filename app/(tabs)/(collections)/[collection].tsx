@@ -598,24 +598,8 @@ export default function CollectionDetailScreen() {
     );
   }
 
-  if (collection === "all-liked") {
-    return (
-      <View className="flex-1 justify-center items-center px-4">
-        <Text className="text-gray-600 text-center">
-          All Liked feature coming soon...
-        </Text>
-      </View>
-    );
-  }
-
   return (
     <ScrollView className="flex-1 px-4">
-      {/* Title Section */}
-      {/* <View className="mb-6 pt-4">
-        <Text className="text-2xl font-bold">
-          {collection === "all-liked" ? "LIKED PRODUCTS" : collection}
-        </Text>
-      </View> */}
 
       {/* Header Section */}
       <View
