@@ -104,11 +104,12 @@ export function NavBar({
       return safe || "BRAND";
     }
     if (path.includes("/collection")) return "LIBRARY";
-    if (path.includes("/drops")) return "DROP TRACKER";
+    if (path.includes("/drops")) return "DROP TrRACKER";
     if (path.includes("/user")) return "ACCOUNT";
     if (path.includes("/archive")) return "ARCHIVE";
     if (path.includes("/style-quiz")) return "STYLE QUIZ";
     if (path.includes("/search-results")) return "SEARCH RESULTS";
+    if (path.includes("/product")) return "PRODUCT";
     if (segments && segments.includes("[friend]")) return "FRIENDS";
     console.log("segments", segments);
     console.log("path", path);

@@ -205,19 +205,19 @@ export default function SearchResultsScreen() {
 
   const productTypeOptions = [
     {
-      label: "SHIRT",
+      label: "TOP",
       onPress: () => {
         setSearchResults(
-          originalResults.filter((piece) => piece.type === "Shirt")
+          originalResults.filter((piece) => piece.type === "top")
         );
         setProductTypeSubDropdownOpen(false);
       },
     },
     {
-      label: "PANTS",
+      label: "BOTTOM",
       onPress: () => {
         setSearchResults(
-          originalResults.filter((piece) => piece.type === "Pants")
+          originalResults.filter((piece) => piece.type === "bottom")
         );
         setProductTypeSubDropdownOpen(false);
       },
@@ -226,25 +226,25 @@ export default function SearchResultsScreen() {
       label: "OUTERWEAR",
       onPress: () => {
         setSearchResults(
-          originalResults.filter((piece) => piece.type === "Outerwear")
+          originalResults.filter((piece) => piece.type === "outerwear")
         );
         setProductTypeSubDropdownOpen(false);
       },
     },
     {
-      label: "ACCESSORIES",
+      label: "ACCESSORY",
       onPress: () => {
         setSearchResults(
-          originalResults.filter((piece) => piece.type === "Accessory")
+          originalResults.filter((piece) => piece.type === "accessory")
         );
         setProductTypeSubDropdownOpen(false);
       },
     },
     {
-      label: "SHOES",
+      label: "SHOE",
       onPress: () => {
         setSearchResults(
-          originalResults.filter((piece) => piece.type === "Shoes")
+          originalResults.filter((piece) => piece.type === "shoe")
         );
         setProductTypeSubDropdownOpen(false);
       },

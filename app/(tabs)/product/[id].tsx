@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import PaginationDots from "../../../components/PaginationDots";
 import { IconSymbol } from "../../../components/ui/IconSymbol";
 import { supabase } from "../../../lib/supabase";
 
@@ -52,6 +53,7 @@ export default function ProductScreen() {
   const [media, setMedia] = useState<Media[]>([]);
   const [isLiked, setIsLiked] = useState(false);
   const [sessionUserId, setSessionUserId] = useState<string | null>(null);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
   useEffect(() => {
     console.log("🧭 ProductScreen params", {
@@ -293,40 +295,71 @@ export default function ProductScreen() {
       contentContainerStyle={{ paddingBottom: 40 }}
     >
       {/* Media carousel */}
-      {media.length > 0 ? (
-        <FlatList
-          data={media}
-          keyExtractor={(m) => m.url}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <View style={{ width: screenW, aspectRatio: 1 }}>
-              {item.type === "image" ? (
-                <Image
-                  source={{ uri: item.url }}
-                  style={{ width: "100%", height: "100%" }}
-                  resizeMode="cover"
-                />
-              ) : (
-                <Video
-                  source={{ uri: item.url }}
-                  style={{ width: "100%", height: "100%" }}
-                  resizeMode={"cover" as any}
-                  shouldPlay
-                  isLooping
-                  isMuted
-                  useNativeControls={false}
-                />
+      <View className="relative">
+        {media.length > 0 ? (
+          <>
+            <FlatList
+              data={media}
+              keyExtractor={(m) => m.url}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(e) => {
+                const newIndex = Math.round(
+                  e.nativeEvent.contentOffset.x / screenW
+                );
+                setCurrentMediaIndex(newIndex);
+              }}
+              renderItem={({ item }) => (
+                <View
+                  style={{
+                    width: screenW,
+                    aspectRatio: 1,
+                    paddingHorizontal: 16,
+                  }}
+                >
+                  <View className="w-full h-full rounded-2xl overflow-hidden">
+                    {item.type === "image" ? (
+                      <Image
+                        source={{ uri: item.url }}
+                        style={{ width: "100%", height: "100%" }}
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <Video
+                        source={{ uri: item.url }}
+                        style={{ width: "100%", height: "100%" }}
+                        resizeMode={"cover" as any}
+                        shouldPlay
+                        isLooping
+                        isMuted
+                        useNativeControls={false}
+                      />
+                    )}
+                  </View>
+                </View>
               )}
-            </View>
-          )}
-        />
-      ) : (
-        <View className="w-full aspect-square bg-gray-200 justify-center items-center">
-          <Text className="text-gray-500">No media</Text>
-        </View>
-      )}
+            />
+            {/* Pagination Dots */}
+            {media.length > 1 && (
+              <View className="absolute bottom-4 left-0 right-0 items-center">
+                <PaginationDots
+                  totalItems={media.length}
+                  currentIndex={currentMediaIndex}
+                  dotSize={6}
+                  dotSpacing={4}
+                  activeColor="#000000"
+                  inactiveColor="rgba(0, 0, 0, 0.3)"
+                />
+              </View>
+            )}
+          </>
+        ) : (
+          <View className="w-full aspect-square bg-gray-200 justify-center items-center mx-4 rounded-2xl">
+            <Text className="text-gray-500">No media</Text>
+          </View>
+        )}
+      </View>
 
       {/* Header */}
       <View className="px-4 mt-4">
@@ -356,6 +389,7 @@ export default function ProductScreen() {
             />
           </TouchableOpacity>
         </View>
+        <Text className="text-sm text-gray-600 mt-2">[description]</Text>
         <Text className="text-base font-semibold mt-2">${price}</Text>
       </View>
 

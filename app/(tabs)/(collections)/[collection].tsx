@@ -36,6 +36,7 @@ export default function CollectionDetailScreen() {
   const { collection } = useLocalSearchParams<{ collection: string }>();
   const router = useRouter();
   const [pieces, setPieces] = useState<CollectionPiece[]>([]);
+  const [originalPieces, setOriginalPieces] = useState<CollectionPiece[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -123,6 +124,7 @@ export default function CollectionDetailScreen() {
           })) || [];
 
         setPieces(transformedPieces);
+        setOriginalPieces(transformedPieces);
         setLoading(false);
         return;
       } catch (err) {
@@ -207,6 +209,7 @@ export default function CollectionDetailScreen() {
         })) || [];
 
       setPieces(transformedPieces);
+      setOriginalPieces(transformedPieces);
     } catch (err) {
       console.error("Error in fetchCollectionPieces:", err);
       setError("An unexpected error occurred");
@@ -522,30 +525,37 @@ export default function CollectionDetailScreen() {
 
   const productTypeOptions = [
     {
-      label: "SHOES",
+      label: "TOP",
       onPress: () => {
-        console.log("Filter: Shoes");
+        setPieces(originalPieces.filter((piece) => piece.type === "top"));
         setProductTypeSubDropdownOpen(false);
       },
     },
     {
-      label: "CLOTHING",
+      label: "BOTTOM",
       onPress: () => {
-        console.log("Filter: Clothing");
+        setPieces(originalPieces.filter((piece) => piece.type === "bottom"));
         setProductTypeSubDropdownOpen(false);
       },
     },
     {
-      label: "ACCESSORIES",
+      label: "OUTERWEAR",
       onPress: () => {
-        console.log("Filter: Accessories");
+        setPieces(originalPieces.filter((piece) => piece.type === "outerwear"));
         setProductTypeSubDropdownOpen(false);
       },
     },
     {
-      label: "BAGS",
+      label: "ACCESSORY",
       onPress: () => {
-        console.log("Filter: Bags");
+        setPieces(originalPieces.filter((piece) => piece.type === "accessory"));
+        setProductTypeSubDropdownOpen(false);
+      },
+    },
+    {
+      label: "SHOE",
+      onPress: () => {
+        setPieces(originalPieces.filter((piece) => piece.type === "shoe"));
         setProductTypeSubDropdownOpen(false);
       },
     },
@@ -554,33 +564,29 @@ export default function CollectionDetailScreen() {
   const priceRangeOptions = [
     {
       label: "UNDER $50",
-      onPress: async () => {
-        await fetchCollectionPieces();
-        setPieces((prev) => prev.filter((piece) => piece.price < 50));
+      onPress: () => {
+        setPieces(originalPieces.filter((piece) => piece.price < 50));
         setPriceRangeSubDropdownOpen(false);
       },
     },
     {
       label: "UNDER $100",
-      onPress: async () => {
-        await fetchCollectionPieces();
-        setPieces((prev) => prev.filter((piece) => piece.price < 100));
+      onPress: () => {
+        setPieces(originalPieces.filter((piece) => piece.price < 100));
         setPriceRangeSubDropdownOpen(false);
       },
     },
     {
       label: "UNDER $200",
-      onPress: async () => {
-        await fetchCollectionPieces();
-        setPieces((prev) => prev.filter((piece) => piece.price < 200));
+      onPress: () => {
+        setPieces(originalPieces.filter((piece) => piece.price < 200));
         setPriceRangeSubDropdownOpen(false);
       },
     },
     {
       label: "UNDER $500",
-      onPress: async () => {
-        await fetchCollectionPieces();
-        setPieces((prev) => prev.filter((piece) => piece.price < 500));
+      onPress: () => {
+        setPieces(originalPieces.filter((piece) => piece.price < 500));
         setPriceRangeSubDropdownOpen(false);
       },
     },
@@ -589,9 +595,9 @@ export default function CollectionDetailScreen() {
   const filterOptions = [
     {
       label: "ALL ITEMS",
-      onPress: async () => {
-        // Refetch original collection pieces to reset filters
-        await fetchCollectionPieces();
+      onPress: () => {
+        // Reset to original pieces to clear all filters
+        setPieces(originalPieces);
         setFilterDropdownOpen(false);
       },
     },
