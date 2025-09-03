@@ -8,6 +8,7 @@ import {
 import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
+  Image,
   Keyboard,
   Text,
   TextInput,
@@ -15,11 +16,14 @@ import {
   View,
 } from "react-native";
 
-import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from "@/lib/supabase";
 import EventEmitter from "eventemitter3";
+import { LinearGradient } from "expo-linear-gradient";
 import { useColorScheme } from "../../hooks/useColorScheme";
 import { IconSymbol } from "./IconSymbol";
+
+const BUCKET_URL =
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/brand-content";
 // @ts-ignore
 export const feedFilterEmitter = new EventEmitter();
 
@@ -189,33 +193,25 @@ export function NavBar({
     setMenuOpen(!menuOpen);
   };
 
-  // Dummy data for recent product pages
-  const recentProductPages = [
-    {
-      id: 1,
-      name: "Nike Air Max 270",
-      brand: "Nike",
-      price: "$150",
-      image: "https://via.placeholder.com/80x80",
-    },
-    {
-      id: 2,
-      name: "Adidas Ultraboost 22",
-      brand: "Adidas",
-      price: "$180",
-      image: "https://via.placeholder.com/80x80",
-    },
-    {
-      id: 3,
-      name: "Puma RS-X 3D",
-      brand: "Puma",
-      price: "$110",
-      image: "https://via.placeholder.com/80x80",
-    },
-  ];
-
   // State for recent searches
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  // Interface for recent search products
+  interface RecentSearchProduct {
+    id: number;
+    product_name: string;
+    brand_name: string;
+    price: number;
+    media_filepath: string;
+  }
+
+  // State for recent search products
+  const [recentSearchProducts, setRecentSearchProducts] = useState<
+    RecentSearchProduct[]
+  >([]);
+  const [productThumbs, setProductThumbs] = useState<Record<number, string>>(
+    {}
+  );
 
   // Fetch recent searches on component mount
   useEffect(() => {
@@ -230,12 +226,20 @@ export function NavBar({
             .select("search_query")
             .eq("user_id", session.user.id)
             .order("created_at", { ascending: false })
-            .limit(5);
+            .limit(20); // Fetch more results to ensure we get 5 unique ones
 
           if (error) {
             console.error("Error fetching recent searches:", error.message);
           } else if (data && data.length > 0) {
-            setRecentSearches(data.map((item: any) => item.search_query));
+            // Get unique search queries, preserving the order of first occurrence
+            const uniqueSearches = data
+              .map((item: any) => item.search_query)
+              .filter(
+                (search: string, index: number, array: string[]) =>
+                  array.indexOf(search) === index
+              )
+              .slice(0, 5); // Take only the first 5 unique searches
+            setRecentSearches(uniqueSearches);
           }
         }
       } catch (error) {
@@ -245,6 +249,221 @@ export function NavBar({
     fetchRecentSearches();
     console.log("recentSearches", recentSearches);
   }, []);
+
+  // Function to get product thumbnail URL
+  async function getProductThumbnailUrl(
+    mediaPath: string
+  ): Promise<string | null> {
+    try {
+      const indexUrl = `${BUCKET_URL}/${mediaPath}/index.json`;
+      const res = await fetch(indexUrl);
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!Array.isArray(data?.files)) return null;
+      const files: string[] = data.files
+        .map((f: any) => (typeof f === "string" ? f : f?.name))
+        .filter(Boolean);
+      const imageFile = files.find((f) => /\.(jpg|jpeg|png|webp)$/i.test(f));
+      return imageFile ? `${BUCKET_URL}/${mediaPath}/${imageFile}` : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // Fetch recent search products on component mount
+  useEffect(() => {
+    const fetchRecentSearchProducts = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session?.user) {
+          const { data, error } = await supabase
+            .from("recent_search_products")
+            .select(
+              `
+              id,
+              created_at,
+              product:product_id (
+                id,
+                product_name,
+                price,
+                media_filepath,
+                brand:brand_id (
+                  brand_name
+                )
+              )
+            `
+            )
+            .eq("user_id", session.user.id)
+            .order("created_at", { ascending: false })
+            .limit(20); // Fetch more to ensure we get 3 unique ones
+
+          if (error) {
+            console.error(
+              "Error fetching recent search products:",
+              error.message
+            );
+          } else if (data && data.length > 0) {
+            // Get unique products, preserving the order of first occurrence
+            const uniqueProducts = data
+              .map((item: any) => ({
+                id: item.product.id,
+                product_name: item.product.product_name || "",
+                brand_name: item.product.brand?.brand_name || "",
+                price: item.product.price || 0,
+                media_filepath: item.product.media_filepath || "",
+              }))
+              .filter(
+                (
+                  product: RecentSearchProduct,
+                  index: number,
+                  array: RecentSearchProduct[]
+                ) => array.findIndex((p) => p.id === product.id) === index
+              )
+              .slice(0, 3); // Take only the first 3 unique products
+
+            setRecentSearchProducts(uniqueProducts);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching recent search products:", error);
+      }
+    };
+
+    fetchRecentSearchProducts();
+  }, []);
+
+  // Fetch product thumbnails when recent search products change
+  useEffect(() => {
+    if (recentSearchProducts.length === 0) return;
+
+    const fetchThumbnails = async () => {
+      try {
+        const entries = await Promise.all(
+          recentSearchProducts.map(async (p) => {
+            const url =
+              p.media_filepath && p.media_filepath !== "placeholder"
+                ? await getProductThumbnailUrl(p.media_filepath)
+                : null;
+            return [p.id, url] as const;
+          })
+        );
+        setProductThumbs(
+          Object.fromEntries(entries.filter(([, url]) => url)) as Record<
+            number,
+            string
+          >
+        );
+      } catch (_e) {
+        // ignore errors
+      }
+    };
+
+    fetchThumbnails();
+  }, [recentSearchProducts]);
+
+  // Refetch data when search modal opens
+  useFocusEffect(
+    React.useCallback(() => {
+      if (searchMenuOpen) {
+        // Refetch recent searches
+        const fetchRecentSearches = async () => {
+          try {
+            const {
+              data: { session },
+            } = await supabase.auth.getSession();
+            if (session?.user) {
+              const { data, error } = await supabase
+                .from("recent_search_queries")
+                .select("search_query")
+                .eq("user_id", session.user.id)
+                .order("created_at", { ascending: false })
+                .limit(20);
+
+              if (error) {
+                console.error("Error fetching recent searches:", error.message);
+              } else if (data && data.length > 0) {
+                const uniqueSearches = data
+                  .map((item: any) => item.search_query)
+                  .filter(
+                    (search: string, index: number, array: string[]) =>
+                      array.indexOf(search) === index
+                  )
+                  .slice(0, 5);
+                setRecentSearches(uniqueSearches);
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching recent searches:", error);
+          }
+        };
+
+        // Refetch recent search products
+        const fetchRecentSearchProducts = async () => {
+          try {
+            const {
+              data: { session },
+            } = await supabase.auth.getSession();
+            if (session?.user) {
+              const { data, error } = await supabase
+                .from("recent_search_products")
+                .select(
+                  `
+                  id,
+                  created_at,
+                  product:product_id (
+                    id,
+                    product_name,
+                    price,
+                    media_filepath,
+                    brand:brand_id (
+                      brand_name
+                    )
+                  )
+                `
+                )
+                .eq("user_id", session.user.id)
+                .order("created_at", { ascending: false })
+                .limit(20);
+
+              if (error) {
+                console.error(
+                  "Error fetching recent search products:",
+                  error.message
+                );
+              } else if (data && data.length > 0) {
+                const uniqueProducts = data
+                  .map((item: any) => ({
+                    id: item.product.id,
+                    product_name: item.product.product_name || "",
+                    brand_name: item.product.brand?.brand_name || "",
+                    price: item.product.price || 0,
+                    media_filepath: item.product.media_filepath || "",
+                  }))
+                  .filter(
+                    (
+                      product: RecentSearchProduct,
+                      index: number,
+                      array: RecentSearchProduct[]
+                    ) => array.findIndex((p) => p.id === product.id) === index
+                  )
+                  .slice(0, 3);
+
+                setRecentSearchProducts(uniqueProducts);
+              }
+            }
+          } catch (error) {
+            console.error("Error fetching recent search products:", error);
+          }
+        };
+
+        // Fetch both
+        fetchRecentSearches();
+        fetchRecentSearchProducts();
+      }
+    }, [searchMenuOpen])
+  );
 
   // Dummy data for recent brands
   const recentBrands = [
@@ -533,9 +752,12 @@ export function NavBar({
     setSearchMenuOpen(false);
   };
 
-  const handleRecentProductPress = (product: any) => {
-    // Navigate to product page (placeholder for now)
-    console.log("Navigate to product:", product.name);
+  const handleRecentProductPress = (product: RecentSearchProduct) => {
+    // Navigate to product page
+    router.push({
+      pathname: "/(tabs)/product/[id]",
+      params: { id: product.id.toString() },
+    });
     setSearchMenuOpen(false);
   };
 
@@ -553,66 +775,72 @@ export function NavBar({
       {/* Top Nav Bar */}
 
       {pageDisplayName === "fashion:week" ? (
-          <View
-            className={`flex-row items-center justify-between px-4 py-3 pt-16 ${
-              pageDisplayName === "fashion:week"
-                ? "absolute top-0 left-0 right-0 z-50 bg-transparent"
-                : "bg-transparent"
-            }`}
-          >
-            <LinearGradient
-              colors={['rgba(0,0,0,0.8)', 'transparent']}
-              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-            /> 
-            {shouldShowBack && (
-              <TouchableOpacity
-                className="w-11 h-11 justify-center items-center"
-                onPress={onBack || (() => router.back())}
-              >
-                <IconSymbol name="chevron.left" size={20} color={iconColor} />
-              </TouchableOpacity>
-            )}
-            {!shouldShowBack && (
-              <TouchableOpacity
-                className="w-11 h-11 justify-center items-center"
-                onPress={handleMenuPress}
-              >
-                {!menuOpen ? (
-                  <View className="w-4 h-3 justify-between">
-                    <View
-                      className="h-0.5 w-full rounded-sm"
-                      style={{ backgroundColor: iconColor }}
-                    />
-                    <View
-                      className="h-0.5 w-full rounded-sm"
-                      style={{ backgroundColor: iconColor }}
-                    />
-                    <View
-                      className="h-0.5 w-full rounded-sm"
-                      style={{ backgroundColor: iconColor }}
-                    />
-                  </View>
-                ) : (
-                  <IconSymbol name="xmark" size={16} color={iconColor} />
-                )}
-              </TouchableOpacity>
-            )}
-
-            <Text
-              className={`text-lg font-semibold tracking-wider ${
-                pageDisplayName === "fashion:week" ? "text-white" : "text-black"
-              }`}
-            >
-              {customTitle || pageDisplayName}
-            </Text>
-
+        <View
+          className={`flex-row items-center justify-between px-4 py-3 pt-16 ${
+            pageDisplayName === "fashion:week"
+              ? "absolute top-0 left-0 right-0 z-50 bg-transparent"
+              : "bg-transparent"
+          }`}
+        >
+          <LinearGradient
+            colors={["rgba(0,0,0,0.8)", "transparent"]}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+            }}
+          />
+          {shouldShowBack && (
             <TouchableOpacity
               className="w-11 h-11 justify-center items-center"
-              onPress={handleSearchPress}
+              onPress={onBack || (() => router.back())}
             >
-              <IconSymbol name="magnifyingglass" size={20} color={iconColor} />
+              <IconSymbol name="chevron.left" size={20} color={iconColor} />
             </TouchableOpacity>
-          </View>
+          )}
+          {!shouldShowBack && (
+            <TouchableOpacity
+              className="w-11 h-11 justify-center items-center"
+              onPress={handleMenuPress}
+            >
+              {!menuOpen ? (
+                <View className="w-4 h-3 justify-between">
+                  <View
+                    className="h-0.5 w-full rounded-sm"
+                    style={{ backgroundColor: iconColor }}
+                  />
+                  <View
+                    className="h-0.5 w-full rounded-sm"
+                    style={{ backgroundColor: iconColor }}
+                  />
+                  <View
+                    className="h-0.5 w-full rounded-sm"
+                    style={{ backgroundColor: iconColor }}
+                  />
+                </View>
+              ) : (
+                <IconSymbol name="xmark" size={16} color={iconColor} />
+              )}
+            </TouchableOpacity>
+          )}
+
+          <Text
+            className={`text-lg font-semibold tracking-wider ${
+              pageDisplayName === "fashion:week" ? "text-white" : "text-black"
+            }`}
+          >
+            {customTitle || pageDisplayName}
+          </Text>
+
+          <TouchableOpacity
+            className="w-11 h-11 justify-center items-center"
+            onPress={handleSearchPress}
+          >
+            <IconSymbol name="magnifyingglass" size={20} color={iconColor} />
+          </TouchableOpacity>
+        </View>
       ) : (
         <View
           className={`flex-row items-center justify-between px-4 py-3 pt-16 ${
@@ -797,36 +1025,46 @@ export function NavBar({
           </View>
 
           {/* Continue Shopping Section */}
-          <View className="px-4 mb-8">
-            <Text className="text-lg font-bold text-black mb-4">
-              Continue Shopping
-            </Text>
-            <View className="flex-row gap-4">
-              {recentProductPages.map((product) => (
-                <TouchableOpacity
-                  key={product.id}
-                  className="flex-1"
-                  onPress={() => handleRecentProductPress(product)}
-                >
-                  <View className="w-full h-32 bg-gray-200 rounded-lg mb-2 overflow-hidden">
-                    <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg" />
-                  </View>
-                  <Text
-                    className="text-sm font-semibold text-black mb-1"
-                    numberOfLines={1}
+          {recentSearchProducts.length > 0 && (
+            <View className="px-4 mb-8">
+              <Text className="text-lg font-bold text-black mb-4">
+                Continue Shopping
+              </Text>
+              <View className="flex-row gap-4">
+                {recentSearchProducts.map((product) => (
+                  <TouchableOpacity
+                    key={product.id}
+                    style={{ width: (width - 32 - 16) / 3 }} // (screen width - padding - gaps) / 3
+                    onPress={() => handleRecentProductPress(product)}
                   >
-                    {product.name}
-                  </Text>
-                  <Text className="text-xs text-gray-600 mb-1">
-                    {product.brand}
-                  </Text>
-                  <Text className="text-sm font-bold text-black">
-                    {product.price}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <View className="w-full h-32 bg-gray-200 rounded-lg mb-2 overflow-hidden">
+                      {productThumbs[product.id] ? (
+                        <Image
+                          source={{ uri: productThumbs[product.id] }}
+                          className="w-full h-full"
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg" />
+                      )}
+                    </View>
+                    <Text
+                      className="text-sm font-semibold text-black mb-1"
+                      numberOfLines={1}
+                    >
+                      {product.product_name}
+                    </Text>
+                    <Text className="text-xs text-gray-600 mb-1">
+                      {product.brand_name}
+                    </Text>
+                    <Text className="text-sm font-bold text-black">
+                      ${product.price}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
-          </View>
+          )}
 
           {/* Recent Searches Section */}
           <View className="px-4 mb-8">

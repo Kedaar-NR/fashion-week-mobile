@@ -176,6 +176,33 @@ export default function SearchResultsScreen() {
     }
   }
 
+  // Function to save product to recent_search_products
+  const saveProductToRecentSearches = async (productId: number) => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.user) {
+        console.log("User not authenticated, skipping recent search save");
+        return;
+      }
+
+      const { error } = await supabase.from("recent_search_products").insert({
+        user_id: session.user.id,
+        product_id: productId,
+      });
+
+      if (error) {
+        console.error("Error saving product to recent searches:", error);
+      } else {
+        console.log(`Product ${productId} saved to recent searches`);
+      }
+    } catch (error) {
+      console.error("Error in saveProductToRecentSearches:", error);
+    }
+  };
+
   const productTypeOptions = [
     {
       label: "SHIRT",
@@ -475,6 +502,10 @@ export default function SearchResultsScreen() {
                 key={item.id}
                 className="w-[48%] mb-4"
                 onPress={() => {
+                  // Save product to recent searches
+                  saveProductToRecentSearches(item.id);
+
+                  // Navigate to product page
                   router.push({
                     pathname: "/(tabs)/product/[id]",
                     params: { id: item.id.toString() },
