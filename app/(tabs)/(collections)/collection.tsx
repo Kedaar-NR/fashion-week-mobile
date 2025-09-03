@@ -18,6 +18,9 @@ import {
 } from "react-native";
 import { supabase } from "../../../lib/supabase";
 
+const BUCKET_URL =
+  "https://bslylabiiircssqasmcs.supabase.co/storage/v1/object/public/brand-content";
+
 interface FashionPiece {
   id: number;
   product_name: string;
@@ -104,6 +107,9 @@ export default function CollectionScreen() {
     null
   );
   const [creatingCollection, setCreatingCollection] = useState(false);
+  const [productThumbs, setProductThumbs] = useState<Record<number, string>>(
+    {}
+  );
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(
     null
@@ -210,6 +216,35 @@ export default function CollectionScreen() {
     }, [])
   );
 
+  // Fetch product thumbnails when fashion pieces change
+  useEffect(() => {
+    if (fashionPieces.length === 0) return;
+
+    const fetchThumbnails = async () => {
+      try {
+        const entries = await Promise.all(
+          fashionPieces.map(async (p) => {
+            const url =
+              p.media_filepath && p.media_filepath !== "placeholder"
+                ? await getProductThumbnailUrl(p.media_filepath)
+                : null;
+            return [p.id, url] as const;
+          })
+        );
+        setProductThumbs(
+          Object.fromEntries(entries.filter(([, url]) => url)) as Record<
+            number,
+            string
+          >
+        );
+      } catch (_e) {
+        // ignore errors
+      }
+    };
+
+    fetchThumbnails();
+  }, [fashionPieces]);
+
   const requestMediaLibraryPermissions = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -222,6 +257,26 @@ export default function CollectionScreen() {
     }
     return true;
   };
+
+  // Function to get product thumbnail URL
+  async function getProductThumbnailUrl(
+    mediaPath: string
+  ): Promise<string | null> {
+    try {
+      const indexUrl = `${BUCKET_URL}/${mediaPath}/index.json`;
+      const res = await fetch(indexUrl);
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!Array.isArray(data?.files)) return null;
+      const files: string[] = data.files
+        .map((f: any) => (typeof f === "string" ? f : f?.name))
+        .filter(Boolean);
+      const imageFile = files.find((f) => /\.(jpg|jpeg|png|webp)$/i.test(f));
+      return imageFile ? `${BUCKET_URL}/${mediaPath}/${imageFile}` : null;
+    } catch {
+      return null;
+    }
+  }
 
   const handleSelectCoverImage = async () => {
     const hasPermission = await requestMediaLibraryPermissions();
@@ -538,23 +593,39 @@ export default function CollectionScreen() {
 
   const renderRecentlyLikedItem = ({ item }: { item: FashionPiece }) => (
     <TouchableOpacity
-      className="w-32 h-40 bg-gray-200 rounded-lg overflow-hidden"
+      className="items-center"
+      style={{ width: gridItemWidth }}
       onPress={() =>
         router.push({
-          pathname: "/(tabs)/(collections)/[collection]",
-          params: { collection: "all-liked" },
+          pathname: "/(tabs)/product/[id]",
+          params: { id: item.id.toString() },
         })
       }
     >
-      <View className="w-full h-24 bg-gradient-to-br from-gray-300 to-gray-400" />
-      <View className="p-2">
-        <Text className="text-xs font-semibold" numberOfLines={1}>
-          {item.product_name}
-        </Text>
-        <Text className="text-xs text-gray-600" numberOfLines={1}>
-          {item.brand_name}
-        </Text>
-        <Text className="text-xs text-gray-600" numberOfLines={1}>
+      <View
+        className="rounded-xl justify-center items-center mb-2 overflow-hidden bg-gray-200"
+        style={{ width: gridItemWidth, height: gridItemWidth }}
+      >
+        {productThumbs[item.id] ? (
+          <Image
+            source={{ uri: productThumbs[item.id] }}
+            className="w-full h-full"
+            resizeMode="cover"
+          />
+        ) : (
+          <Text className="text-xs opacity-50">No Image</Text>
+        )}
+      </View>
+      <View className="flex-row justify-between items-start w-full">
+        <View className="flex-1 mr-2">
+          <Text className="text-xs font-medium" numberOfLines={1}>
+            {item.product_name}
+          </Text>
+          <Text className="text-xs text-gray-600" numberOfLines={1}>
+            {item.brand_name}
+          </Text>
+        </View>
+        <Text className="text-xs font-bold" numberOfLines={1}>
           ${item.price}
         </Text>
       </View>
