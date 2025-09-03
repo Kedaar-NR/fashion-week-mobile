@@ -24,6 +24,7 @@ export default function EditProfileScreen() {
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [profileUrl, setProfileUrl] = useState<string | null>(null);
 
   // Loading state
   const [initializing, setInitializing] = useState(true);
@@ -44,6 +45,34 @@ export default function EditProfileScreen() {
   const [selected, setSelected] = useState<"add" | "dontAdd" | null>(null);
 
   const isValidUsername = (name: string) => /^[A-Za-z0-9._]+$/.test(name);
+
+  const getProfilePicture = async (userId: string, cacheBust = false) => {
+    const bucket = supabase.storage.from("profile-pics");
+    const prefix = ""; // e.g. "avatars/" if your files are in a folder
+    const candidates = [`${userId}.jpg`, `${userId}.jpeg`, `${userId}.png`];
+
+    for (const name of candidates) {
+      const { data, error } = await bucket.list(prefix, {
+        limit: 1,
+        search: name,
+      });
+      if (!error && data?.some((f) => f.name === name)) {
+        // If bucket is public:
+        const publicUrl = bucket.getPublicUrl(`${prefix}${name}`).data
+          .publicUrl;
+        // Add cache busting parameter if requested
+        return cacheBust ? `${publicUrl}?t=${Date.now()}` : publicUrl;
+        // If bucket is private, use a signed URL instead:
+        // const { data: signed } = await bucket.createSignedUrl(`${prefix}${name}`, 60 * 60);
+        // return signed?.signedUrl ?? null;
+      }
+    }
+
+    // Fallback to default
+    const defaultUrl = bucket.getPublicUrl(`${prefix}default-user.jpg`).data
+      .publicUrl;
+    return cacheBust ? `${defaultUrl}?t=${Date.now()}` : defaultUrl;
+  };
 
   // Request camera permissions
   const requestCameraPermissions = async () => {
@@ -127,7 +156,8 @@ export default function EditProfileScreen() {
 
     setUploadingImage(true);
     try {
-      const fileName = `profile-pictures/${session.user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+      // Use the same naming convention as getProfilePicture function
+      const fileName = `${session.user.id}.jpg`;
 
       // Convert local URI to base64
       const response = await fetch(imageUri);
@@ -147,10 +177,12 @@ export default function EditProfileScreen() {
       reader.readAsDataURL(blob);
       const base64Data = await base64Promise;
 
+      // Upload to profile-pics bucket (same as getProfilePicture function)
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("profile-pictures")
+        .from("profile-pics")
         .upload(fileName, decode(base64Data), {
           contentType: "image/jpeg",
+          upsert: true, // This will overwrite existing file with same name
         });
 
       if (uploadError) {
@@ -161,10 +193,21 @@ export default function EditProfileScreen() {
 
       // Get the public URL for the uploaded image
       const { data: urlData } = supabase.storage
-        .from("profile-pictures")
+        .from("profile-pics")
         .getPublicUrl(fileName);
 
+      // Update both avatarUrl (for backward compatibility) and profileUrl
       setAvatarUrl(urlData.publicUrl);
+      setProfileUrl(urlData.publicUrl);
+
+      // Refresh profile picture with cache busting to ensure immediate update
+      setTimeout(async () => {
+        if (session?.user?.id) {
+          const refreshedUrl = await getProfilePicture(session.user.id, true);
+          setProfileUrl(refreshedUrl);
+        }
+      }, 1000); // Small delay to ensure upload is complete
+
       setShowImageModal(false);
       Alert.alert("Success", "Profile picture updated successfully!");
     } catch (uploadError) {
@@ -178,7 +221,11 @@ export default function EditProfileScreen() {
   useFocusEffect(
     React.useCallback(() => {
       console.log("📍 Current path: /(tabs)/(user)/edit-profile");
-    }, [])
+      // Refresh profile picture when screen comes into focus
+      if (session?.user?.id) {
+        getProfilePicture(session.user.id, true).then(setProfileUrl);
+      }
+    }, [session])
   );
 
   // Load session and seed form from user metadata
@@ -252,6 +299,16 @@ export default function EditProfileScreen() {
     }, 400);
     return () => clearTimeout(t);
   }, [username, session]);
+
+  // Load profile picture from storage
+  useEffect(() => {
+    (async () => {
+      if (session?.user?.id) {
+        const url = await getProfilePicture(session.user.id);
+        setProfileUrl(url);
+      }
+    })();
+  }, [session]);
 
   const canSaveUsername = useMemo(() => {
     const name = username.trim();
@@ -401,8 +458,8 @@ export default function EditProfileScreen() {
             <Image
               source={{
                 uri:
-                  avatarUrl?.trim() ||
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZ7c0IdRTbJOYyf78cFdrPoUwF1CjQ8GIquQ&s",
+                  profileUrl ||
+                  "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
               }}
               className="w-24 h-24 rounded-full mb-3"
               resizeMode="cover"
@@ -593,8 +650,8 @@ export default function EditProfileScreen() {
             <Image
               source={{
                 uri:
-                  avatarUrl?.trim() ||
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZ7c0IdRTbJOYyf78cFdrPoUwF1CjQ8GIquQ&s",
+                  profileUrl ||
+                  "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
               }}
               className="w-80 h-80 rounded-full"
               resizeMode="cover"

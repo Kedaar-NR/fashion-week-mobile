@@ -49,6 +49,7 @@ export default function UserScreen() {
   const [loadingSavedBrands, setLoadingSavedBrands] = useState(true);
   const [friendsCount, setFriendsCount] = useState(0);
   const [loadingFriendsCount, setLoadingFriendsCount] = useState(true);
+  const [profileUrl, setProfileUrl] = useState<string | null>(null);
 
   const fetchPinnedCollections = async () => {
     if (!session) return;
@@ -191,6 +192,10 @@ export default function UserScreen() {
         fetchRecentlyPurchased();
         fetchSavedBrandsCount(true); // Show loading only on initial load
         fetchFriendsCount();
+        // Refresh profile picture when screen comes into focus
+        if (session.user?.id) {
+          getProfilePicture(session.user.id, true).then(setProfileUrl);
+        }
       }
     }, [session])
   );
@@ -241,6 +246,15 @@ export default function UserScreen() {
       listener.subscription.unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      if (session?.user?.id) {
+        const url = await getProfilePicture(session.user.id);
+        setProfileUrl(url);
+      }
+    })();
+  }, [session]);
 
   if (!session) {
     return <Auth />;
@@ -346,6 +360,34 @@ export default function UserScreen() {
     }
   };
 
+  const getProfilePicture = async (userId: string, cacheBust = false) => {
+    const bucket = supabase.storage.from("profile-pics");
+    const prefix = ""; // e.g. "avatars/" if your files are in a folder
+    const candidates = [`${userId}.jpg`, `${userId}.jpeg`, `${userId}.png`];
+
+    for (const name of candidates) {
+      const { data, error } = await bucket.list(prefix, {
+        limit: 1,
+        search: name,
+      });
+      if (!error && data?.some((f) => f.name === name)) {
+        // If bucket is public:
+        const publicUrl = bucket.getPublicUrl(`${prefix}${name}`).data
+          .publicUrl;
+        // Add cache busting parameter if requested
+        return cacheBust ? `${publicUrl}?t=${Date.now()}` : publicUrl;
+        // If bucket is private, use a signed URL instead:
+        // const { data: signed } = await bucket.createSignedUrl(`${prefix}${name}`, 60 * 60);
+        // return signed?.signedUrl ?? null;
+      }
+    }
+
+    // Fallback to default
+    const defaultUrl = bucket.getPublicUrl(`${prefix}default-user.jpg`).data
+      .publicUrl;
+    return cacheBust ? `${defaultUrl}?t=${Date.now()}` : defaultUrl;
+  };
+
   return (
     <View className="flex-1">
       <ScrollView className="flex-1 bg-transparent">
@@ -354,7 +396,9 @@ export default function UserScreen() {
           {/* Profile Picture */}
           <Image
             source={{
-              uri: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZ7c0IdRTbJOYyf78cFdrPoUwF1CjQ8GIquQ&s",
+              uri:
+                profileUrl ??
+                "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
             }}
             className="w-24 h-24 rounded-full mb-3"
             resizeMode="cover"

@@ -21,6 +21,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import Constants from 'expo-constants';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PaginationDots from "../../components/PaginationDots";
 import { feedFilterEmitter } from "../../components/ui/NavBar";
@@ -1506,6 +1507,7 @@ export default function HomeScreen() {
     })
       .then(() => {
         console.log("[AUDIO] Audio mode set successfully");
+        console.log(Constants.systemFonts);
       })
       .catch((e) => {
         console.log("[AUDIO] Error setting audio mode:", e);

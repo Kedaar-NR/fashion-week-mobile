@@ -15,6 +15,7 @@ import {
   View,
 } from "react-native";
 
+import { LinearGradient } from 'expo-linear-gradient';
 import { supabase } from "@/lib/supabase";
 import EventEmitter from "eventemitter3";
 import { useColorScheme } from "../../hooks/useColorScheme";
@@ -549,7 +550,129 @@ export function NavBar({
 
   return (
     <View>
-      <View
+      {/* Top Nav Bar */}
+
+      {pageDisplayName === "fashion:week" ? (
+          <View
+            className={`flex-row items-center justify-between px-4 py-3 pt-16 ${
+              pageDisplayName === "fashion:week"
+                ? "absolute top-0 left-0 right-0 z-50 bg-transparent"
+                : "bg-transparent"
+            }`}
+          >
+            <LinearGradient
+              colors={['rgba(0,0,0,0.8)', 'transparent']}
+              style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+            /> 
+            {shouldShowBack && (
+              <TouchableOpacity
+                className="w-11 h-11 justify-center items-center"
+                onPress={onBack || (() => router.back())}
+              >
+                <IconSymbol name="chevron.left" size={20} color={iconColor} />
+              </TouchableOpacity>
+            )}
+            {!shouldShowBack && (
+              <TouchableOpacity
+                className="w-11 h-11 justify-center items-center"
+                onPress={handleMenuPress}
+              >
+                {!menuOpen ? (
+                  <View className="w-4 h-3 justify-between">
+                    <View
+                      className="h-0.5 w-full rounded-sm"
+                      style={{ backgroundColor: iconColor }}
+                    />
+                    <View
+                      className="h-0.5 w-full rounded-sm"
+                      style={{ backgroundColor: iconColor }}
+                    />
+                    <View
+                      className="h-0.5 w-full rounded-sm"
+                      style={{ backgroundColor: iconColor }}
+                    />
+                  </View>
+                ) : (
+                  <IconSymbol name="xmark" size={16} color={iconColor} />
+                )}
+              </TouchableOpacity>
+            )}
+
+            <Text
+              className={`text-lg font-semibold tracking-wider ${
+                pageDisplayName === "fashion:week" ? "text-white" : "text-black"
+              }`}
+            >
+              {customTitle || pageDisplayName}
+            </Text>
+
+            <TouchableOpacity
+              className="w-11 h-11 justify-center items-center"
+              onPress={handleSearchPress}
+            >
+              <IconSymbol name="magnifyingglass" size={20} color={iconColor} />
+            </TouchableOpacity>
+          </View>
+      ) : (
+        <View
+          className={`flex-row items-center justify-between px-4 py-3 pt-16 ${
+            pageDisplayName === "fashion:week"
+              ? "absolute top-0 left-0 right-0 z-50 bg-transparent"
+              : "bg-transparent"
+          }`}
+        >
+          {shouldShowBack && (
+            <TouchableOpacity
+              className="w-11 h-11 justify-center items-center"
+              onPress={onBack || (() => router.back())}
+            >
+              <IconSymbol name="chevron.left" size={20} color={iconColor} />
+            </TouchableOpacity>
+          )}
+          {!shouldShowBack && (
+            <TouchableOpacity
+              className="w-11 h-11 justify-center items-center"
+              onPress={handleMenuPress}
+            >
+              {!menuOpen ? (
+                <View className="w-4 h-3 justify-between">
+                  <View
+                    className="h-0.5 w-full rounded-sm"
+                    style={{ backgroundColor: iconColor }}
+                  />
+                  <View
+                    className="h-0.5 w-full rounded-sm"
+                    style={{ backgroundColor: iconColor }}
+                  />
+                  <View
+                    className="h-0.5 w-full rounded-sm"
+                    style={{ backgroundColor: iconColor }}
+                  />
+                </View>
+              ) : (
+                <IconSymbol name="xmark" size={16} color={iconColor} />
+              )}
+            </TouchableOpacity>
+          )}
+
+          <Text
+            className={`text-lg font-semibold tracking-wider ${
+              pageDisplayName === "fashion:week" ? "text-white" : "text-black"
+            }`}
+          >
+            {customTitle || pageDisplayName}
+          </Text>
+
+          <TouchableOpacity
+            className="w-11 h-11 justify-center items-center"
+            onPress={handleSearchPress}
+          >
+            <IconSymbol name="magnifyingglass" size={20} color={iconColor} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* <View
         className={`flex-row items-center justify-between px-4 py-3 pt-16 ${pageDisplayName === "fashion:week" ? "absolute top-0 left-0 right-0 z-50 bg-transparent" : "bg-transparent"}`}
       >
         {shouldShowBack && (
@@ -598,7 +721,7 @@ export function NavBar({
         >
           <IconSymbol name="magnifyingglass" size={20} color={iconColor} />
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       {/* Dropdown Menu */}
       {menuOpen && (
