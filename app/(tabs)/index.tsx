@@ -210,7 +210,7 @@ const IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"];
 //   YOUTH_MOVEMENT: "Youth Movement",
 // };
 
-const BRANDS = {
+const BRANDS: { [key: string]: string } = {
   "5MOREDAYS": "5 More Days",
   ABSTRAITE_DESIGN: "Abstraite Design",
   ACTIVIST_PARIS: "Activist Paris",
