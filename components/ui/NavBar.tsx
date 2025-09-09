@@ -13,6 +13,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 
@@ -983,138 +984,142 @@ export function NavBar({
 
       {/* Full Screen Search Menu */}
       {searchMenuOpen && (
-        <View
-          className="absolute inset-0 bg-white z-50"
-          style={{ width, height }}
-        >
-          {/* Header with Search Bar */}
-          <View className="flex-row items-center justify-between px-4 py-3 pt-16">
-            {searchActive ? (
-              <View className="flex-1 flex-row items-center gap-2 h-11">
-                <TextInput
-                  ref={inputRef}
-                  className="flex-1 h-9 rounded-lg px-3 text-base text-gray-900 bg-gray-100"
-                  value={searchText}
-                  onChangeText={setSearchText}
-                  placeholder="Search..."
-                  placeholderTextColor="#999"
-                  autoFocus={true}
-                  returnKeyType="search"
-                  onSubmitEditing={handleSearchSubmit}
-                />
-                <TouchableOpacity
-                  className="ml-2 px-2 py-1"
-                  onPress={handleCancelSearch}
-                >
-                  <IconSymbol name="chevron.left" size={20} color="#000000" />
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <>
-                <TouchableOpacity
-                  className="w-11 h-11 justify-center items-center"
-                  onPress={handleSearchMenuClose}
-                >
-                  <IconSymbol name="xmark" size={20} color="#000000" />
-                </TouchableOpacity>
-                <Text className="text-lg font-semibold tracking-wider text-black">
-                  SEARCH
-                </Text>
-                <View className="w-11" />
-              </>
-            )}
-          </View>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View
+            className="absolute inset-0 bg-white z-50"
+            style={{ width, height }}
+          >
+            {/* Header with Search Bar */}
+            <View className="flex-row items-center justify-between px-4 py-3 pt-16">
+              {searchActive ? (
+                <View className="flex-1 flex-row items-center gap-2 h-11">
+                  <TextInput
+                    ref={inputRef}
+                    className="flex-1 h-9 rounded-lg px-3 text-base text-gray-900 bg-gray-100"
+                    value={searchText}
+                    onChangeText={setSearchText}
+                    placeholder="Search..."
+                    placeholderTextColor="#999"
+                    autoFocus={true}
+                    returnKeyType="search"
+                    onSubmitEditing={handleSearchSubmit}
+                  />
+                  <TouchableOpacity
+                    className="ml-2 px-2 py-1"
+                    onPress={handleCancelSearch}
+                  >
+                    <IconSymbol name="chevron.left" size={20} color="#000000" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    className="w-11 h-11 justify-center items-center"
+                    onPress={handleSearchMenuClose}
+                  >
+                    <IconSymbol name="xmark" size={20} color="#000000" />
+                  </TouchableOpacity>
+                  <Text className="text-lg font-semibold tracking-wider text-black">
+                    SEARCH
+                  </Text>
+                  <View className="w-11" />
+                </>
+              )}
+            </View>
 
-          {/* Continue Shopping Section */}
-          {recentSearchProducts.length > 0 && (
+            {/* Continue Shopping Section */}
+            {recentSearchProducts.length > 0 && (
+              <View className="px-4 mb-8">
+                <Text className="text-lg font-bold text-black mb-4">
+                  Continue Shopping
+                </Text>
+                <View className="flex-row gap-4">
+                  {recentSearchProducts.map((product) => (
+                    <TouchableOpacity
+                      key={product.id}
+                      style={{ width: (width - 32 - 16) / 3 }} // (screen width - padding - gaps) / 3
+                      onPress={() => handleRecentProductPress(product)}
+                    >
+                      <View className="w-full h-32 bg-gray-200 rounded-lg mb-2 overflow-hidden">
+                        {productThumbs[product.id] ? (
+                          <Image
+                            source={{ uri: productThumbs[product.id] }}
+                            className="w-full h-full"
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg" />
+                        )}
+                      </View>
+                      <Text
+                        className="text-sm font-semibold text-black mb-1"
+                        numberOfLines={1}
+                      >
+                        {product.product_name}
+                      </Text>
+                      <Text className="text-xs text-gray-600 mb-1">
+                        {product.brand_name}
+                      </Text>
+                      <Text className="text-sm font-bold text-black">
+                        ${product.price}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Recent Searches Section */}
             <View className="px-4 mb-8">
               <Text className="text-lg font-bold text-black mb-4">
-                Continue Shopping
+                Recently Searched
               </Text>
-              <View className="flex-row gap-4">
-                {recentSearchProducts.map((product) => (
+              <View className="space-y-3">
+                {recentSearches.map((searchTerm, index) => (
                   <TouchableOpacity
-                    key={product.id}
-                    style={{ width: (width - 32 - 16) / 3 }} // (screen width - padding - gaps) / 3
-                    onPress={() => handleRecentProductPress(product)}
+                    key={index}
+                    className="py-3 border-b border-gray-200"
+                    onPress={() => handleRecentSearchPress(searchTerm)}
                   >
-                    <View className="w-full h-32 bg-gray-200 rounded-lg mb-2 overflow-hidden">
-                      {productThumbs[product.id] ? (
-                        <Image
-                          source={{ uri: productThumbs[product.id] }}
-                          className="w-full h-full"
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg" />
-                      )}
-                    </View>
-                    <Text
-                      className="text-sm font-semibold text-black mb-1"
-                      numberOfLines={1}
-                    >
-                      {product.product_name}
-                    </Text>
-                    <Text className="text-xs text-gray-600 mb-1">
-                      {product.brand_name}
-                    </Text>
-                    <Text className="text-sm font-bold text-black">
-                      ${product.price}
+                    <Text className="text-base text-gray-800">
+                      {searchTerm}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
             </View>
-          )}
 
-          {/* Recent Searches Section */}
-          <View className="px-4 mb-8">
-            <Text className="text-lg font-bold text-black mb-4">
-              Recently Searched
-            </Text>
-            <View className="space-y-3">
-              {recentSearches.map((searchTerm, index) => (
-                <TouchableOpacity
-                  key={index}
-                  className="py-3 border-b border-gray-200"
-                  onPress={() => handleRecentSearchPress(searchTerm)}
-                >
-                  <Text className="text-base text-gray-800">{searchTerm}</Text>
-                </TouchableOpacity>
-              ))}
+            {/* Recent Brands Section */}
+            <View className="px-4">
+              <Text className="text-lg font-bold text-black mb-4">
+                Recent Brands
+              </Text>
+              <View className="space-y-3">
+                {recentBrands.map((brand) => (
+                  <TouchableOpacity
+                    key={brand.id}
+                    className="py-3 border-b border-gray-200"
+                    onPress={() => handleRecentBrandPress(brand)}
+                  >
+                    <View className="flex-row items-center">
+                      <View className="w-12 h-12 bg-gray-200 rounded-full mr-4 overflow-hidden">
+                        <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-full" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-base font-semibold text-gray-800 mb-1">
+                          {brand.name}
+                        </Text>
+                        <Text className="text-sm text-gray-600">
+                          {brand.tagline}
+                        </Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
           </View>
-
-          {/* Recent Brands Section */}
-          <View className="px-4">
-            <Text className="text-lg font-bold text-black mb-4">
-              Recent Brands
-            </Text>
-            <View className="space-y-3">
-              {recentBrands.map((brand) => (
-                <TouchableOpacity
-                  key={brand.id}
-                  className="py-3 border-b border-gray-200"
-                  onPress={() => handleRecentBrandPress(brand)}
-                >
-                  <View className="flex-row items-center">
-                    <View className="w-12 h-12 bg-gray-200 rounded-full mr-4 overflow-hidden">
-                      <View className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 rounded-full" />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-base font-semibold text-gray-800 mb-1">
-                        {brand.name}
-                      </Text>
-                      <Text className="text-sm text-gray-600">
-                        {brand.tagline}
-                      </Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        </View>
+        </TouchableWithoutFeedback>
       )}
     </View>
   );
