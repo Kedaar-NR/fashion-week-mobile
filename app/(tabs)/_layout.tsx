@@ -1,7 +1,6 @@
 import { Tabs, usePathname } from "expo-router";
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { IconSymbol } from "../../components/ui/IconSymbol";
 import { NavBar } from "../../components/ui/NavBar";
 import TabBar from "../../components/ui/TabBar";
 
@@ -40,21 +39,15 @@ export default function TabLayout() {
           <Tabs.Screen
             name="index"
             options={{
-              title: "Home",
+              title: "HOME",
               headerShown: false,
-              tabBarIcon: ({ color }) => (
-                <IconSymbol size={20} name="house.fill" color={color} />
-              ),
             }}
           />
           <Tabs.Screen
             name="(collections)"
             options={{
-              title: "Collection",
+              title: "LIBRARY",
               headerShown: false,
-              tabBarIcon: ({ color }) => (
-                <IconSymbol size={20} name="heart.fill" color={color} />
-              ),
             }}
           />
           {/* <Tabs.Screen
@@ -73,21 +66,15 @@ export default function TabLayout() {
           <Tabs.Screen
             name="(drops)"
             options={{
-              title: "Drops",
+              title: "DROPS",
               headerShown: false,
-              tabBarIcon: ({ color }) => (
-                <IconSymbol size={20} name="bell.fill" color={color} />
-              ),
             }}
           />
           <Tabs.Screen
             name="(user)"
             options={{
-              title: "Account",
+              title: "ACCOUNT",
               headerShown: false,
-              tabBarIcon: ({ color }) => (
-                <IconSymbol size={20} name="person.fill" color={color} />
-              ),
             }}
           />
           <Tabs.Screen
@@ -96,9 +83,6 @@ export default function TabLayout() {
               title: "Search Results",
               headerShown: false,
               href: null,
-              tabBarIcon: ({ color }) => (
-                <IconSymbol size={20} name="magnifyingglass" color={color} />
-              ),
             }}
           />
           <Tabs.Screen

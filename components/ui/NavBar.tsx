@@ -104,7 +104,7 @@ export function NavBar({
       return safe || "BRAND";
     }
     if (path.includes("/collection")) return "LIBRARY";
-    if (path.includes("/drops")) return "DROP TrRACKER";
+    if (path.includes("/drops")) return "DROP TRACKER";
     if (path.includes("/user")) return "ACCOUNT";
     if (path.includes("/archive")) return "ARCHIVE";
     if (path.includes("/style-quiz")) return "STYLE QUIZ";
@@ -510,13 +510,13 @@ export function NavBar({
               setMenuOpen(false);
             },
           },
-          {
-            label: "FEATURED",
-            onPress: () => {
-              router.push("/(tabs)/style-quiz");
-              setMenuOpen(false);
-            },
-          },
+          // {
+          //   label: "FEATURED",
+          //   onPress: () => {
+          //     router.push("/(tabs)/style-quiz");
+          //     setMenuOpen(false);
+          //   },
+          // },
         ];
       case "LIBRARY":
         return [
